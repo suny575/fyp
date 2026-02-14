@@ -1,0 +1,72 @@
+.device-registration-page {
+  background-color: #0d0d0d;
+  min-height: 100vh;
+  padding-top: 50px;
+  color: #fff;
+  margin-top: 40px;
+  max-width: 1500px; 
+  margin: 70px auto; 
+  padding: 20px;
+}
+.stitle {
+  text-align: center;
+}
+/* Table styling */
+.devices-table {
+  background-color: #023368; /* Black table background */
+  color: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.devices-table th {
+  background-color: #03223d; /* Blue header */
+  color: #fff;
+}
+
+.devices-table tbody tr:hover {
+  background-color: #1565c0; /* Darker blue hover */
+  color: #fff;
+}
+
+/* Form card styling */
+.registration-card {
+  background-color: #1a1a1a; /* Dark card */
+  color: #fff;
+  border-radius: 12px;
+}
+
+.registration-card .form-control,
+.registration-card .form-select,
+.registration-card textarea {
+  background-color: #0d0d0d;
+  color: #fff;
+  border: 1px solid #333;
+}
+
+.registration-card .form-control:focus,
+.registration-card .form-select:focus,
+.registration-card textarea:focus {
+  background-color: #0d0d0d;
+  color: #fff;
+  border-color: #1e88e5;
+  box-shadow: 0 0 5px #1e88e5;
+}
+
+.btn-primary {
+  background-color: rgb(3, 3, 81);
+  border: none;
+}
+
+.btn-primary:hover {
+  background-color: #0d47a1;
+}
+
+.btn-secondary {
+  background-color: #607d8b;
+  border: none;
+}
+
+.btn-secondary:hover {
+  background-color: #455a64;
+}
