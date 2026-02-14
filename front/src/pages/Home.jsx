@@ -13,7 +13,7 @@ const Hero = () => {
           <h1 className="hero-title display-4 fw-bold">
             Hospital Equipment Maintenance
             <br />
-            Tracking & Stock Management System
+             & Stock Management System
           </h1>
           {/* CTA Button */}
           <button className="cta-btn btn btn-lg">
