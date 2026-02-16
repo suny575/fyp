@@ -1,7 +1,7 @@
-import React from 'react';
-import { Container, Card, Table } from 'react-bootstrap';
-import { Bar } from 'react-chartjs-2';
-import Sidebar from '../components/Sidebar';
+import React from "react";
+import { Container, Card, Table } from "react-bootstrap";
+import { Bar } from "react-chartjs-2";
+import Sidebar from "../components/Sidebar";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -10,7 +10,7 @@ import {
   Title,
   Tooltip,
   Legend,
-} from 'chart.js';
+} from "chart.js";
 
 ChartJS.register(
   CategoryScale,
@@ -18,21 +18,21 @@ ChartJS.register(
   BarElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
 );
 
 const data = {
-  labels: ['MRI Scanner', 'X-Ray Machine', 'Ventilator', 'ECG Monitor'],
+  labels: ["MRI Scanner", "X-Ray Machine", "Ventilator", "ECG Monitor"],
   datasets: [
     {
-      label: 'Maintenance Completed',
+      label: "Maintenance Completed",
       data: [5, 3, 7, 2],
-      backgroundColor: '#4e73df',
+      backgroundColor: "#4e73df",
     },
     {
-      label: 'Pending Maintenance',
+      label: "Pending Maintenance",
       data: [2, 1, 1, 0],
-      backgroundColor: '#f6c23e',
+      backgroundColor: "#f6c23e",
     },
   ],
 };
@@ -40,26 +40,40 @@ const data = {
 const options = {
   responsive: true,
   plugins: {
-    legend: { position: 'top', labels: { color: '#FFFFFF' } },
-    title: { display: true, text: 'Maintenance Report', color: '#FFFFFF' },
+    legend: { position: "top", labels: { color: "#FFFFFF" } },
+    title: { display: true, text: "Maintenance Report", color: "#FFFFFF" },
   },
   scales: {
-    x: { ticks: { color: '#FFFFFF' } },
-    y: { ticks: { color: '#FFFFFF' }, beginAtZero: true },
+    x: { ticks: { color: "#FFFFFF" } },
+    y: { ticks: { color: "#FFFFFF" }, beginAtZero: true },
   },
 };
 
 function Login() {
   return (
-    <div style={{ display: 'flex' }}>
+    <div style={{ display: "flex" }}>
       <Sidebar />
-      <Container style={{ marginLeft: '240px', paddingTop: '30px' }}>
-        <Card className="shadow-lg mb-4" style={{ borderRadius: '15px', backgroundColor: '#121C3F', color: '#FFFFFF' }}>
+      <Container style={{ marginLeft: "240px", paddingTop: "30px" }}>
+        <Card
+          className="shadow-lg mb-4"
+          style={{
+            borderRadius: "15px",
+            backgroundColor: "#121C3F",
+            color: "#FFFFFF",
+          }}
+        >
           <Card.Body>
             <Bar data={data} options={options} />
           </Card.Body>
         </Card>
-        <Card className="shadow-lg" style={{ borderRadius: '15px', backgroundColor: '#1C294D', color: '#FFFFFF' }}>
+        <Card
+          className="shadow-lg"
+          style={{
+            borderRadius: "15px",
+            backgroundColor: "#1C294D",
+            color: "#FFFFFF",
+          }}
+        >
           <Card.Body>
             <Table striped bordered hover variant="dark">
               <thead>

@@ -1,0 +1,140 @@
+.auth-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #4b6cb7, #182848);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: "Poppins", sans-serif;
+}
+
+.auth-card {
+  width: 420px;
+  background: white;
+  border-radius: 20px;
+  padding: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Toggle Buttons */
+.auth-toggle {
+  position: relative;
+  display: flex;
+  background: #f1f1f1;
+  border-radius: 30px;
+  margin-bottom: 2rem;
+}
+
+.auth-toggle button {
+  flex: 1;
+  padding: 10px 0;
+  border: none;
+  background: transparent;
+  font-weight: 600;
+  z-index: 2;
+  transition: color 0.3s ease;
+}
+
+.auth-toggle button.active {
+  color: white;
+}
+
+.toggle-indicator {
+  position: absolute;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(135deg, #4b6cb7, #182848);
+  border-radius: 30px;
+  transition: transform 0.4s ease;
+}
+
+.toggle-indicator.right {
+  transform: translateX(100%);
+}
+
+/* Form Animation */
+.form-wrapper {
+  position: relative;
+  height: 260px;
+}
+
+.form-box {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(20px); 
+  transition: all 0.4s ease;
+  position: absolute; 
+  width: 100%;
+}
+
+.form-box.show {
+  opacity: 1;
+  pointer-events: auto; 
+  transform: translateX(0);
+  position: relative; 
+}
+
+/* Invitation Message */
+.invitation-message {
+  background: #fff3cd;
+  padding: 15px;
+  border-radius: 10px;
+  color: #856404;
+  text-align: center;
+  font-weight: 500;
+}
+
+/* Inputs */
+.form-control {
+  border-radius: 10px;
+  padding: 0.75rem;
+}
+
+/* Buttons */
+.btn {
+  border-radius: 10px;
+  padding: 0.6rem;
+  font-weight: 600;
+  transition: transform 0.2s ease;
+}
+
+.btn:hover {
+  transform: scale(1.03);
+}
+
+.auth-page {
+  animation: smoothEnter 0.6s ease;
+}
+
+@keyframes smoothEnter {
+  from {
+    opacity: 0;
+    transform: translateY(25px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Smooth slide animation for mobile menu */
+.animated-menu {
+  animation: slideDown 0.5s ease forwards;
+}
+
+@keyframes slideDown {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Optional: Hamburger icon rotation when open */
+.navbar-toggler-icon.open {
+  transform: rotate(90deg);
+  transition: transform 0.4s ease;
+}
