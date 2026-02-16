@@ -1,7 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
-import "../styles/Navbar.css"; // Custom CSS for colors & effects
+import "bootstrap/dist/js/bootstrap.bundle.min.js"; // crucial for collapse
+import "../styles/Navbar.css";
 
 const Navbar = () => {
   return (
@@ -10,8 +11,10 @@ const Navbar = () => {
         <Link className="navbar-brand fw-bold" to="/">
           HEM & SMS
         </Link>
+
+        {/* Hamburger for small screens */}
         <button
-          className="navbar-toggler"
+          className="navbar-toggler collapsed"
           type="button"
           data-bs-toggle="collapse"
           data-bs-target="#navbarNav"
@@ -21,6 +24,8 @@ const Navbar = () => {
         >
           <span className="navbar-toggler-icon"></span>
         </button>
+
+        {/* Menu links */}
         <div
           className="collapse navbar-collapse justify-content-end"
           id="navbarNav"
@@ -42,7 +47,7 @@ const Navbar = () => {
               </Link>
             </li>
             <li className="nav-item">
-              <Link className="nav-link" to="/login">
+              <Link className="nav-link" to="/auth">
                 Login
               </Link>
             </li>
