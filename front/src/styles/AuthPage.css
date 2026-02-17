@@ -5,15 +5,19 @@
   justify-content: center;
   align-items: center;
   font-family: "Poppins", sans-serif;
+  animation: smoothEnter 0.98s ease;
 }
 
 .auth-card {
   width: 420px;
+  min-height: 520px;
   background: white;
   border-radius: 20px;
   padding: 2rem;
   position: relative;
   overflow: hidden;
+  transition: height 0.4s ease;
+  /* height: 500px; */
 }
 
 /* Toggle Buttons */
@@ -55,33 +59,25 @@
 /* Form Animation */
 .form-wrapper {
   position: relative;
-  height: 260px;
+  min-height: 420px;
 }
 
 .form-box {
+  position: absolute;
+  width: 100%;
+  top: 0;
+  left: 0;
   opacity: 0;
   pointer-events: none;
-  transform: translateX(20px); 
   transition: all 0.4s ease;
-  position: absolute; 
-  width: 100%;
+  transform: translateX(20px);
 }
 
 .form-box.show {
   opacity: 1;
-  pointer-events: auto; 
+  pointer-events: auto;
   transform: translateX(0);
-  position: relative; 
-}
-
-/* Invitation Message */
-.invitation-message {
-  background: #fff3cd;
-  padding: 15px;
-  border-radius: 10px;
-  color: #856404;
-  text-align: center;
-  font-weight: 500;
+  /* position: relative; */
 }
 
 /* Inputs */
@@ -100,10 +96,6 @@
 
 .btn:hover {
   transform: scale(1.03);
-}
-
-.auth-page {
-  animation: smoothEnter 0.6s ease;
 }
 
 @keyframes smoothEnter {

@@ -16,7 +16,6 @@ const userSchema = new mongoose.Schema({
     ],
     required: true,
   },
-  department: String,
   approved: { type: Boolean, default: false }, // <-- add this
   createdAt: { type: Date, default: Date.now },
 });
