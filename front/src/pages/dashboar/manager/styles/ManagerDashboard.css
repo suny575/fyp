@@ -1,0 +1,34 @@
+.dashboard-layout {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f4f6f9;
+}
+
+.main-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.content-area {
+  padding: 20px;
+  flex: 1;
+}
+
+/* Overlay for mobile */
+.overlay {
+  position: fixed;
+  top: 60px;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+}
+
+@media (min-width: 992px) {
+  .overlay {
+    display: none;
+  }
+}

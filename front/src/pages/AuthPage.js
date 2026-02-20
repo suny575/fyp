@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
@@ -119,7 +118,10 @@ const AuthPage = () => {
               value={loginPassword}
               onChange={(e) => setLoginPassword(e.target.value)}
             />
-            <button className="btn btn-primary w-100" onClick={handleLogin}>
+            <button
+              className="btn btn-primary w-100 btnl"
+              onClick={handleLogin}
+            >
               Login
             </button>
           </div>
@@ -160,7 +162,10 @@ const AuthPage = () => {
               onChange={(e) => setRegisterPassword(e.target.value)}
             />
 
-            <button className="btn btn-primary w-100" onClick={handleRegister}>
+            <button
+              className="btn btn-primary w-100 btnl"
+              onClick={handleRegister}
+            >
               Register
             </button>
           </div>
