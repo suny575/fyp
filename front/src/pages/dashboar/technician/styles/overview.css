@@ -1,0 +1,73 @@
+.td-card {
+  border-radius: 10px;
+  background: #fff;
+  transition: all 0.3s;
+}
+
+.td-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.mini-bar-chart {
+  margin-top: 5px;
+}
+
+.td-card {
+  border-radius: 10px;
+  background: #fff;
+  transition: all 0.3s;
+}
+.td-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+.mini-bar-chart {
+  margin-top: 5px;
+}
+
+/* Quick Action Cards */
+.action-card {
+  border-radius: 10px;
+  transition:
+    transform 0.3s,
+    box-shadow 0.3s;
+}
+.action-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.trend-card {
+  border-radius: 12px;
+  background: #ffffff;
+  transition: all 0.3s ease;
+}
+
+.trend-card:hover {
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+.productivity-card {
+  border-radius: 12px;
+  background: #ffffff;
+  transition: all 0.3s ease;
+}
+
+.productivity-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+
+.progress-circle {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: conic-gradient(#198754 var(--percent), #e9ecef var(--percent));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 14px;
+}

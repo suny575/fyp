@@ -4,6 +4,8 @@ import "../styles/Settings.css";
 
 const Settings = () => {
   const [equipment, setEquipment] = useState([]);
+  const [scheduledList, setScheduledList] = useState([]);
+
   const [selected, setSelected] = useState(null);
   const [interval, setInterval] = useState("weekly");
 
@@ -12,32 +14,31 @@ const Settings = () => {
   const [password, setPassword] = useState("");
 
   const [autoAssign, setAutoAssign] = useState(true);
-  const [qrScanEnabled, setQrScanEnabled] = useState(false);
+  const [qrScanEnabled, setQrScanEnabled] = useState(true);
 
   useEffect(() => {
     fetchEquipment();
     fetchSettings();
+    fetchScheduled();
   }, []);
+
+  // ---------------- FETCH DATA ----------------
 
   const fetchEquipment = async () => {
     try {
       const res = await axios.get("/api/equipment");
       setEquipment(res.data);
     } catch {
-      setEquipment([
-        {
-          _id: "1",
-          name: "MRI Machine",
-          serialNumber: "MRI-7788",
-          equipmentID: "EQ-009",
-        },
-        {
-          _id: "2",
-          name: "X-Ray Machine",
-          serialNumber: "XR-1234",
-          equipmentID: "EQ-010",
-        },
-      ]);
+      setEquipment([]);
+    }
+  };
+
+  const fetchScheduled = async () => {
+    try {
+      const res = await axios.get("/api/scheduledMaintenance");
+      setScheduledList(res.data);
+    } catch {
+      setScheduledList([]);
     }
   };
 
@@ -49,22 +50,28 @@ const Settings = () => {
       setTwoFactorEnabled(res.data.twoFactorEnabled);
     } catch {
       setAutoAssign(true);
-      setQrScanEnabled(false);
-      setTwoFactorEnabled(false);
+      setQrScanEnabled(true);
     }
   };
 
+  // ---------------- MAINTENANCE ----------------
+
   const handleMaintenanceSave = async () => {
-    if (!selected) return;
+    if (!selected) return alert("Select equipment first");
+
     try {
       await axios.patch(`/api/equipment/${selected._id}/maintenance`, {
         maintenanceInterval: interval,
       });
-      alert("Maintenance Scheduled & Task Created");
+
+      alert("Maintenance Scheduled ✔ Technician & Manager Notified");
+      fetchScheduled();
     } catch {
-      alert("Mock: Maintenance Saved");
+      alert("Failed to schedule maintenance");
     }
   };
+
+  // ---------------- SECURITY ----------------
 
   const enable2FA = async () => {
     try {
@@ -73,39 +80,41 @@ const Settings = () => {
       setShow2FASetup(false);
       alert("2FA Enabled Successfully");
     } catch {
-      alert("Mock 2FA Enabled");
+      alert("Error enabling 2FA");
     }
   };
 
+  // ---------------- SETTINGS TOGGLES ----------------
+
   const toggleAutoAssign = async () => {
-    setAutoAssign(!autoAssign);
-    try {
-      await axios.patch("/api/settings/auto-assign", {
-        autoAssignTechnician: !autoAssign,
-      });
-    } catch {}
+    const newValue = !autoAssign;
+    setAutoAssign(newValue);
+
+    await axios.patch("/api/settings/auto-assign", {
+      autoAssignTechnician: newValue,
+    });
   };
 
   const toggleQrScan = async () => {
-    setQrScanEnabled(!qrScanEnabled);
-    try {
-      await axios.patch("/api/settings/qr-scan", {
-        qrScanEnabled: !qrScanEnabled,
-      });
-    } catch {}
+    const newValue = !qrScanEnabled;
+    setQrScanEnabled(newValue);
+
+    await axios.patch("/api/settings/qr-scan", {
+      qrScanEnabled: newValue,
+    });
   };
 
-  function toggle2FA() {
-    const box = document.getElementById("twofaBox");
-    box.style.display = box.style.display === "flex" ? "none" : "flex";
-  }
+  // ---------------- UI ----------------
+
   return (
     <div className="settings-page">
-      {/* Maintenance Schedule */}
-      <h2 className="section-divider">Maintenance</h2>
+      {/* ========== MAINTENANCE SECTION ========== */}
+      <h2 className="section-divider">Maintenance Management</h2>
+
       <div className="card-grid">
+        {/* Schedule Maintenance */}
         <div className="card">
-          <h3>Maintenance Schedule</h3>
+          <h3>Schedule Maintenance</h3>
 
           <select
             onChange={(e) =>
@@ -150,11 +159,11 @@ const Settings = () => {
           )}
         </div>
 
-        {/* Auto-Assign Technician */}
+        {/* Auto Assign */}
         <div className="card">
           <h3>Automatic Assignment</h3>
           <div className="auto-assign-control">
-            <span>Assign Technician Automatically</span>
+            <span>Auto Assign Technician</span>
             <div
               className={`toggle-switch ${autoAssign ? "active" : ""}`}
               onClick={toggleAutoAssign}
@@ -165,9 +174,36 @@ const Settings = () => {
         </div>
       </div>
 
-      {/* Security */}
-      <h2 className="section-divider">Security</h2>
+      {/* Scheduled Maintenance List */}
+      <div className="scheduled-wrapper">
+        <h4>Upcoming Scheduled Maintenance</h4>
+
+        <div className="scheduled-grid">
+          {scheduledList.length === 0 && (
+            <p className="text-muted">No scheduled maintenance found.</p>
+          )}
+
+          {scheduledList.map((item) => (
+            <div key={item._id} className="scheduled-card">
+              <h5>{item.equipment?.name}</h5>
+              <p>
+                <strong>Interval:</strong> {item.interval}
+              </p>
+              <p>
+                <strong>Next Date:</strong>{" "}
+                {new Date(item.nextDate).toLocaleDateString()}
+              </p>
+              <span className="badge bg-warning text-dark">{item.status}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ========== SECURITY SECTION ========== */}
+      <h2 className="section-divider">Security & Permissions</h2>
+
       <div className="card-grid">
+        {/* 2FA */}
         <div className="card">
           <h3>Two-Factor Authentication</h3>
 
@@ -195,15 +231,15 @@ const Settings = () => {
               )}
             </>
           ) : (
-            <p className="enabled">2FA is Enabled ✔</p>
+            <p className="enabled">2FA Enabled ✔</p>
           )}
         </div>
 
-        {/* QR Scan */}
+        {/* QR Permission */}
         <div className="card">
           <h3>QR Scan Permission</h3>
           <div className="auto-assign-control">
-            <span>Require QR Scan for Equipment</span>
+            <span>Allow Equipment QR Scanning</span>
             <div
               className={`toggle-switch ${qrScanEnabled ? "active" : ""}`}
               onClick={toggleQrScan}
@@ -211,8 +247,9 @@ const Settings = () => {
               <div className="toggle-circle"></div>
             </div>
           </div>
-          <p className="mt-2 text-muted">
-            When enabled, equipment must be scanned before processing.
+          <p className="mt-2 textb text-muted">
+            If disabled, department staff must request manager approval before
+            scanning.
           </p>
         </div>
       </div>

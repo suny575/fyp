@@ -1,6 +1,6 @@
 // src/pages/dashboard/manager/ManagerDashboard.jsx
-
-import React, { useState } from "react";
+import { io } from "socket.io-client";
+import React, { useState, useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import Sidebar from "./components/Sidebar";
 import Topbar from "./components/Topbar";
@@ -10,11 +10,11 @@ import TechnicianManagement from "./components/TechnicianManagement";
 import DepStaffManagement from "./components/DepStaffManagement";
 import PharmacyStoreManagement from "./components/PharmacyStoreManagement";
 import UserDetails from "./components/UserDetails";
-import ReportsPage from "./components/Reports"
-import Footer from "./components/Footer";
+import ReportsPage from "./components/Reports";
 import "./styles/ManagerDashboard.css";
 import Settings from "./components/Settings";
 
+const socket = io("http://localhost:5000");
 const ManagerDashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -41,6 +41,20 @@ const ManagerDashboard = () => {
     setProfileOpen(false);
     setNotificationOpen(false);
   };
+
+  useEffect(() => {
+    const userId = localStorage.getItem("userId");
+
+    socket.emit("register", userId);
+
+    socket.on("notification", (data) => {
+      alert(data.message);
+    });
+
+    return () => {
+      socket.off("notification");
+    };
+  }, []);
 
   return (
     <div className="dashboard-layout">
@@ -71,10 +85,9 @@ const ManagerDashboard = () => {
             <Route path="depstaff/:id" element={<UserDetails />} />
             <Route path="pharmacystore" element={<PharmacyStoreManagement />} />
             <Route path="pharmacystore/:id" element={<UserDetails />} />
-            <Route path="/reports" element ={<ReportsPage />} />
-              <Route path="/settings" element ={<Settings />} />
+            <Route path="/reports" element={<ReportsPage />} />
+            <Route path="/settings" element={<Settings />} />
           </Routes>
-          <Footer />
         </div>
       </div>
     </div>

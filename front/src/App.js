@@ -11,6 +11,8 @@ import ContactUs from "./pages/ContactUs.jsx";
 import DepStaffDashboard from "./pages/dashboar/staff/Dashboard.jsx.jsx";
 import ManagerDashboard from "./pages/dashboar/manager/ManagerDashboard.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
+import TDashboard from "./pages/dashboar/technician/tdashBoard.jsx";
+import Footer from "./pages/Footer.jsx";
 
 function App() {
   return (
@@ -26,7 +28,10 @@ function App() {
           <Route path="/staff" element={<DepStaffDashboard />} />
           <Route path="/contactus" element={<ContactUs />} />
           <Route path="/manager/*" element={<ManagerDashboard />} />
+
+          <Route path="/technician/*" element={<TDashboard />} />
         </Routes>
+          <Footer />
       </Router>
     </AuthProvider>
   );

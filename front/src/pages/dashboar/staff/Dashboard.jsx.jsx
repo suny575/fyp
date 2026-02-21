@@ -8,8 +8,36 @@ import FaultStatusList from "./components/FaultStatusList";
 import StockRequestForm from "./components/StockRequestForm";
 import DepartmentEquipment from "./components/DepartmentEquipment";
 import Notifications from "./components/Notifications";
-import Footer from "./components/Footer"
 import "./styles/Dashboard.css";
+
+const checkQRPermission = async () => {
+  const res = await axios.get("/api/settings/qrscan");
+
+  if (res.data.enabled) {
+    openScanner();
+  } else {
+    requestApproval();
+  }
+};
+
+const openScanner = () => {
+  console.log("Opening QR Scanner...");
+  // later you will connect real scanner logic
+};
+
+const requestApproval = async () => {
+  try {
+    const staffId = localStorage.getItem("userId");
+
+    await axios.post("/api/qr-approval/request", {
+      staffId,
+    });
+
+    alert("Manager approval requested.");
+  } catch (error) {
+    alert("Failed to request approval.");
+  }
+};
 
 const DepStaffDashboard = () => {
   const [user, setUser] = useState(null);
@@ -106,9 +134,7 @@ const DepStaffDashboard = () => {
           onClick={() => setSidebarOpen(false)}
         />
       )}
-          <Footer />
     </div>
-
   );
 };
 
