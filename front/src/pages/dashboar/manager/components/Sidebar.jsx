@@ -1,6 +1,12 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
-import { FaTachometerAlt, FaUsers, FaFileAlt, FaCog } from "react-icons/fa";
+import {
+  FaTachometerAlt,
+  FaUsers,
+  FaFileAlt,
+  FaCog,
+  FaBell,
+} from "react-icons/fa";
 import "../styles/Sidebar.css";
 
 const Sidebar = ({ sidebarOpen, closeSidebar }) => {
@@ -8,12 +14,23 @@ const Sidebar = ({ sidebarOpen, closeSidebar }) => {
     <div className={`sidebar ${sidebarOpen ? "open" : ""}`}>
       <h4 className="sidebar-title">Manager</h4>
 
-      <NavLink to="." end className="nav-link" onClick={closeSidebar}>
+      <NavLink
+        to="/manager/overview"
+        end
+        className="nav-link"
+        onClick={closeSidebar}
+      >
         <FaTachometerAlt /> Overview
       </NavLink>
 
-      <NavLink to="/manager/overview">Overview</NavLink>
-
+      <NavLink
+        to="/manager/notifications"
+        className="nav-link"
+        onClick={closeSidebar}
+      >
+        <FaBell /> Notification
+      </NavLink>
+      
       <NavLink
         to="/manager/technician"
         className="nav-link"

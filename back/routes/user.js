@@ -1,7 +1,6 @@
-const express = require("express");
+import express from "express";
+import User from "../models/user";
 const router = express.Router();
-const User = require("../models/User");
-
 // Get all users (admin only)
 router.get("/", async (req, res) => {
   try {
@@ -26,11 +25,13 @@ router.get("/:id", async (req, res) => {
 // Update user (role/page info)
 router.put("/:id", async (req, res) => {
   try {
-    const user = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const user = await User.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+    });
     res.json(user);
   } catch (err) {
     res.status(500).send("Server error");
   }
 });
 
-module.exports = router;
+export default router;

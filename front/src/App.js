@@ -6,7 +6,6 @@ import Home from "./pages/Home";
 import AuthPage from "./pages/AuthPage";
 import AboutUs from "./pages/AboutUs";
 import HowItWorks from "./pages/HowItWorks.jsx";
-import Stock from "./pages/Stock.jsx";
 import ContactUs from "./pages/ContactUs.jsx";
 import DepStaffDashboard from "./pages/dashboar/staff/Dashboard.jsx.jsx";
 import ManagerDashboard from "./pages/dashboar/manager/ManagerDashboard.jsx";
@@ -22,7 +21,6 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/aboutus" element={<AboutUs />} />
-          <Route path="/stock" element={<Stock />} />
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/howitworks" element={<HowItWorks />} />
           <Route path="/staff" element={<DepStaffDashboard />} />
