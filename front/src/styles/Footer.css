@@ -1,0 +1,15 @@
+/* FOOTER */
+.overview-footer {
+  background-color: #f8f9fa;
+  font-size: 0.9rem;
+  transition: background 0.3s ease;
+}
+
+.overview-footer a {
+  transition: color 0.3s ease;
+}
+
+.overview-footer a:hover {
+  color: #0d6efd;
+  text-decoration: underline;
+}

@@ -1,0 +1,181 @@
+.about-page {
+  overflow-x: hidden;
+}
+
+/* HERO */
+.about-hero {
+  height: 65vh;
+  background: linear-gradient(135deg, #6610f2, #0d6efd);
+  padding: 40px 20px;
+}
+
+/* OBJECTIVES */
+.objectives-list {
+  max-width: 700px;
+  margin: auto;
+  list-style: none;
+  padding: 0;
+}
+
+.objectives-list li {
+  margin-bottom: 15px;
+  font-size: 1rem;
+  position: relative;
+  padding-left: 25px;
+}
+
+.objectives-list li::before {
+  content: "✔";
+  position: absolute;
+  left: 0;
+  color: #0d6efd;
+  font-weight: bold;
+}
+
+/* FEATURE CARDS */
+.feature-card {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+  transition:
+    transform 0.4s ease,
+    box-shadow 0.4s ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+}
+
+/* SCROLL ANIMATION */
+.fade-section {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: all 0.8s ease;
+}
+
+.fade-section.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* GLASSMORPHISM BLOCK */
+.system-architecture .architecture-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  max-width: 400px;
+  margin: auto;
+}
+
+.arch-box {
+  width: 100%;
+  padding: 20px 15px;
+  border-radius: 15px;
+  background: rgba(196, 19, 19, 0.2);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(189, 175, 175, 0.3);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+  font-weight: 600;
+  color: #0d6efd;
+  font-size: 1.1rem;
+  transition:
+    transform 0.4s ease,
+    box-shadow 0.4s ease;
+  opacity: 0;
+  transform: translateY(30px) scale(0.95);
+}
+
+.arch-box:hover {
+  transform: translateY(-6px) scale(1);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+}
+
+.arch-arrow {
+  font-size: 1.5rem;
+  color: #6c757d;
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+/* ARCHITECTURE BOXES */
+.arch-box.fade-section.visible {
+  animation: fadeScale 0.6s forwards;
+}
+
+.arch-arrow.fade-section.visible {
+  animation: fadeArrow 0.5s forwards;
+}
+/* ================= ANIMATION DELAYS ================= */
+.animate-delay-1 {
+  animation: fadeScale 0.6s forwards;
+  animation-delay: 0.2s;
+}
+
+.animate-delay-2 {
+  animation: fadeArrow 0.5s forwards;
+  animation-delay: 0.4s;
+}
+
+.animate-delay-3 {
+  animation: fadeScale 0.6s forwards;
+  animation-delay: 0.6s;
+}
+
+.animate-delay-4 {
+  animation: fadeArrow 0.5s forwards;
+  animation-delay: 0.8s;
+}
+
+.animate-delay-5 {
+  animation: fadeScale 0.6s forwards;
+  animation-delay: 1s;
+}
+
+/* ================= KEYFRAMES ================= */
+@keyframes fadeScale {
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes fadeArrow {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .about-hero {
+    height: auto;
+    padding: 80px 20px;
+  }
+
+  .about-hero h1 {
+    font-size: 2rem;
+  }
+
+  .about-hero p {
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .system-architecture .architecture-block {
+    max-width: 100%;
+  }
+
+  .arch-box {
+    font-size: 1rem;
+  }
+
+  .arch-arrow {
+    font-size: 1.2rem;
+  }
+}

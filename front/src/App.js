@@ -15,24 +15,36 @@ import ContactUs from "./pages/ContactUs";
 import AdminDashboard from "./pages/dashboard/admin/AdminDashboard";
 import PharmacyDashboard from "./pages/dashboard/pharmacy/PharmacyDashboard";
 
+import DepStaffDashboard from "./pages/dashboar/staff/Dashboard.jsx.jsx";
+import ManagerDashboard from "./pages/dashboar/manager/ManagerDashboard.jsx";
+import { AuthProvider } from "./context/AuthContext.jsx";
+import TDashboard from "./pages/dashboar/technician/tdashBoard.jsx";
+import Footer from "./pages/Footer.jsx";
+
+
 function App() {
   return (
-    <Router>
-      <Navbar />
-
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/aboutus" element={<AboutUs />} />
+    <AuthProvider>
+      <Router>
+        <Navbar />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/aboutus" element={<AboutUs />} />
         
-        <Route path="/auth" element={<AuthPage />} />
-        <Route path="/howitworks" element={<HowItWorks />} />
-        <Route path="/contactus" element={<ContactUs />} />
+          <Route path="/auth" element={<AuthPage />} />
+          <Route path="/howitworks" element={<HowItWorks />} />
+          <Route path="/staff" element={<DepStaffDashboard />} />
+          <Route path="/contactus" element={<ContactUs />} />
+          <Route path="/manager/*" element={<ManagerDashboard />} />
 
-        <Route path="/admin/*" element={<AdminDashboard />} />
+           <Route path="/admin/*" element={<AdminDashboard />} />
         <Route path="/pharmacy/*" element={<PharmacyDashboard />} />
-      </Routes>
 
-    </Router>
+          <Route path="/technician/*" element={<TDashboard />} />
+        </Routes>
+          <Footer />
+      </Router>
+    </AuthProvider>
   );
 }
 

@@ -1,0 +1,47 @@
+/* Actions column layout */
+.tech-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px; /* comfortable spacing */
+}
+
+/* Icon style */
+.tech-actions i {
+  font-size: 1.3rem;
+  padding: 6px 8px;
+  border-radius: 5px;
+  background-color: #f3f4f6; /* light neutral */
+  color: #333;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+/* Icon hover effect */
+.tech-actions i:hover {
+  transform: scale(1.15);
+  color: #fff;
+  background-color: #0d6efd; /* bootstrap primary */
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Table row hover */
+.tech-table tbody tr:hover {
+  transform: translateY(-2px);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+/* Status badges */
+.tech-table .badge {
+  font-size: 0.85rem;
+  padding: 0.4em 0.6em;
+  cursor: default;
+  transition: all 0.2s ease;
+}
+
+.tech-table .badge:hover {
+  transform: scale(1.1);
+  opacity: 0.85;
+}

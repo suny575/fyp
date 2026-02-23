@@ -6,8 +6,7 @@ import "../styles/AuthPage.css";
 
 const AuthPage = () => {
   const [activeTab, setActiveTab] = useState("login");
-  // eslint-disable-next-line no-unused-vars
-const [invitationExists, setInvitationExists] = useState(false);
+  const [invitationExists, setInvitationExists] = useState(false);
   const [registerRole, setRegisterRole] = useState("");
 
   const [searchParams] = useSearchParams();
@@ -45,7 +44,6 @@ const [invitationExists, setInvitationExists] = useState(false);
       return;
     }
     setError("");
-    // Call your login API here
     console.log("Login:", { email: loginEmail, password: loginPassword });
   };
 
@@ -64,7 +62,6 @@ const [invitationExists, setInvitationExists] = useState(false);
       token,
     });
 
-    // After successful API call:
     setActiveTab("login");
   };
 
@@ -111,8 +108,8 @@ const [invitationExists, setInvitationExists] = useState(false);
               type="email"
               className="form-control mb-3"
               placeholder="Email"
-              value={loginEmail} // <- controlled value
-              onChange={(e) => setLoginEmail(e.target.value)} // <- update state
+              value={loginEmail}
+              onChange={(e) => setLoginEmail(e.target.value)}
             />
             <input
               type="password"
@@ -121,25 +118,29 @@ const [invitationExists, setInvitationExists] = useState(false);
               value={loginPassword}
               onChange={(e) => setLoginPassword(e.target.value)}
             />
-            <button className="btn btn-primary w-100" onClick={handleLogin}>
+            <button
+              className="btn btn-primary w-100 btnl"
+              onClick={handleLogin}
+            >
               Login
             </button>
           </div>
 
-          {/* Register Section */}
-          <div>
+          {/* Register Form */}
+          <div className={`form-box ${activeTab === "register" ? "show" : ""}`}>
             <h3 className="text-center mb-4">Join The System</h3>
 
             <input
               type="email"
-              placeholder="emailI"
+              placeholder="Email"
               className="form-control mb-3"
               value={registerEmail}
               readOnly
             />
-<input
+
+            <input
               type="text"
-              placeholder="roleI"
+              placeholder="Role"
               className="form-control mb-3"
               value={registerRole}
               readOnly
@@ -161,7 +162,10 @@ const [invitationExists, setInvitationExists] = useState(false);
               onChange={(e) => setRegisterPassword(e.target.value)}
             />
 
-            <button className="btn btn-primary w-100" onClick={handleRegister}>
+            <button
+              className="btn btn-primary w-100 btnl"
+              onClick={handleRegister}
+            >
               Register
             </button>
           </div>

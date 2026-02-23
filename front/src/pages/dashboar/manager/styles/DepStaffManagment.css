@@ -1,0 +1,58 @@
+/* src/pages/dashboard/manager/styles/UserManagement.css */
+
+/* Table hover effect */
+.tech-table tbody tr:hover {
+  transform: translateY(-2px);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Action icons */
+.tech-actions button,
+.tech-actions i {
+  margin-right: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 1.2rem;
+  color: #0d6efd;
+}
+
+.tech-actions i:hover {
+  transform: scale(1.2);
+  color: #0a58ca;
+}
+
+/* Status badges */
+.tech-table .badge {
+  transition: all 0.2s ease;
+}
+.tech-table .badge:hover {
+  opacity: 0.85;
+  transform: scale(1.1);
+}
+
+/* Cards for top section */
+.row.mb-4 > .col-md-4 {
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+}
+.row.mb-4 > .col-md-4:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Invite button */
+.btn-invite {
+  background-color: #0d6efd;
+  color: #fff;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+.btn-invite:hover {
+  background-color: #0a58ca;
+  color: #fff;
+  transform: scale(1.05);
+}
