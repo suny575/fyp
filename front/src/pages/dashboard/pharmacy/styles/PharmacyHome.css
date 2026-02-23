@@ -1,0 +1,61 @@
+.pharmacy-home-container {
+  padding: 20px;
+  margin-top:80px;
+}
+
+.pharmacy-home-container h3 {
+  margin-bottom: 35px;
+  color: #111827;
+}
+
+.dashboard-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+.dashboard-card {
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  text-align: center;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+}
+
+.dashboard-card h3 {
+  margin-bottom: 10px;
+  color: #111827;
+}
+
+.card-count {
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #3b82f6;
+}
+
+.card-desc {
+  font-size: 14px;
+  color: #6b7280;
+  margin-bottom: 15px;
+}
+
+.dashboard-card button {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  background-color: #3b82f6;
+  color: white;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.dashboard-card button:hover {
+  background-color: #2563eb;
+}

@@ -13,6 +13,8 @@
     "chart.js": "^4.5.1",
     "file-saver": "^2.0.5",
     "framer-motion": "^12.34.0",
+    "html2canvas": "^1.4.1",
+    "lucide-react": "^0.574.0",
     "jspdf": "^4.2.0",
     "jspdf-autotable": "^5.0.7",
     "jwt-decode": "^4.0.0",
@@ -25,6 +27,8 @@
     "react-router-dom": "^7.13.0",
     "react-scripts": "5.0.1",
     "recharts": "^3.7.0",
+  
+    "xlsx": "^0.18.5"
     "socket.io-client": "^4.8.3",
     "web-vitals": "^2.1.4"
   },

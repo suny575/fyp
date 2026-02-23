@@ -113,11 +113,11 @@ const AuthPage = () => {
         {/* Toggle Header */}
         <div className="auth-toggle">
           <div
-            className={`toggle-indicator ${activeTab === "register" ? "right" : ""}`}
+            className={`toggle-indicator ${activeTab === "register" ? "right" : ""} `}
           ></div>
 
           <button
-            className={activeTab === "login" ? "active" : ""}
+            className={activeTab === "login" ? "active"  : "" }
             onClick={() => setActiveTab("login")}
           >
             Login
