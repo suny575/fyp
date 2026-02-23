@@ -1,0 +1,19 @@
+ PharmacyDashboard.css *
+.pharmacy-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.pharmacy-main {
+  margin-left: 220px; /* width of sidebar */
+  flex: 1;
+  padding-top: 60px; /* height of topbar */
+  background-color: #f1f5f9;
+}
+
+.pharmacy-content {
+  padding: 20px;
+}
+
+
+

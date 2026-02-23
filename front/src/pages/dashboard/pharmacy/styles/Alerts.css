@@ -1,0 +1,33 @@
+.alerts-container {
+  padding: 20px;
+}
+
+.alerts-table table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+
+.alerts-table th,
+.alerts-table td {
+  padding: 10px;
+  border: 1px solid #e5e7eb;
+  text-align: left;
+}
+
+.check-btn {
+  padding: 6px 12px;
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.check-btn:hover {
+  background-color: #2563eb;
+}
+
+.highlight-row {
+  background-color: #fef9c3 !important;
+}

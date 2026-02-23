@@ -1,10 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/AuthPage.css";
 
 const AuthPage = () => {
   const [activeTab, setActiveTab] = useState("login");
-  const invitationExists = false; // change to true when testing register
+  // eslint-disable-next-line no-unused-vars
+const [invitationExists, setInvitationExists] = useState(false);
+  const [registerRole, setRegisterRole] = useState("");
+
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get("token");
 
   // Input states
   const [loginEmail, setLoginEmail] = useState("");
@@ -15,6 +22,21 @@ const AuthPage = () => {
 
   // Error message state
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (token) {
+      try {
+        const decoded = jwtDecode(token);
+
+        setRegisterEmail(decoded.email);
+        setRegisterRole(decoded.role);
+        setInvitationExists(true);
+        setActiveTab("register"); // auto switch to register
+      } catch (error) {
+        setInvitationExists(false);
+      }
+    }
+  }, [token]);
 
   // Handle Login
   const handleLogin = () => {
@@ -29,17 +51,21 @@ const AuthPage = () => {
 
   // Handle Register
   const handleRegister = () => {
-    if (!registerName || !registerEmail || !registerPassword) {
+    if (!registerName || !registerPassword) {
       setError("Please fill in all registration fields!");
       return;
     }
+
     setError("");
-    // Call your register API here
+
     console.log("Register:", {
       name: registerName,
-      email: registerEmail,
       password: registerPassword,
+      token,
     });
+
+    // After successful API call:
+    setActiveTab("login");
   };
 
   return (
@@ -48,11 +74,11 @@ const AuthPage = () => {
         {/* Toggle Header */}
         <div className="auth-toggle">
           <div
-            className={`toggle-indicator ${activeTab === "register" ? "right" : ""}`}
+            className={`toggle-indicator ${activeTab === "register" ? "right" : ""} `}
           ></div>
 
           <button
-            className={activeTab === "login" ? "active" : ""}
+            className={activeTab === "login" ? "active"  : "" }
             onClick={() => setActiveTab("login")}
           >
             Login
@@ -101,44 +127,43 @@ const AuthPage = () => {
           </div>
 
           {/* Register Section */}
-          <div className={`form-box ${activeTab === "register" ? "show" : ""}`}>
+          <div>
             <h3 className="text-center mb-4">Join The System</h3>
 
-            {!invitationExists ? (
-              <div className="invitation-message">
-                Registration is available only via an invitation link.
-              </div>
-            ) : (
-              <>
-                <input
-                  type="text"
-                  className="form-control mb-3"
-                  placeholder="Full Name"
-                  value={registerName}
-                  onChange={(e) => setRegisterName(e.target.value)}
-                />
-                <input
-                  type="email"
-                  className="form-control mb-3"
-                  placeholder="Email"
-                  value={registerEmail}
-                  onChange={(e) => setRegisterEmail(e.target.value)}
-                />
-                <input
-                  type="password"
-                  className="form-control mb-3"
-                  placeholder="Password"
-                  value={registerPassword}
-                  onChange={(e) => setRegisterPassword(e.target.value)}
-                />
-                <button
-                  className="btn btn-success w-100"
-                  onClick={handleRegister}
-                >
-                  Register
-                </button>
-              </>
-            )}
+            <input
+              type="email"
+              placeholder="emailI"
+              className="form-control mb-3"
+              value={registerEmail}
+              readOnly
+            />
+<input
+              type="text"
+              placeholder="roleI"
+              className="form-control mb-3"
+              value={registerRole}
+              readOnly
+            />
+
+            <input
+              type="text"
+              className="form-control mb-3"
+              placeholder="Full Name"
+              value={registerName}
+              onChange={(e) => setRegisterName(e.target.value)}
+            />
+
+            <input
+              type="password"
+              className="form-control mb-3"
+              placeholder="Password"
+              value={registerPassword}
+              onChange={(e) => setRegisterPassword(e.target.value)}
+            />
+
+            <button className="btn btn-primary w-100" onClick={handleRegister}>
+              Register
+            </button>
           </div>
         </div>
       </div>
