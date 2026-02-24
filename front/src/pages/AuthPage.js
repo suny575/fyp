@@ -3,8 +3,11 @@ import { useSearchParams } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/AuthPage.css";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const AuthPage = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("login");
   const [invitationExists, setInvitationExists] = useState(false);
   const [registerRole, setRegisterRole] = useState("");
@@ -38,31 +41,70 @@ const AuthPage = () => {
   }, [token]);
 
   // Handle Login
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!loginEmail || !loginPassword) {
       setError("Please fill in all login fields!");
       return;
     }
-    setError("");
-    console.log("Login:", { email: loginEmail, password: loginPassword });
+
+    try {
+      setError("");
+
+      const res = await axios.post("http://localhost:5000/api/login", {
+        email: loginEmail.trim(),
+        password: loginPassword.trim(),
+      });
+
+      const { token, user } = res.data;
+
+      // Store auth data
+      localStorage.setItem("token", token);
+      localStorage.setItem("userId", user._id);
+      localStorage.setItem("role", user.role);
+
+      // Redirect based on role
+      if (user.role === "maintenanceManager") {
+        navigate("/manager");
+      } else if (user.role === "admin") {
+        navigate("/admin");
+      } else if (user.role === "depStaff") {
+        navigate("/staff");
+      } else if (user.role === "technician") {
+        navigate("/technician");
+      } else {
+        navigate("/");
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || "Login failed");
+    }
   };
 
   // Handle Register
-  const handleRegister = () => {
+  const handleRegister = async () => {
     if (!registerName || !registerPassword) {
       setError("Please fill in all registration fields!");
       return;
     }
 
-    setError("");
+    try {
+      setError("");
 
-    console.log("Register:", {
-      name: registerName,
-      password: registerPassword,
-      token,
-    });
+      await axios.post("http://localhost:5000/api/register", {
+        name: registerName.trim(),
+        password: registerPassword.trim(),
+        email: registerEmail, // comes from invitation
+        token: token, // invitation token
+      });
 
-    setActiveTab("login");
+      // After successful registration → go to login
+      setActiveTab("login");
+      setError("Registration successful! Please login.");
+
+      setRegisterName("");
+      setRegisterPassword("");
+    } catch (err) {
+      setError(err.response?.data?.msg || "Registration failed");
+    }
   };
 
   return (

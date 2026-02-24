@@ -1,28 +1,29 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const invitationSchema = new mongoose.Schema({
-  email: { type: String, required: true },
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+  },
   role: {
     type: String,
-    enum: [
-      "admin",
-      "technician",
-      "maintenanceManager",
-      "depStaff",
-      "pharmacyStore",
-    ],
     required: true,
   },
-  status: {
+  status: { type: String, default: "pending" }, // pending | accepted
+  token: {
     type: String,
-    enum: ["pending", "accepted", "rejected"],
-    default: "pending",
+    required: true,
+    unique: true,
   },
-  sentBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
+  expiresAt: {
+    type: Date,
+    default: () => Date.now() + 24 * 60 * 60 * 1000, // 24 hours
   },
-  createdAt: { type: Date, default: Date.now },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
 });
 
-module.exports = mongoose.model("Invitation", invitationSchema);
+export default mongoose.model("Invitation", invitationSchema);

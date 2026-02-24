@@ -1,92 +1,71 @@
-// src/pages/dashboard/manager/ManagerDashboard.jsx
-import { io } from "socket.io-client";
 import React, { useState, useEffect } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
+import { io } from "socket.io-client";
+
 import Sidebar from "./components/Sidebar";
 import Topbar from "./components/Topbar";
 
 import Overview from "./components/Overview";
+import Notifications from "./components/Notifications";
 import TechnicianManagement from "./components/TechnicianManagement";
 import DepStaffManagement from "./components/DepStaffManagement";
 import PharmacyStoreManagement from "./components/PharmacyStoreManagement";
 import UserDetails from "./components/UserDetails";
 import ReportsPage from "./components/Reports";
-import "./styles/ManagerDashboard.css";
 import Settings from "./components/Settings";
 
+import "./styles/ManagerDashboard.css";
+
 const socket = io("http://localhost:5000");
+
 const ManagerDashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [profileOpen, setProfileOpen] = useState(false);
-  const [notificationOpen, setNotificationOpen] = useState(false);
+  const [manager] = useState({
+    firstName: "John",
+    fullName: "John Doe",
+    email: "john@example.com",
+    phone: "123456789",
+  });
 
-  const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
-    setProfileOpen(false);
-    setNotificationOpen(false);
-  };
+  const toggleSidebar = () => setSidebarOpen((prev) => !prev);
 
-  const toggleProfile = () => {
-    setProfileOpen(!profileOpen);
-    setNotificationOpen(false);
-  };
-
-  const toggleNotification = () => {
-    setNotificationOpen(!notificationOpen);
-    setProfileOpen(false);
-  };
-
-  const closeAll = () => {
-    setSidebarOpen(false);
-    setProfileOpen(false);
-    setNotificationOpen(false);
-  };
+  const closeSidebar = () => setSidebarOpen(false);
 
   useEffect(() => {
     const userId = localStorage.getItem("userId");
-
     socket.emit("register", userId);
-
-    socket.on("notification", (data) => {
-      alert(data.message);
-    });
-
-    return () => {
-      socket.off("notification");
-    };
+    socket.on("notification", (data) => alert(data.message));
+    return () => socket.off("notification");
   }, []);
 
   return (
     <div className="dashboard-layout">
-      <Sidebar
-        sidebarOpen={sidebarOpen}
-        closeSidebar={() => setSidebarOpen(false)}
-      />
+      <Sidebar sidebarOpen={sidebarOpen} closeSidebar={closeSidebar} />
 
       <div className="main-section">
         <Topbar
           toggleSidebar={toggleSidebar}
-          profileOpen={profileOpen}
-          toggleProfile={toggleProfile}
-          notificationOpen={notificationOpen}
-          toggleNotification={toggleNotification}
+          sidebarOpen={sidebarOpen}
+          manager={manager}
         />
 
-        {sidebarOpen && <div className="overlay" onClick={closeAll}></div>}
+        {/* Sidebar overlay for mobile */}
+        {sidebarOpen && <div className="overlay" onClick={closeSidebar}></div>}
 
         <div className="content-area">
           <Routes>
-            {/* DEFAULT PAGE */}
             <Route index element={<Overview />} />
             <Route path="overview" element={<Overview />} />
+
+            <Route path="notifications" element={<Notifications />} />
             <Route path="technician" element={<TechnicianManagement />} />
             <Route path="technician/:id" element={<UserDetails />} />
             <Route path="depstaff" element={<DepStaffManagement />} />
             <Route path="depstaff/:id" element={<UserDetails />} />
             <Route path="pharmacystore" element={<PharmacyStoreManagement />} />
             <Route path="pharmacystore/:id" element={<UserDetails />} />
-            <Route path="/reports" element={<ReportsPage />} />
-            <Route path="/settings" element={<Settings />} />
+            <Route path="reports" element={<ReportsPage />} />
+            <Route path="settings" element={<Settings />} />
           </Routes>
         </div>
       </div>

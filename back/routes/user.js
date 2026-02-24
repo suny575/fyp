@@ -1,16 +1,15 @@
-// const express = require("express");
-// const router = express.Router();
-// const User = require("../models/User");
-
-// // Get all users (admin only)
-// router.get("/", async (req, res) => {
-//   try {
-//     const users = await User.find();
-//     res.json(users);
-//   } catch (err) {
-//     res.status(500).send("Server error");
-//   }
-// });
+import express from "express";
+import User from "../models/user";
+const router = express.Router();
+// Get all users (admin only)
+router.get("/", async (req, res) => {
+  try {
+    const users = await User.find();
+    res.json(users);
+  } catch (err) {
+    res.status(500).send("Server error");
+  }
+});
 
 // // Get user by ID
 // router.get("/:id", async (req, res) => {
@@ -23,14 +22,16 @@
 //   }
 // });
 
-// // Update user (role/page info)
-// router.put("/:id", async (req, res) => {
-//   try {
-//     const user = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
-//     res.json(user);
-//   } catch (err) {
-//     res.status(500).send("Server error");
-//   }
-// });
+// Update user (role/page info)
+router.put("/:id", async (req, res) => {
+  try {
+    const user = await User.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+    });
+    res.json(user);
+  } catch (err) {
+    res.status(500).send("Server error");
+  }
+});
 
-// module.exports = router;
+export default router;
