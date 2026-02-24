@@ -143,3 +143,23 @@
   background-color: #0284c7;      /* even darker on click */
   transform: translateY(0);
 }
+
+
+.allocation-table-wrapper {
+  margin-top: 20px;
+}
+
+.allocation-table-scroll {
+  width: 100%;
+  overflow-x: auto;      /* enables horizontal scroll */
+  -webkit-overflow-scrolling: touch; /* smooth scroll on mobile */
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
+
+.allocation-table-scroll table {
+  width: 100%;
+  min-width: 700px; /* ensures table doesn't shrink too much */
+  border-collapse: collapse;
+  background: white;
+}
