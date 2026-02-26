@@ -1,11 +1,14 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
-const stockSchema = new mongoose.Schema({
-  itemName: { type: String, required: true },
-  quantity: { type: Number, required: true },
-  reorderLevel: { type: Number, default: 5 },
-  supplier: String,
-  lastUpdated: { type: Date, default: Date.now },
-});
+const stockSchema = new mongoose.Schema(
+  {
+    name: { type: String, required: true },
+    batch: { type: String, required: true },
+    category: { type: String, required: true },
+    quantity: { type: Number, required: true },
+    expiry: { type: Date },
+  },
+  { timestamps: true }
+);
 
-module.exports = mongoose.model("Stock", stockSchema);
+export default mongoose.model("stock", stockSchema);
