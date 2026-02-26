@@ -79,29 +79,40 @@ const Overview = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // USERS
-        const resUsers = await fetch("/api/manager/user-overview");
-        const dataUsers = (await resUsers.ok)
-          ? await resUsers.json()
-          : mockUserOverview;
-        setUserOverview(dataUsers);
+        const res = await fetch("/api/manager/dashboard-summary");
+        const data = await res.json();
+
+        // USER OVERVIEW
+        setUserOverview([
+          {
+            title: "Technicians",
+            count: data.users.technicians,
+            route: "/manager/technician",
+          },
+          {
+            title: "Dep Staff",
+            count: data.users.depStaff,
+            route: "/manager/depstaff",
+          },
+          {
+            title: "Pharmacy Store",
+            count: data.users.pharmacy,
+            route: "/manager/pharmacystore",
+          },
+        ]);
 
         // SYSTEM STATS
-        const resStats = await fetch("/api/manager/system-stats");
-        const dataStats = (await resStats.ok)
-          ? await resStats.json()
-          : mockSystemStats;
-        setSystemStats(dataStats);
+        setSystemStats([
+          { title: "Pending Tasks", value: data.stats.pendingTasks },
+          { title: "Completed Tasks", value: data.stats.completedTasks },
+          { title: "Active Faults", value: data.stats.activeFaults },
+          { title: "Active Reports", value: data.stats.activeReports },
+        ]);
 
-        // RECENT ACTIVITIES
-        const resActivity = await fetch("/api/manager/recent-activity");
-        const dataActivity = (await resActivity.ok)
-          ? await resActivity.json()
-          : mockRecentActivities;
-        setRecentActivities(dataActivity);
+        // RECENT ACTIVITY
+        setRecentActivities(data.recentActivity);
       } catch (err) {
-        console.error("Error fetching data, using mock data", err);
-        // fallback to mock
+        console.error("Using mock data due to error", err);
         setUserOverview(mockUserOverview);
         setSystemStats(mockSystemStats);
         setRecentActivities(mockRecentActivities);

@@ -13,12 +13,12 @@ import HowItWorks from "./pages/HowItWorks";
 import ContactUs from "./pages/ContactUs";
 
 import AdminDashboard from "./pages/dashboard/admin/AdminDashboard";
-import PharmacyDashboard from "./pages/dashboard/pharmacy/PharmacyDashboard";
+import PharmacyDashboard from "./pages/dashboard/pharmacy/PharmacyDashboard.jsx";
 
-import DepStaffDashboard from "./pages/dashboar/staff/Dashboard.jsx.jsx";
-import ManagerDashboard from "./pages/dashboar/manager/ManagerDashboard.jsx";
+import DepStaffDashboard from "./pages/dashboard/staff/Dashboard.jsx";
+import ManagerDashboard from "./pages/dashboard/manager/ManagerDashboard.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
-import TDashboard from "./pages/dashboar/technician/tdashBoard.jsx";
+import TDashboard from "./pages/dashboard/technician/tdashBoard.jsx";
 import Footer from "./pages/Footer.jsx";
 
 

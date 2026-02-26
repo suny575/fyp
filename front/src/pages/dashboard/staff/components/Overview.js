@@ -1,35 +1,70 @@
 // Overview.js
-import React from "react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 
 const Overview = () => {
+  const [faults, setFaults] = useState([]);
+  const [pendingCount, setPendingCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const token = localStorage.getItem("token");
+
+  useEffect(() => {
+    const fetchFaults = async () => {
+      try {
+        const res = await axios.get("http://localhost:5000/api/faults", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        const data = res.data;
+
+        setFaults(data);
+
+        const pending = data.filter(
+          (fault) => fault.status === "pending",
+        ).length;
+
+        setPendingCount(pending);
+      } catch (err) {
+        console.error(err);
+        setError("Failed to load overview data");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFaults();
+  }, []);
+
+  if (loading)
+    return (
+      <div className="text-center py-5">
+        <div className="spinner-border text-primary" />
+      </div>
+    );
+
+  if (error) return <div className="alert alert-danger m-3">{error}</div>;
+
+  const recentFaults = faults.slice(0, 5);
+
   return (
     <div>
-      {/* Page Title */}
+      {/* Title */}
       <div className="mb-4">
         <h3 className="fw-bold">Department Overview</h3>
         <p className="text-muted">
-          Monitor faults, stock requests, and equipment health in one place.
+          Monitor faults, stock requests, and equipment health.
         </p>
       </div>
 
-      {/*
-      LATER I'LL REPLACE THIS 3  2, 1 WITH
-With real data from:
-
-GET /api/faults
-
-GET /api/stock-requests
-
-GET /api/consumables?expiring=true
-*/}
-
-      {/* Stats Cards */}
+      {/* Stats */}
       <div className="row g-4 mb-4">
         <div className="col-md-4">
           <div className="card shadow-sm border-0">
             <div className="card-body">
               <h6 className="text-muted">Pending Faults</h6>
-              <h2 className="fw-bold text-warning">3</h2>
+              <h2 className="fw-bold text-warning">{pendingCount}</h2>
               <small className="text-muted">
                 Awaiting technician assignment
               </small>
@@ -41,8 +76,8 @@ GET /api/consumables?expiring=true
           <div className="card shadow-sm border-0">
             <div className="card-body">
               <h6 className="text-muted">Stock Requests</h6>
-              <h2 className="fw-bold text-primary">2</h2>
-              <small className="text-muted">Currently under review</small>
+              <h2 className="fw-bold text-primary">—</h2>
+              <small className="text-muted">Backend not connected yet</small>
             </div>
           </div>
         </div>
@@ -51,93 +86,52 @@ GET /api/consumables?expiring=true
           <div className="card shadow-sm border-0">
             <div className="card-body">
               <h6 className="text-muted">Expiring Items</h6>
-              <h2 className="fw-bold text-danger">1</h2>
-              <small className="text-muted">Needs immediate attention</small>
+              <h2 className="fw-bold text-danger">—</h2>
+              <small className="text-muted">Feature coming soon</small>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Expiry Alert Section */}
-      <div className="alert alert-danger shadow-sm mb-4">
-        <strong>Expiry Alert:</strong> Surgical Gloves batch #SG-102 will expire
-        in 5 days.
-      </div>
+      {/* Recent Faults */}
+      <div className="card shadow-sm">
+        <div className="card-header bg-white fw-bold">Recent Fault Reports</div>
 
-      {/* Recent Activity Section */}
-      <div className="row g-4">
-        {/* Recent Faults */}
-        <div className="col-md-6">
-          <div className="card shadow-sm">
-            <div className="card-header bg-white fw-bold">
-              Recent Fault Reports
-            </div>
-            <div className="card-body p-0">
-              <table className="table mb-0">
-                <thead className="table-light">
-                  <tr>
-                    <th>Equipment</th>
-                    <th>Status</th>
-                    <th>Date</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>ECG Machine</td>
+        <div className="card-body p-0">
+          {recentFaults.length === 0 ? (
+            <div className="p-3 text-muted">No fault reports found.</div>
+          ) : (
+            <table className="table mb-0">
+              <thead className="table-light">
+                <tr>
+                  <th>Description</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {recentFaults.map((fault) => (
+                  <tr key={fault._id}>
+                    <td>{fault.description}</td>
                     <td>
-                      <span className="badge bg-warning text-dark">
-                        Pending
+                      <span
+                        className={`badge ${
+                          fault.status === "pending"
+                            ? "bg-warning text-dark"
+                            : fault.status === "completed"
+                              ? "bg-success"
+                              : "bg-primary"
+                        }`}
+                      >
+                        {fault.status}
                       </span>
                     </td>
-                    <td>2026-02-15</td>
+                    <td>{new Date(fault.createdAt).toLocaleDateString()}</td>
                   </tr>
-                  <tr>
-                    <td>X-Ray Unit</td>
-                    <td>
-                      <span className="badge bg-success">Completed</span>
-                    </td>
-                    <td>2026-02-10</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        {/* Recent Stock Requests */}
-        <div className="col-md-6">
-          <div className="card shadow-sm">
-            <div className="card-header bg-white fw-bold">
-              Recent Stock Requests
-            </div>
-            <div className="card-body p-0">
-              <table className="table mb-0">
-                <thead className="table-light">
-                  <tr>
-                    <th>Item</th>
-                    <th>Status</th>
-                    <th>Date</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>Face Masks</td>
-                    <td>
-                      <span className="badge bg-primary">In Review</span>
-                    </td>
-                    <td>2026-02-14</td>
-                  </tr>
-                  <tr>
-                    <td>Syringes</td>
-                    <td>
-                      <span className="badge bg-success">Delivered</span>
-                    </td>
-                    <td>2026-02-08</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
     </div>

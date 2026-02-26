@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { Table, Button } from "react-bootstrap";
-import InviteModal from "../components/InviteModal";
 import { useNavigate } from "react-router-dom";
 
 const PharmacyStoreManagement = () => {
@@ -60,11 +59,11 @@ const PharmacyStoreManagement = () => {
         </tbody>
       </Table>
 
-      <InviteModal
+      {/* <InviteModal
         show={showInvite}
         handleClose={() => setShowInvite(false)}
         userType="PharmacyStore"
-      />
+      /> */}
     </div>
   );
 };

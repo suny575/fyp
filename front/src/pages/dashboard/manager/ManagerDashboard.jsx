@@ -9,11 +9,11 @@ import Overview from "./components/Overview";
 import Notifications from "./components/Notifications";
 import TechnicianManagement from "./components/TechnicianManagement";
 import DepStaffManagement from "./components/DepStaffManagement";
+import DepStaffDetail from "./components/DepStaffDetails.jsx";
 import PharmacyStoreManagement from "./components/PharmacyStoreManagement";
 import UserDetails from "./components/UserDetails";
 import ReportsPage from "./components/Reports";
 import Settings from "./components/Settings";
-
 import "./styles/ManagerDashboard.css";
 
 const socket = io("http://localhost:5000");
@@ -61,7 +61,7 @@ const ManagerDashboard = () => {
             <Route path="technician" element={<TechnicianManagement />} />
             <Route path="technician/:id" element={<UserDetails />} />
             <Route path="depstaff" element={<DepStaffManagement />} />
-            <Route path="depstaff/:id" element={<UserDetails />} />
+            <Route path="depstaff/:id" element={<DepStaffDetail />} />
             <Route path="pharmacystore" element={<PharmacyStoreManagement />} />
             <Route path="pharmacystore/:id" element={<UserDetails />} />
             <Route path="reports" element={<ReportsPage />} />

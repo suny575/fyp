@@ -4,16 +4,16 @@ const faultSchema = new mongoose.Schema({
   equipment: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Equipment",
-    required: true, // link to a specific equipment
+    required: true,
   },
   reportedBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
-    required: true, // the depStaff who reported
+    required: true,
   },
   description: {
     type: String,
-    required: true, // what’s wrong with the equipment
+    required: true,
   },
   status: {
     type: String,
@@ -34,6 +34,9 @@ const faultSchema = new mongoose.Schema({
   },
 });
 
-const Fault = mongoose.model("Fault", faultSchema);
+/**
+ * 🔥 This prevents OverwriteModelError
+ */
+const Fault = mongoose.models.Fault || mongoose.model("Fault", faultSchema);
 
 export default Fault;

@@ -1,13 +1,41 @@
 import express from "express";
-import User from "../models/user.js";
+import User from "../models/User.js";
+import Invitation from "../models/invitation.js";
 const router = express.Router();
 // =============================
 // GET ALL TECHNICIANS
 // =============================
 router.get("/", async (req, res) => {
   try {
-    const technicians = await User.find({ role: "technician" });
-    res.json(technicians);
+    // 1️⃣ Get registered technicians
+    const registered = await User.find({ role: "technician" }).lean();
+
+    const activeTechs = registered.map((tech) => ({
+      id: tech._id,
+      name: tech.name || "Registered Technician",
+      email: tech.email,
+      role: tech.role,
+      status: "active",
+    }));
+
+    // 2️⃣ Get pending invitations
+    const pendingInvites = await Invitation.find({
+      role: "technician",
+      status: "pending",
+    }).lean();
+
+    const pendingTechs = pendingInvites.map((invite) => ({
+      id: invite._id,
+      name: "Pending Registration",
+      email: invite.email,
+      role: invite.role,
+      status: "pending",
+    }));
+
+    // 3️⃣ Merge both
+    const allTechnicians = [...activeTechs, ...pendingTechs];
+
+    res.json(allTechnicians);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -52,6 +80,7 @@ router.post("/", async (req, res) => {
     const newTechnician = new User({
       email,
       role: "technician",
+      status: "active",
     });
 
     await newTechnician.save();
