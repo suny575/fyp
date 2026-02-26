@@ -15,7 +15,11 @@ import ContactUs from "./pages/ContactUs";
 import AdminDashboard from "./pages/dashboard/admin/AdminDashboard";
 import PharmacyDashboard from "./pages/dashboard/pharmacy/PharmacyDashboard.jsx";
 
+<<<<<<< HEAD
 import DepStaffDashboard from "./pages/dashboard/staff/Dashboard.jsx";
+=======
+import DepStaffDashboard from "./pages/dashboard/staff/Dashboard.jsx.jsx";
+>>>>>>> 759ffb2ea20ad33e36b78b21e664d99f37c9403a
 import ManagerDashboard from "./pages/dashboard/manager/ManagerDashboard.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import TDashboard from "./pages/dashboard/technician/tdashBoard.jsx";

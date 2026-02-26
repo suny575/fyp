@@ -1,14 +1,22 @@
-const User = require("../models/User");
-const EquipmentAssignment = require("../models/equipment.js");
-const StockRequest = require("../models/StockRequest.js");
-const Fault = require("../models/fault.js");
+// dashboardController.mjs (or .js if type: "module" in package.json)
+import User from "../models/User.js";
+import EquipmentAssignment from "../models/equipment.js";
+import StockRequest from "../models/StockRequest.js";
+import Fault from "../models/fault.js";
 
-exports.getDashboardSummary = async (req, res) => {
+const getDashboardSummary = async (req, res) => {
   try {
     // ===== USER COUNTS =====
     const technicians = await User.countDocuments({ role: "technician" });
     const depStaff = await User.countDocuments({ role: "depstaff" });
     const pharmacy = await User.countDocuments({ role: "pharmacystore" });
+
+    // ===== EQUIPMENT COUNTS =====
+    const totalEquipment = await EquipmentAssignment.countDocuments();
+    const assignedEquipment = await EquipmentAssignment.countDocuments({
+      assignedTo: { $exists: true, $ne: null },
+    });
+    const availableEquipment = totalEquipment - assignedEquipment;
 
     // ===== SYSTEM STATS =====
     const pendingTasks = await Fault.countDocuments({
@@ -43,6 +51,11 @@ exports.getDashboardSummary = async (req, res) => {
         depStaff,
         pharmacy,
       },
+      equipment: {
+        totalEquipment,
+        assignedEquipment,
+        availableEquipment,
+      },
       stats: {
         pendingTasks,
         completedTasks,
@@ -56,3 +69,5 @@ exports.getDashboardSummary = async (req, res) => {
     res.status(500).json({ message: "Server Error" });
   }
 };
+
+export default getDashboardSummary;

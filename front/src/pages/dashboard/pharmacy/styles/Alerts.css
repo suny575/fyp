@@ -31,3 +31,34 @@
 .highlight-row {
   background-color: #fef9c3 !important;
 }
+
+.alerts-table-wrapper {
+  margin-top: 20px;
+}
+
+.alerts-table-scroll {
+  width: 100%;
+  overflow-x: auto; /* horizontal scroll */
+  -webkit-overflow-scrolling: touch; /* smooth scroll on mobile */
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
+
+.alerts-table-scroll table {
+  width: 100%;
+  min-width: 600px; /* ensures columns don’t shrink too much */
+  border-collapse: collapse;
+  background: white;
+}
+
+.alerts-table-scroll th,
+.alerts-table-scroll td {
+  text-align: left;
+  padding: 10px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.alerts-table-scroll th {
+  background-color: #f8fafc;
+  font-weight: 600;
+}

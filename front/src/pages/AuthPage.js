@@ -74,12 +74,21 @@ const AuthPage = () => {
       setLoginPassword("");
 
       // Redirect based on role
-      if (user.role === "maintenanceManager") navigate("/manager");
-      else if (user.role === "admin") navigate("/admin");
-      else if (user.role === "depStaff") navigate("/staff");
-      else if (user.role === "technician") navigate("/technician");
-      else if (user.role === "pharmacyStore") navigate("/pharmacy");
-      else navigate("/");
+      if (user.role === "maintenanceManager") {
+        navigate("/manager");
+      } else if (user.role === "admin") {
+        navigate("/admin");
+      }
+      else if (user.role === "pharmacyStore") {
+        navigate("/pharmacy");}
+      
+      else if (user.role === "depStaff") {
+        navigate("/staff");
+      } else if (user.role === "technician") {
+        navigate("/technician");
+      } else {
+        navigate("/");
+      }
     } catch (err) {
       setError(err.response?.data?.message || "Login failed");
     }

@@ -1,5 +1,5 @@
 import express from "express";
-import User from "../models/user";
+import User from "../models/user.js";
 const router = express.Router();
 // Get all users (admin only)
 router.get("/", async (req, res) => {
@@ -11,16 +11,16 @@ router.get("/", async (req, res) => {
   }
 });
 
-// Get user by ID
-router.get("/:id", async (req, res) => {
-  try {
-    const user = await User.findById(req.params.id);
-    if (!user) return res.status(404).json({ msg: "User not found" });
-    res.json(user);
-  } catch (err) {
-    res.status(500).send("Server error");
-  }
-});
+// // Get user by ID
+// router.get("/:id", async (req, res) => {
+//   try {
+//     const user = await User.findById(req.params.id);
+//     if (!user) return res.status(404).json({ msg: "User not found" });
+//     res.json(user);
+//   } catch (err) {
+//     res.status(500).send("Server error");
+//   }
+// });
 
 // Update user (role/page info)
 router.put("/:id", async (req, res) => {

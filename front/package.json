@@ -29,7 +29,11 @@
     "recharts": "^3.7.0",
     "socket.io-client": "^4.8.3",
     "web-vitals": "^2.1.4",
+<<<<<<< HEAD
     "xlsx": "0.18.5"
+=======
+    "xlsx": "^0.18.5"
+>>>>>>> 759ffb2ea20ad33e36b78b21e664d99f37c9403a
   },
   "scripts": {
     "start": "react-scripts start",
