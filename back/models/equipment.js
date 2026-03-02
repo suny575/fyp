@@ -20,6 +20,6 @@ const equipmentSchema = new mongoose.Schema({
 
 }, { timestamps: true });
 
-const Equipment = mongoose.model("Equipment", equipmentSchema);
+// const Equipment = mongoose.model("Equipment", equipmentSchema);
 
-export default Equipment;
+export default mongoose.models.Equipment || mongoose.model("Equipment", equipmentSchema);

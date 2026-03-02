@@ -31,28 +31,12 @@ const Sidebar = ({ sidebarOpen, closeSidebar }) => {
         <FaBell /> Notification
       </NavLink>
       
-      <NavLink
-        to="/manager/technician"
+        <NavLink
+        to="/manager/user"
         className="nav-link"
         onClick={closeSidebar}
       >
-        <FaUsers /> Technicians
-      </NavLink>
-
-      <NavLink
-        to="/manager/depstaff"
-        className="nav-link"
-        onClick={closeSidebar}
-      >
-        <FaUsers /> Department Staff
-      </NavLink>
-
-      <NavLink
-        to="/manager/pharmacystore"
-        className="nav-link"
-        onClick={closeSidebar}
-      >
-        <FaUsers /> Pharmacy Store
+        <FaUsers /> Manage users
       </NavLink>
 
       <NavLink

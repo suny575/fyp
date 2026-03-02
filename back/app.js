@@ -14,15 +14,20 @@ import adminRoutes from "./routes/adminRoutes.js";
 // import technicianRoutes from "./routes/technicianRoute.js";
 
 import technicianRoutes from "./routes/technicianRoute.js";
+import faultRoutes from "./routes/faultRoutes.js";
+import taskRoutes from "./routes/taskRoute.js";
+import managerRoutes from "./routes/managerRoutes.js"; // for manager summer data
+import EquipmentReportRouts from "./routes/equipmentReportRoutes.js";
+import User from "./routes/user.js";
 const app = express();
 
-// Routes
 app.use("/login", login);
 app.use("/register", register);
+app.use("/manager/users", User);
 app.use("/invitations", invitationRoutes);
-app.use("/technicians", technicianRoutes);
-
-// Equipment routes
+app.use("/faults", faultRoutes);
+app.use("/tasks", taskRoutes);
+app.use("managerRoutes", managerRoutes);
 app.use("/equipment", equipmentRoutes);
 app.use("/stock", stockRoutes);
 app.use("/stock-requests", stockRequestRoutes);
@@ -31,12 +36,10 @@ app.use("/alerts", alertsRoutes);
 app.use("/reports", reportsRoutes);
 // app.use("/pharmacy", pharmacyRoutes);
 app.use("/admin", adminRoutes);
+app.use("/equipmentReportRoutes.js", EquipmentReportRouts);
+
 app.get("/", (req, res) => {
   res.send("Hospital Equipment Maintenance API Running");
 });
 
-// Add more routes here...
-
-
-
-export default app; // ✅ default export for server.js
+export default app;

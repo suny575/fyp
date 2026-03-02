@@ -1,39 +1,61 @@
 import mongoose from "mongoose";
 
-const faultSchema = new mongoose.Schema({
-  equipment: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Equipment",
-    required: true, // link to a specific equipment
+const faultSchema = new mongoose.Schema(
+  {
+    equipment: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Equipment",
+      required: true,
+    },
+    reportedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    assignedTo: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null, // ✅ allow null
+    },
+    updatedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null, // ✅ allow null
+    },
+    description: {
+      type: String,
+      required: true,
+    },
+    media: {
+      images: [{ type: String }],
+      voiceNote: { type: String },
+    },
+
+    department: {
+      type: String,
+      required: true,
+    },
+    status: {
+      type: String,
+      enum: ["pending", "approved", "rejected", "waiting"],
+      default: "pending",
+    },
+    priority: {
+      type: String,
+      enum: ["low", "medium", "high"],
+      default: "medium",
+    },
   },
-  reportedBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-    required: true, // the depStaff who reported
-  },
-  description: {
-    type: String,
-    required: true, // what’s wrong with the equipment
-  },
-  status: {
-    type: String,
-    enum: ["pending", "in-progress", "completed"],
-    default: "pending",
-  },
-  priority: {
-    type: String,
-    enum: ["low", "medium", "high"],
-    default: "medium",
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-  updatedAt: {
-    type: Date,
-  },
+  { timestamps: true },
+);
+
+// ⚡ Middleware to track status updates
+faultSchema.pre("save", function () {
+  if (this.isModified("status") && !this.updatedBy) {
+    this.updatedBy = null;
+  }
 });
 
-const Fault = mongoose.model("Fault", faultSchema);
+const Fault = mongoose.models.Fault || mongoose.model("Fault", faultSchema);
 
 export default Fault;

@@ -1,12 +1,48 @@
 import React, { useState, useRef, useEffect } from "react";
 import "../styles/topbar.css";
-const Topbar = ({ toggleSidebar, sidebarOpen, setActiveView, user }) => {
+import axios from "axios";
+
+const Topbar = ({ toggleSidebar, sidebarOpen, setActiveView }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
-  const [profileData, setProfileData] = useState(user || {});
+  const [profileData, setProfileData] = useState({});
+  const [notifications, setNotifications] = useState([]);
   const wrapperRef = useRef(null);
 
-  const notificationCount = 3;
+  const token = localStorage.getItem("token");
+  const loggedInUser = JSON.parse(localStorage.getItem("user"));
+  const TECH_ID = loggedInUser?._id;
+
+  // Fetch user profile on mount
+  useEffect(() => {
+    if (loggedInUser) {
+      setProfileData(loggedInUser);
+    }
+  }, [loggedInUser]);
+
+  // Fetch notifications for this technician
+  const fetchNotifications = async () => {
+    if (!token) return;
+    try {
+      const res = await axios.get("http://localhost:5000/api/notifications", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      // filter for logged-in user
+      const techNotifs = res.data.filter(
+        (n) => n.recipient && n.recipient._id === TECH_ID,
+      );
+      setNotifications(techNotifs);
+    } catch (err) {
+      console.error("Failed to fetch notifications:", err.message);
+      setNotifications([]);
+    }
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 40000); // refresh every 40s
+    return () => clearInterval(interval);
+  }, [TECH_ID, token]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -22,14 +58,35 @@ const Topbar = ({ toggleSidebar, sidebarOpen, setActiveView, user }) => {
   }, []);
 
   const handleLogout = () => {
-    console.log("Logging out...");
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
     window.location.href = "/auth";
   };
 
-  const handleProfileUpdate = () => {
-    console.log("Updated profile:", profileData);
-    setEditMode(false);
-    setDropdownOpen(false);
+  const handleProfileUpdate = async () => {
+    try {
+      // optional backend update API call
+      const formData = new FormData();
+      formData.append("name", profileData.name || "");
+      formData.append("phone", profileData.phone || "");
+      if (profileData.avatarFile)
+        formData.append("avatar", profileData.avatarFile);
+
+      await axios.put("http://localhost:5000/api/users/profile", formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      alert("Profile updated!");
+      setEditMode(false);
+      setDropdownOpen(false);
+      // refresh profileData
+      setProfileData({ ...profileData, avatarFile: null });
+    } catch (err) {
+      console.error("Profile update failed:", err.message);
+    }
   };
 
   const handleImageChange = (e) => {
@@ -37,13 +94,14 @@ const Topbar = ({ toggleSidebar, sidebarOpen, setActiveView, user }) => {
     if (!file) return;
 
     const imageUrl = URL.createObjectURL(file);
-
     setProfileData({
       ...profileData,
       avatar: imageUrl,
-      avatarFile: file, // store real file for backend upload
+      avatarFile: file,
     });
   };
+
+  const notificationCount = notifications.length;
 
   return (
     <div
@@ -101,7 +159,6 @@ const Topbar = ({ toggleSidebar, sidebarOpen, setActiveView, user }) => {
 
         {/* Profile Section */}
         <div className="position-relative" ref={wrapperRef}>
-          {/* Profile Button */}
           <div
             onClick={(e) => {
               e.stopPropagation();
@@ -124,7 +181,6 @@ const Topbar = ({ toggleSidebar, sidebarOpen, setActiveView, user }) => {
             {profileData?.name?.charAt(0)?.toUpperCase() || "U"}
           </div>
 
-          {/* Dropdown */}
           {dropdownOpen && (
             <div
               className="dropdown"
@@ -187,10 +243,7 @@ const Topbar = ({ toggleSidebar, sidebarOpen, setActiveView, user }) => {
                     placeholder="Name"
                     value={profileData?.name || ""}
                     onChange={(e) =>
-                      setProfileData({
-                        ...profileData,
-                        name: e.target.value,
-                      })
+                      setProfileData({ ...profileData, name: e.target.value })
                     }
                   />
 
@@ -199,17 +252,13 @@ const Topbar = ({ toggleSidebar, sidebarOpen, setActiveView, user }) => {
                     placeholder="Phone"
                     value={profileData?.phone || ""}
                     onChange={(e) =>
-                      setProfileData({
-                        ...profileData,
-                        phone: e.target.value,
-                      })
+                      setProfileData({ ...profileData, phone: e.target.value })
                     }
                   />
 
                   <div className="profile-upload">
                     <label className="profile-upload-btn">
                       {profileData?.avatar ? "Change Profile" : "Set Profile"}
-
                       <input
                         type="file"
                         accept="image/*"

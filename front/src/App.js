@@ -13,9 +13,9 @@ import HowItWorks from "./pages/HowItWorks";
 import ContactUs from "./pages/ContactUs";
 
 import AdminDashboard from "./pages/dashboard/admin/AdminDashboard";
-import PharmacyDashboard from "./pages/dashboard/pharmacy/PharmacyDashboard";
+import PharmacyDashboard from "./pages/dashboard/pharmacy/PharmacyDashboard.jsx";
 
-import DepStaffDashboard from "./pages/dashboard/staff/Dashboard.jsx.jsx";
+import DepStaffDashboard from "./pages/dashboard/staff/Dashboard.jsx";
 import ManagerDashboard from "./pages/dashboard/manager/ManagerDashboard.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import TDashboard from "./pages/dashboard/technician/tdashBoard.jsx";
@@ -33,7 +33,7 @@ function App() {
         
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/howitworks" element={<HowItWorks />} />
-          <Route path="/staff" element={<DepStaffDashboard />} />
+          <Route path="/staff/*" element={<DepStaffDashboard />} />
           <Route path="/contactus" element={<ContactUs />} />
           <Route path="/manager/*" element={<ManagerDashboard />} />
 

@@ -1,13 +1,12 @@
 // controllers/taskController.js
-const Task = require("../models/Task");
-const User = require("../models/User");
-const SystemLog = require("../models/SystemLog"); // optional
+import Task from "../models/Task.js";
+import User from "../models/user.js";
+import SystemLog from "../models/SystemLog.js";
 
-const createTask = async (req, res) => {
+export const createTask = async (req, res) => {
   try {
     const { title, description, department, priority } = req.body;
 
-    // 1️⃣ Create task without technician
     const task = new Task({
       title,
       description,
@@ -16,20 +15,17 @@ const createTask = async (req, res) => {
       createdBy: req.user.id,
     });
 
-    // 2️⃣ Find available technician
     const technician = await User.find({ role: "technician", department })
-      .sort({ activeTasks: 1 }) // need activeTasks count
+      .sort({ activeTasks: 1 })
       .limit(1);
 
     if (technician.length) {
       task.assignedTechnician = technician[0]._id;
       task.status = "assigned";
 
-      // Optional: increment activeTasks count on technician
       technician[0].activeTasks = (technician[0].activeTasks || 0) + 1;
       await technician[0].save();
 
-      // Optional: log system auto-assignment
       await SystemLog.create({
         actionType: "AUTO_ASSIGN",
         performedBy: "SYSTEM",
@@ -45,5 +41,3 @@ const createTask = async (req, res) => {
     res.status(500).json({ message: "Server Error" });
   }
 };
-
-module.exports = { createTask };

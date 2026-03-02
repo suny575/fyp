@@ -1,8 +1,8 @@
 import React from "react";
+import { NavLink } from "react-router-dom";
 
-const Sidebar = ({ activeView, setActiveView, sidebarOpen, toggleSidebar }) => {
-  const handleClickLink = (view) => {
-    setActiveView(view);
+const Sidebar = ({ sidebarOpen, toggleSidebar }) => {
+  const handleClickLink = () => {
     // Close sidebar automatically on mobile
     if (sidebarOpen && window.innerWidth < 768) toggleSidebar();
   };
@@ -11,36 +11,40 @@ const Sidebar = ({ activeView, setActiveView, sidebarOpen, toggleSidebar }) => {
     <div className={`td-sidebar ${sidebarOpen ? "open" : ""}`}>
       <ul className="nav flex-column">
         <li className="nav-item">
-          <button
-            className={`nav-link ${activeView === "dashboard" ? "active" : ""}`}
-            onClick={() => handleClickLink("dashboard")}
+          <NavLink
+            to="/technician"
+            className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}
+            onClick={handleClickLink}
           >
-          Overview
-          </button>
+            Overview
+          </NavLink>
         </li>
         <li className="nav-item">
-          <button
-            className={`nav-link ${activeView === "tasks" ? "active" : ""}`}
-            onClick={() => handleClickLink("tasks")}
+          <NavLink
+            to="/technician/tasks"
+            className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}
+            onClick={handleClickLink}
           >
             Tasks
-          </button>
+          </NavLink>
         </li>
         <li className="nav-item">
-          <button
-            className={`nav-link ${activeView === "report" ? "active" : ""}`}
-            onClick={() => handleClickLink("report")}
+          <NavLink
+            to="/technician/report"
+            className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}
+            onClick={handleClickLink}
           >
             Reports
-          </button>
+          </NavLink>
         </li>
         <li className="nav-item">
-          <button
-            className={`nav-link ${activeView === "notifications" ? "active" : ""}`}
-            onClick={() => handleClickLink("notifications")}
+          <NavLink
+            to="/technician/notifications"
+            className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}
+            onClick={handleClickLink}
           >
             Notifications
-          </button>
+          </NavLink>
         </li>
       </ul>
     </div>
