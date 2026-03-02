@@ -5,7 +5,7 @@ import Sidebar from "./components/Sidebar";
 import Topbar from "./components/Topbar";
 import ManagersList from "./components/ManagersList";
 import DashboardHome from "./components/DashboardHome";
-import ManagerForm from "./components/ManagerForm";
+// import ManagerForm from "./components/ManagerForm";
 import Reports from "./components/Reports";
 import Notifications from "./components/Notifications";
 import Settings from "./components/Settings";
@@ -28,7 +28,7 @@ const AdminDashboard = () => {
             <Route index element={<DashboardHome />} />
             <Route path="dashboardhome" element={<DashboardHome/>} />
             <Route path="managers" element={<ManagersList />} />
-            <Route path="manager/new" element={<ManagerForm />} />
+            {/* <Route path="manager/new" element={<ManagerForm />} /> */}
             <Route path="reports" element={<Reports />} />
             <Route path="notifications" element={<Notifications />} />
             <Route path="settings" element={<Settings />} />

@@ -1,159 +1,134 @@
 
+
 import React, { useState, useEffect } from "react";
-import { useNavigate,useLocation } from "react-router-dom";
+import axios from "axios";
 import "../styles/ManagersList.css";
 
-// import { useLocation } from "react-router-dom";
-
-
 const ManagersList = () => {
-  const navigate = useNavigate();
-  const location = useLocation(); 
+  const [showForm, setShowForm] = useState(false);
+  const [managers, setManagers] = useState([]);
+  const [email, setEmail] = useState("");
 
-  // Sample managers data (replace with API call later)
-  const [managers, setManagers] = useState([
-    { id: 1, name: "John Doe", email: "john@example.com", status: "Active" },
-    { id: 2, name: "Jane Smith", email: "jane@example.com", status: "Inactive" },
-    { id: 3, name: "Mark Wilson", email: "mark@example.com", status: "Active" },
-  ]);
+  const fetchManagers = async () => {
+    try {
+      const res = await axios.get("http://localhost:5000/api/admin/managers");
+      setManagers(res.data.managers);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
+  useEffect(() => {
+    fetchManagers();
+  }, []);
 
+  const handleInvite = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await axios.post("http://localhost:5000/api/admin/invite-manager", { email });
+      setManagers((prev) => [...prev, res.data.manager]);
+      setEmail("");
+      setShowForm(false);
+    } catch (err) {
+      console.error(err);
+      if (err.response?.status === 400) alert(err.response.data.message);
+      else alert("Error sending invitation");
+    }
+  };
 
-useEffect(() => {
-  if (location.state?.newManager) {
-    setManagers((prev) => {
-      // 👉 CHECK IF MANAGER ALREADY EXISTS
-      const exists = prev.some(
-        (m) => m.id === location.state.newManager.id
+  const toggleStatus = async (managerId, currentStatus) => {
+    try {
+      const newStatus = currentStatus === "Active" ? "inactive" : "active";
+      await axios.patch(`http://localhost:5000/api/admin/manager/${managerId}/status`, { status: newStatus });
+      setManagers((prev) =>
+        prev.map((m) => (m._id === managerId ? { ...m, status: newStatus } : m))
       );
+    } catch (err) {
+      console.error(err);
+      alert("Error updating status");
+    }
+  };
 
-      if (exists) return prev; // 👉 DO NOTHING IF EXISTS
-
-      return [...prev, location.state.newManager];
-    });
-
-    // 👉 CLEAR ROUTER STATE
-    navigate(location.pathname, { replace: true, state: {} });
-  }
-
-  if (location.state?.updatedManager) {
-    setManagers((prev) =>
-      prev.map((m) =>
-        m.id === location.state.updatedManager.id
-          ? location.state.updatedManager
-          : m
-      )
-    );
-
-    navigate(location.pathname, { replace: true, state: {} });
-  }
-}, [location.state, location.pathname, navigate]);
-
-
-
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterStatus, setFilterStatus] = useState("All");
-
-  // Filter & search logic
-  const filteredManagers = managers.filter((manager) => {
-    const matchesSearch = manager.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus =
-      filterStatus === "All" ? true : manager.status === filterStatus;
-    return matchesSearch && matchesStatus;
-  });
-
-  // Toggle manager status
-  const toggleStatus = (id) => {
-    setManagers((prev) =>
-      prev.map((manager) =>
-        manager.id === id
-          ? { ...manager, status: manager.status === "Active" ? "Inactive" : "Active" }
-          : manager
-      )
-    );
+  const deleteManager = async (managerId) => {
+    try {
+      await axios.delete(`http://localhost:5000/api/admin/manager/${managerId}`);
+      setManagers((prev) => prev.filter((m) => m._id !== managerId));
+    } catch (err) {
+      console.error(err);
+      alert("Error deleting manager");
+    }
   };
 
   return (
     <div className="managers-container">
       <h3>Maintenance Managers</h3>
 
-      {/* Search & Filter */}
-      <div className="managers-controls">
-        <input
-          type="text"
-          placeholder="Search by name..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-
-        <select
-          value={filterStatus}
-          onChange={(e) => setFilterStatus(e.target.value)}
-        >
-          <option value="All">All</option>
-          <option value="Active">Active</option>
-          <option value="Inactive">Inactive</option>
-        </select>
-
-        <button
-          className="add-manager-btn"
-          onClick={() => navigate("/admin/managers/new")}
-        >
-          + Add New Manager
-        </button>
+      <div className="top-controls">
+        <button className="add-btn" onClick={() => setShowForm(!showForm)}>+ Invite Manager</button>
       </div>
 
-      {/* Managers Table */}
+      {showForm && (
+        <div className="invite-form">
+          <form onSubmit={handleInvite}>
+            <h4>Invite Maintenance Manager</h4>
+            <label>Email</label>
+            <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+            <label>Role</label>
+            <input type="text" value="Maintenance Manager" readOnly />
+            <div className="form-buttons">
+              <button type="submit" className="send-btn">Send Invitation</button>
+              <button type="button" className="cancel-btn" onClick={() => setShowForm(false)}>Cancel</button>
+            </div>
+          </form>
+        </div>
+      )}
+
       <div className="table-wrapper">
-      <table className="managers-table">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredManagers.map((manager) => (
-            <tr key={manager.id}>
-              <td>{manager.name}</td>
-              <td>{manager.email}</td>
-              <td>
-                <span
-                  className={`status-badge ${
-                    manager.status === "Active" ? "active" : "inactive"
-                  }`}
-                >
-                  {manager.status}
-                </span>
-              </td>
-              <td>
-   
-
-                <button
-                  className="toggle-btn"
-                  onClick={() => toggleStatus(manager.id)}
-                >
-                  {manager.status === "Active" ? "Deactivate" : "Activate"}
-                </button>
-              </td>
-            </tr>
-          ))}
-
-          {filteredManagers.length === 0 && (
+        <table className="managers-table">
+          <thead>
             <tr>
-              <td colSpan="4" style={{ textAlign: "center", padding: "15px" }}>
-                No managers found.
-              </td>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Status</th>
+              <th>Actions</th>
             </tr>
-          )}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {managers.map((manager) => (
+              <tr key={manager._id}>
+                <td>{manager.name || "-"}</td>
+                <td>{manager.email}</td>
+                <td>{manager.role}</td>
+                <td>
+                  <span className={`status ${manager.status.toLowerCase()}`}>
+                    {manager.status.charAt(0).toUpperCase() + manager.status.slice(1)}
+                  </span>
+                </td>
+                <td>
+                  {manager.status === "pending" && (
+                    <button className="delete-btn" onClick={() => deleteManager(manager._id)}>Delete</button>
+                  )}
+                  {manager.status === "active" && (
+                    <>
+                      <button className="deactivate-btn" onClick={() => toggleStatus(manager._id, manager.status)}>Deactivate</button>
+                      <button className="delete-btn" onClick={() => deleteManager(manager._id)}>Delete</button>
+                    </>
+                  )}
+                  {manager.status === "inactive" && (
+                    <>
+                      <button className="activate-btn" onClick={() => toggleStatus(manager._id, manager.status)}>Activate</button>
+                      <button className="delete-btn" onClick={() => deleteManager(manager._id)}>Delete</button>
+                    </>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );
 };
 
 export default ManagersList;
-

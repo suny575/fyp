@@ -1,23 +1,4 @@
-// import StockRequest from "../models/StockRequest.js";
-
-// export const createStockRequest = async (req, res) => {
-//   try {
-//     const { stockItem, quantity, department } = req.body;
-
-//     const request = new StockRequest({
-//       stockItem,
-//       quantity,
-//       department,
-//       requestedBy: req.user._id
-//     });
-
-//     const saved = await request.save();
-//     res.status(201).json(saved);
-
-//   } catch (err) {
-//     res.status(500).json({ error: err.message });
-//   }
-// };
+  
 
 import StockRequest from "../models/StockRequest.js";
 
@@ -90,41 +71,3 @@ export const deleteStockRequest = async (req, res) => {
   }
 };
 
-// import StockRequest from "../models/StockRequest.js";
-
-// // Get all stock requests with requestedBy populated
-// export const getAllStockRequests = async (req, res) => {
-//   try {
-//     const requests = await StockRequest.find()
-//       .populate("requestedBy", "name email") // only fetch name & email
-//       .sort({ createdAt: -1 });
-//     res.status(200).json(requests);
-//   } catch (err) {
-//     res.status(500).json({ message: err.message });
-//   }
-// };
-
-// // Create new stock request
-// export const createStockRequest = async (req, res) => {
-//   try {
-//     const { item, quantity, department } = req.body;
-
-//     const requestedBy = req.user.id; // assuming you have auth middleware
-
-//     const newRequest = new StockRequest({
-//       item,
-//       quantity,
-//       department,
-//       requestedBy
-//     });
-
-//     const savedRequest = await newRequest.save();
-
-//     // Populate requestedBy for response
-//     await savedRequest.populate("requestedBy", "name email");
-
-//     res.status(201).json(savedRequest);
-//   } catch (err) {
-//     res.status(500).json({ message: err.message });
-//   }
-// };
