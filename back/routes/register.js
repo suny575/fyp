@@ -1,7 +1,7 @@
 import express from "express";
 import bcrypt from "bcryptjs";
-import User from "../models/User.js";
-import Invitation from "../models/Invitation.js";
+import User from "../models/user.js";
+import Invitation from "../models/invitation.js";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -64,6 +64,37 @@ router.post("/", async (req, res) => {
     res.status(500).json({
       message: "Server error during registration",
     });
+  }
+});
+
+
+router.post("/register", async (req, res) => {
+  try {
+    const { name, password, token } = req.body;
+
+    const invitation = await Invitation.findOne({
+      token,
+      used: false,
+      expiresAt: { $gt: new Date() },
+    });
+
+    if (!invitation)
+      return res.status(400).json({ message: "Invalid invitation" });
+
+    const user = await User.create({
+      name,
+      email: invitation.email,
+      password,
+      role: invitation.role,
+      status: "active",
+    });
+
+    invitation.used = true;
+    await invitation.save();
+
+    res.status(201).json(user);
+  } catch (err) {
+    res.status(500).json({ message: "Registration failed" });
   }
 });
 

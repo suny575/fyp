@@ -8,8 +8,6 @@ import appRoutes from "./app.js"; // your routes
 import dotenv from "dotenv";
 dotenv.config();
 const PORT = process.env.PORT || 5000;
-
-// Connect to MongoDB
 connectDB();
 
 const app = express();
@@ -46,6 +44,10 @@ io.on("connection", (socket) => {
       if (onlineUsers[userId] === socket.id) delete onlineUsers[userId];
     }
   });
+  
+  socket.on("join", (userId) => {
+    socket.join(userId); // each user get their private room
+  });
 });
 
 // Make Socket.IO accessible in routes if needed
@@ -53,3 +55,4 @@ app.set("io", io);
 app.set("onlineUsers", onlineUsers);
 
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  

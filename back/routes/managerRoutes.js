@@ -4,4 +4,4 @@ import getDashboardSummary from "../controllers/managerController.js";
 
 router.get("/dashboard-summary", getDashboardSummary);
 
-module.exports = router;
+export default router;

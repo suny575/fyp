@@ -1,16 +1,3 @@
-// import express from "express";
-// import protect from "../middleware/authMiddleware.js";
-// import {
-//   createStockRequest,
-//   getAllStockRequests
-// } from "../controllers/StockRequestController.js";
-
-// const router = express.Router();
-
-// router.post("/", protect, createStockRequest);
-// router.get("/", protect, getAllStockRequests);
-
-// export default router;
 
 import express from "express";
 import {

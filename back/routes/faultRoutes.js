@@ -1,24 +1,21 @@
 import express from "express";
-import Fault from "../models/fault.js";
+import protect from "../middleware/authMiddleware.js";
+import { submitFault, getFaults } from "../controllers/faultController.js";
+import upload from "../services/uploadConfig.js";
 
 const router = express.Router();
+// GET all faults
+router.get("/", protect, getFaults);
 
-/**
- * GET all faults
- * (For overview + dashboard)
- */
-router.get("/", async (req, res) => {
-  try {
-    const faults = await Fault.find()
-      .populate("equipment", "name") // only get equipment name
-      .populate("reportedBy", "name email")
-      .sort({ createdAt: -1 });
-
-    res.json(faults);
-  } catch (err) {
-    console.error("Error fetching faults:", err);
-    res.status(500).json({ message: "Server error fetching faults" });
-  }
-});
+// POST fault with optional images/audio
+router.post(
+  "/",
+  protect,
+  upload.fields([
+    { name: "images", maxCount: 5 }, // max 5 images
+    { name: "voiceNote", maxCount: 1 }, // only 1 voice note
+  ]),
+  submitFault,
+);
 
 export default router;

@@ -1,17 +1,42 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
-const maintenanceLogSchema = new mongoose.Schema({
-  equipmentRef: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Equipment",
-    required: true,
-  },
-  performedBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-  },
-  description: String,
-  completedAt: { type: Date, default: Date.now },
-});
+const maintenanceLogSchema = new mongoose.Schema(
+  {
+    equipmentRef: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Equipment",
+      required: true,
+    },
 
-module.exports = mongoose.model("MaintenanceLog", maintenanceLogSchema);
+    taskRef: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "MaintenanceTask",
+    },
+
+    performedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+
+    description: {
+      type: String,
+      required: true,
+    },
+
+    cost: {
+      type: Number,
+      default: 0,
+    },
+
+    durationHours: {
+      type: Number,
+    },
+  },
+  { timestamps: true },
+);
+
+const MaintenanceLog =
+  mongoose.models.MaintenanceLog ||
+  mongoose.model("MaintenanceLog", maintenanceLogSchema);
+
+export default MaintenanceLog;

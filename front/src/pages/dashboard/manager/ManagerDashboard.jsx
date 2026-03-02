@@ -1,17 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
 import { io } from "socket.io-client";
-
 import Sidebar from "./components/Sidebar";
 import Topbar from "./components/Topbar";
-
 import Overview from "./components/Overview";
 import Notifications from "./components/Notifications";
-import TechnicianManagement from "./components/TechnicianManagement";
-import DepStaffManagement from "./components/DepStaffManagement";
-import DepStaffDetail from "./components/DepStaffDetails.jsx";
-import PharmacyStoreManagement from "./components/PharmacyStoreManagement";
-import UserDetails from "./components/UserDetails";
+import UserManagment from "./components/UserManagment.jsx";
 import ReportsPage from "./components/Reports";
 import Settings from "./components/Settings";
 import "./styles/ManagerDashboard.css";
@@ -58,12 +52,7 @@ const ManagerDashboard = () => {
             <Route path="overview" element={<Overview />} />
 
             <Route path="notifications" element={<Notifications />} />
-            <Route path="technician" element={<TechnicianManagement />} />
-            <Route path="technician/:id" element={<UserDetails />} />
-            <Route path="depstaff" element={<DepStaffManagement />} />
-            <Route path="depstaff/:id" element={<DepStaffDetail />} />
-            <Route path="pharmacystore" element={<PharmacyStoreManagement />} />
-            <Route path="pharmacystore/:id" element={<UserDetails />} />
+            <Route path="user" element={<UserManagment />} />
             <Route path="reports" element={<ReportsPage />} />
             <Route path="settings" element={<Settings />} />
           </Routes>

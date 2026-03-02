@@ -1,133 +1,64 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
-import Sidebar from "./components/Sidebar";
-import Topbar from "./components/Topbar";
-import Overview from "./components/Overview";
-import FaultReportForm from "./components/FaultReportForm";
-import FaultStatusList from "./components/FaultStatusList";
-import StockRequestForm from "./components/StockRequestForm";
-import DepartmentEquipment from "./components/DepartmentEquipment";
+import React, { useState } from "react";
+import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import Sidebar from "./components/Sidebar.jsx";
+import Topbar from "./components/Topbar.jsx";
+import Overview from "./components/Overview.js";
+import Fault from "./components/Faults.jsx";
+import StockRequestForm from "./components/StockRequestForm.js";
+// import Equipment from "./components/Equipments.jsx";
 import Notifications from "./components/Notifications";
 import "./styles/Dashboard.css";
 
-const checkQRPermission = async () => {
-  const res = await axios.get("/api/settings/qrscan");
-
-  if (res.data.enabled) {
-    openScanner();
-  } else {
-    requestApproval();
-  }
-};
-
-const openScanner = () => {
-  console.log("Opening QR Scanner...");
-  // later you will connect real scanner logic
-};
-
-const requestApproval = async () => {
-  try {
-    const staffId = localStorage.getItem("userId");
-
-    await axios.post("/api/qr-approval/request", {
-      staffId,
-    });
-
-    alert("Manager approval requested.");
-  } catch (error) {
-    alert("Failed to request approval.");
-  }
-};
-
 const DepStaffDashboard = () => {
-  const [user, setUser] = useState(null);
-  const [activeTab, setActiveTab] = useState("overview");
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
-  // Fetch user
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) throw new Error("No token");
-
-        const res = await axios.get("http://localhost:5000/api/depstaff", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (res.data.role !== "depStaff") throw new Error("Unauthorized");
-
-        setUser({
-          ...res.data,
-          notificationCount: res.data.notificationCount || 3,
-        });
-      } catch (err) {
-        console.warn("Using mock user");
-
-        setUser({
-          name: "Department Staff",
-          department: "IT",
-          role: "depStaff",
-          notificationCount: 3, // important for badge
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUser();
-  }, []);
-
-  const renderContent = () => {
-    switch (activeTab) {
+  const handleTabClick = (tab) => {
+    // update route instead of state
+    switch (tab) {
       case "overview":
-        return <Overview />;
-      case "faultReport":
-        return <FaultReportForm />;
-      case "faultStatus":
-        return <FaultStatusList />;
-      case "equipment":
-        return <DepartmentEquipment />;
-      case "stockRequest":
-        return <StockRequestForm />;
+        navigate("overview");
+        break;
+      case "faults":
+        navigate("faults");
+        break;
+      case "stocks":
+        navigate("stock-request");
+        break;
       case "notifications":
-        return <Notifications />;
+        navigate("notifications");
+        break;
       default:
-        return <Overview />;
+        navigate("overview");
     }
   };
 
-  if (loading)
-    return (
-      <div className="vh-100 d-flex justify-content-center align-items-center">
-        <div className="spinner-border text-primary" />
-      </div>
-    );
-
   return (
-    <div className="dashboard-layout">
+    <div className="dashboard-layout my-5">
       <Sidebar
-        user={user}
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
+        onTabClick={handleTabClick}
       />
 
       <div className="main-section">
         <Topbar
-          user={user}
           toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
-          goToNotifications={() => setActiveTab("notifications")}
+          goToNotifications={() => handleTabClick("notifications")}
         />
 
         <div className="content-area container-fluid py-4">
-          {renderContent()}
+          <Routes>
+            <Route path="overview" element={<Overview />} />
+            <Route path="/faults" element={<Fault />} />
+            {/* <Route path="equipment" element={<Equipment />} /> */}
+            <Route path="/stocks" element={<StockRequestForm />} />
+            <Route path="/notifications" element={<Notifications />} />
+            <Route path="*" element={<Navigate to="overview" />} />
+          </Routes>
         </div>
       </div>
 
-      {/* Overlay for small screens */}
       {sidebarOpen && (
         <div
           className="sidebar-overlay"

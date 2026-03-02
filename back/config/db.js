@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 
 const connectDB = async () => {
   if (!process.env.MONGO_URI) {
-    console.error("❌ Database connection failed: MONGO_URI missing in .env");
+    console.error("❌ MONGO_URI missing in .env");
     process.exit(1);
   }
 

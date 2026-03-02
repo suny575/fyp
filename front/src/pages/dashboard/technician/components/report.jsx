@@ -1,247 +1,194 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { QrScanner } from "react-qr-scanner"; // compatible with React 18
 import "../styles/report.css";
 
-// Mock tasks
-const mockTasks = [
-  {
-    id: 1,
-    title: "Fix AC Unit",
-    assignedTo: "tech123",
-    reporter: "depStaff01",
-    equipment: "AC Model X",
-    priority: "high",
-    status: "completed",
-    description: "Cooling failure in lab 2",
-    imageUrl: "/mock/ac_demo.jpg",
-    voiceUrl: "/mock/voice_demo.mp3",
-    dueDate: "2026-02-20",
-    completedDate: "2026-02-21",
-    history: [
-      { status: "pending", updatedBy: "tech123", date: "2026-02-18" },
-      { status: "in-progress", updatedBy: "tech123", date: "2026-02-19" },
-      { status: "completed", updatedBy: "tech123", date: "2026-02-21" },
-    ],
-  },
-  {
-    id: 2,
-    title: "Repair Network Switch",
-    assignedTo: "tech123",
-    reporter: "depStaff02",
-    equipment: "Cisco Switch 2960",
-    priority: "medium",
-    status: "in-progress",
-    description: "Port 4 not working",
-    imageUrl: "/mock/switch_demo.jpg",
-    voiceUrl: "",
-    dueDate: "2026-02-28",
-    completedDate: null,
-    history: [
-      { status: "pending", updatedBy: "tech123", date: "2026-02-20" },
-      { status: "in-progress", updatedBy: "tech123", date: "2026-02-21" },
-      { status: "completed", updatedBy: "tech123", date: "2026-02-21" },
-    ],
-  },
+const EquipmentReport = () => {
+  const [equipmentName, setEquipmentName] = useState("");
+  const [equipmentQuery, setEquipmentQuery] = useState("");
+  const [equipmentList, setEquipmentList] = useState([]);
+  const [equipmentId, setEquipmentId] = useState("");
+  const [selectedEquipment, setSelectedEquipment] = useState(null);
+  const [description, setDescription] = useState("");
+  const [showQRScanner, setShowQRScanner] = useState(false);
+  const token = localStorage.getItem("token");
 
-    {
-    id: 3,
-    title: "Repair Network Switch",
-    assignedTo: "tech123",
-    reporter: "depStaff02",
-    equipment: "Cisco Switch 2960",
-    priority: "medium",
-    status: "pending",
-    description: "Port 4 not working",
-    imageUrl: "/mock/switch_demo.jpg",
-    voiceUrl: "",
-    dueDate: "2026-02-28",
-    completedDate: null,
-    history: [
-      { status: "pending", updatedBy: "tech123", date: "2026-02-20" },
-      { status: "in-progress", updatedBy: "tech123", date: "2026-02-21" },
-      { status: "completed", updatedBy: "tech123", date: "2026-02-21" },
-    ],
-  },
-];
-
-const TechnicianReport = () => {
-  const [tasks, setTasks] = useState([]);
-  const [backendFailed, setBackendFailed] = useState(false);
-  const [expandedHistory, setExpandedHistory] = useState({});
-
+  // Search equipment by name
   useEffect(() => {
-    const fetchTasks = async () => {
+    if (!equipmentQuery) {
+      setEquipmentList([]);
+      return;
+    }
+
+    const fetchEquipment = async () => {
       try {
-        const res = await axios.get("/api/tasks");
-        setTasks(res.data);
-      } catch (error) {
-        console.error("Backend failed, using mock tasks:", error.message);
-        setTasks(mockTasks);
-        setBackendFailed(true);
+        const res = await axios.get(
+          `http://localhost:5000/api/equipment?search=${equipmentQuery}`,
+          { headers: { Authorization: `Bearer ${token}` } },
+        );
+        setEquipmentList(res.data);
+      } catch (err) {
+        console.error("Failed to fetch equipment:", err.message);
       }
     };
-    fetchTasks();
-  }, []);
 
-  const toggleHistory = (taskId) => {
-    setExpandedHistory((prev) => ({
-      ...prev,
-      [taskId]: !prev[taskId],
-    }));
+    fetchEquipment();
+  }, [equipmentQuery, token]);
+
+  // QR scan handler (fills ID only)
+  const handleScan = (result) => {
+    if (result) {
+      const scannedId = result.text || result;
+      setEquipmentId(scannedId);
+
+      // Optional: fetch equipment name automatically
+      axios
+        .get(`http://localhost:5000/api/equipment/${scannedId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        .then((res) => {
+          setSelectedEquipment(res.data);
+          setEquipmentName(res.data.name);
+          setShowQRScanner(false);
+        })
+        .catch((err) => {
+          console.error("Equipment not found:", err.message);
+          alert("Equipment not found in database!");
+        });
+    }
   };
 
-  const groupedTasks = {
-    pending: tasks.filter((t) => t.status === "pending"),
-    inProgress: tasks.filter((t) => t.status === "in-progress"),
-    completed: tasks.filter((t) => t.status === "completed"),
+  const handleError = (err) => {
+    console.error("QR Scan Error:", err);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!equipmentId || !description) {
+      alert("Enter equipment ID and describe the issue");
+      return;
+    }
+
+    try {
+      await axios.post(
+        "http://localhost:5000/api/equipmentReports",
+        {
+          equipment: equipmentId,
+          description,
+        },
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      alert("Report submitted! Waiting for manager approval.");
+      setEquipmentName("");
+      setEquipmentQuery("");
+      setEquipmentId("");
+      setSelectedEquipment(null);
+      setDescription("");
+    } catch (err) {
+      console.error("Failed to submit report:", err.message);
+      alert("Error submitting report");
+    }
   };
 
   return (
-    <div className="container-fluid py-3">
-      {backendFailed && (
-        <div className="alert alert-warning">
-          Backend failed, using mock data!
-        </div>
-      )}
 
-      {/* ⚡ Equipment Report Section */}
+    
+    <div className="container-fluid py-3">
+      <div><h1> <strong>COMING SOON</strong></h1></div>
       <div className="report-equipment-section mb-4 p-3 rounded shadow-sm bg-light">
         <h5>Report Equipment Issue</h5>
         <p className="small text-muted">
-          Report equipment that requires replacement or immediate attention to
-          the manager.
+          Enter equipment name or scan QR code to fill the ID automatically.
         </p>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            console.log("Mock: Equipment report submitted"); // replace with API later
-            alert("Equipment report submitted!");
-            e.target.reset();
-          }}
-        >
+
+        <form onSubmit={handleSubmit}>
+          {/* Equipment Name Search */}
           <div className="mb-2">
             <input
               type="text"
               className="form-control"
-              placeholder="Equipment Name / ID"
-              required
+              placeholder="Equipment Name"
+              value={equipmentName}
+              onChange={(e) => {
+                setEquipmentName(e.target.value);
+                setEquipmentQuery(e.target.value);
+              }}
             />
           </div>
+
+          {/* Name search results */}
+          {equipmentList.length > 0 && (
+            <div className="mb-2">
+              {equipmentList.map((e) => (
+                <div
+                  key={e._id}
+                  className={`p-2 border rounded mb-1 ${
+                    selectedEquipment?._id === e._id
+                      ? "bg-primary text-white"
+                      : "bg-white"
+                  }`}
+                  style={{ cursor: "pointer" }}
+                  onClick={() => {
+                    setSelectedEquipment(e);
+                    setEquipmentName(e.name);
+                    setEquipmentId(e._id);
+                  }}
+                >
+                  {e.name} ({e._id})
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Equipment ID input + QR scan */}
+          <div className="mb-2 d-flex gap-2">
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Equipment ID"
+              value={equipmentId}
+              onChange={(e) => setEquipmentId(e.target.value)}
+              required
+            />
+            <button
+              type="button"
+              className="btn btn-outline-secondary"
+              onClick={() => setShowQRScanner((prev) => !prev)}
+            >
+              {showQRScanner ? "Close QR" : "Scan QR"}
+            </button>
+          </div>
+
+          {/* QR Scanner */}
+          {showQRScanner && (
+            <div className="mb-2">
+              <QrScanner
+                onDecode={handleScan}
+                onError={handleError}
+                style={{ width: "100%" }}
+              />
+            </div>
+          )}
+
+          {/* Description */}
           <div className="mb-2">
             <textarea
               className="form-control"
               rows="2"
               placeholder="Describe the issue"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
               required
             />
           </div>
+
           <button type="submit" className="btn btn-primary px-3 btn-sm">
             Submit Report
           </button>
         </form>
       </div>
-      {/* 👇 reporting tables based on status */}
-      {["pending", "inProgress", "completed"].map((statusKey) => (
-        <div key={statusKey} className="mb-4">
-          <h5 className="text-capitalize mb-2">
-            {statusKey === "inProgress" ? "In-Progress" : statusKey} Tasks
-          </h5>
-
-          <div className="table-responsive">
-            <table className="table report-table">
-              <thead className="sticky-top bg-light">
-                <tr>
-                  <th>Title</th>
-                  <th>Priority</th>
-                  <th>Status</th>
-                  <th>Reporter</th>
-                  <th>Technician</th>
-                  <th>Assigned</th>
-                  <th>Completed</th>
-                  <th>Media</th>
-                  <th>History</th>
-                </tr>
-              </thead>
-              <tbody>
-                {groupedTasks[statusKey].map((task) => (
-                  <tr
-                    key={task.id}
-                    className={`report-row ${
-                      new Date(task.dueDate) < new Date() &&
-                      task.status !== "completed"
-                        ? "overdue-row"
-                        : ""
-                    }`}
-                  >
-                    <td>{task.title}</td>
-                    <td>
-                      <span
-                        className={`badge priority-${
-                          task.priority === "high"
-                            ? "high"
-                            : task.priority === "medium"
-                              ? "medium"
-                              : "low"
-                        }`}
-                      >
-                        {task.priority.toUpperCase()}
-                      </span>
-                    </td>
-                    <td>{task.status}</td>
-                    <td>{task.reporter}</td>
-                    <td>{task.assignedTo}</td>
-                    <td>{new Date(task.dueDate).toLocaleDateString()}</td>
-                    <td>
-                      {task.completedDate
-                        ? new Date(task.completedDate).toLocaleDateString()
-                        : "-"}
-                    </td>
-                    <td className="media-cell">
-                      {task.imageUrl && (
-                        <img
-                          src={task.imageUrl}
-                          alt="task media"
-                          className="media-thumb"
-                        />
-                      )}
-                      {task.voiceUrl && (
-                        <audio controls className="audio-thumb">
-                          <source src={task.voiceUrl} />
-                        </audio>
-                      )}
-                    </td>
-                    <td>
-                      <button
-                        className="btn btn-sm btn-outline-primary"
-                        onClick={() => toggleHistory(task.id)}
-                      >
-                        {expandedHistory[task.id] ? "Hide" : "Show"} History
-                      </button>
-                      <div
-                        className={`timeline-container ${
-                          expandedHistory[task.id] ? "expanded" : ""
-                        }`}
-                      >
-                        <ul className="timeline-list mt-1">
-                          {task.history.map((h, idx) => (
-                            <li key={idx}>
-                              <strong>{h.status.toUpperCase()}</strong> by{" "}
-                              {h.updatedBy} on{" "}
-                              {new Date(h.date).toLocaleDateString()}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      ))}
     </div>
   );
 };
 
-export default TechnicianReport;
+export default EquipmentReport;
