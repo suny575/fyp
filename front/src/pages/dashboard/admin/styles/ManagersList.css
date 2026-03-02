@@ -1,126 +1,108 @@
 .managers-container {
   padding: 20px;
-  height: auto;
-  background:hsl(210, 6%, 93%) ;
 }
 
-.managers-container h2 {
-  margin-bottom: 20px;
-  color: #0f172a;
+.top-controls {
+  margin-bottom: 15px;
 }
 
-.managers-controls {
-  display: flex;
-  gap: 15px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-  align-items: center;
-}
-
-.managers-controls input {
-  padding: 8px 12px;
-  border-radius: 5px;
-  border: 1px solid #cbd5e1;
-  flex: 1;
-  min-width: 200px;
-}
-
-.managers-controls select {
-  padding: 8px 12px;
-  border-radius: 5px;
-  border: 1px solid #cbd5e1;
-}
-
-.add-manager-btn {
-  background: #0a4b66;
-  border: none;
+.add-btn {
+  padding: 8px 14px;
+  background: #1976d2;
   color: white;
-  padding: 8px 15px;
-  border-radius: 5px;
+  border: none;
   cursor: pointer;
-  transition: background 0.2s;
 }
 
-.add-manager-btn:hover {
-  background: #0ea5e9;
+.invite-form {
+  background: #f9f9f9;
+  padding: 15px;
+  margin-bottom: 20px;
+  border-radius: 6px;
+}
+
+.invite-form input {
+  width: 100%;
+  padding: 6px;
+  margin-bottom: 10px;
+}
+
+.form-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.send-btn {
+  background: green;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+}
+
+.cancel-btn {
+  background: gray;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+}
+
+.table-wrapper {
+  overflow-x: auto; /* horizontal scroll */
 }
 
 .managers-table {
   width: 100%;
   border-collapse: collapse;
-  background: white;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  min-width: 700px;
 }
 
-.managers-table th, .managers-table td {
-  padding: 12px 15px;
-  text-align: left;
-  border-bottom: 1px solid #e2e8f0;
+.managers-table th,
+.managers-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
 }
 
-.managers-table th {
-  background: #0f172a;
+.status {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.status.pending {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.status.active {
+  background: #d4edda;
+  color: #155724;
+}
+
+.status.inactive {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.activate-btn {
+  background: green;
   color: white;
-}
-
-.status-badge {
-  padding: 5px 10px;
-  border-radius: 5px;
-  color: white;
-  font-weight: bold;
-}
-
-.status-badge.active {
-  background: #22c55e;
-}
-
-.status-badge.inactive {
-  background: #ef4444;
-}
-
-.view-btn,
-.toggle-btn {
-  padding: 6px 12px;
   border: none;
-  border-radius: 5px;
   margin-right: 5px;
-  cursor: pointer;
-  transition: all 0.2s;
+  padding: 5px 8px;
 }
 
-/* .view-btn {
-  background: #38bdf8;
+.deactivate-btn {
+  background: orange;
   color: white;
+  border: none;
+  margin-right: 5px;
+  padding: 5px 8px;
 }
 
-.view-btn:hover {
-  background: #054867;
-} */
-
-.toggle-btn {
-  background: #053b54;
+.delete-btn {
+  background: red;
   color: white;
-}
-
-.toggle-btn:hover {
-  background:#0ea5e9 ;
-}
-.table-wrapper {
-  width: 100%;
-  overflow-x: auto;
-}
-
-@media (max-width: 768px) {
-  .managers-controls {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .managers-controls input,
-  .managers-controls select,
-  .add-manager-btn {
-    width: 100%;
-  }
+  border: none;
+  padding: 5px 8px;
 }

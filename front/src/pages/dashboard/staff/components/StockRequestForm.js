@@ -10,6 +10,9 @@ const StockRequestForm = () => {
   });
 
   const [requests, setRequests] = useState([]);
+  // 🔥 NEW STATES
+const [stockItems, setStockItems] = useState([]);
+const [departments, setDepartments] = useState([]);
 
   // ===== Fetch requests from backend =====
   const fetchRequests = async () => {
@@ -36,8 +39,27 @@ const StockRequestForm = () => {
     }
   };
 
+  // ===== Fetch stock items for suggestions =====
+const fetchStockItems = async () => {
+  try {
+    const res = await axios.get("http://localhost:5000/api/stock");
+    
+    setStockItems(res.data);
+
+    // Extract unique departments from stock
+    const uniqueDepartments = [
+      ...new Set(res.data.map(item => item.department).filter(Boolean))
+    ];
+    setDepartments(uniqueDepartments);
+
+  } catch (err) {
+    console.error("Failed to fetch stock items:", err.message);
+  }
+};
+
   useEffect(() => {
     fetchRequests();
+    fetchStockItems();
   }, []);
 
   const handleChange = (e) => {
@@ -51,6 +73,17 @@ const StockRequestForm = () => {
     e.preventDefault();
     const token = localStorage.getItem("token");
     const requestedBy = localStorage.getItem("username") || "DeptStaff";
+
+       // 🔒 Validate item exists in stock
+  const itemExists = stockItems.some(
+    (stock) => stock.name.toLowerCase() === formData.item.toLowerCase()
+  );
+
+  if (!itemExists) {
+    alert("This item is not registered in stock!");
+    return; // ⛔ STOP submission
+  }
+
 
     const newRequest = {
       ...formData,
@@ -105,7 +138,7 @@ const StockRequestForm = () => {
           <div style={{ display: "flex", gap: "15px", flexWrap: "wrap" }}>
             <div style={{ flex: "1 1 200px" }}>
               <label>Item</label>
-              <select
+              {/* <select
                 name="item"
                 value={formData.item}
                 onChange={handleChange}
@@ -116,7 +149,24 @@ const StockRequestForm = () => {
                 <option value="Syringes">Syringes</option>
                 <option value="Face Masks">Face Masks</option>
                 <option value="Gloves">Gloves</option>
-              </select>
+              </select> */}
+
+              <input
+  type="text"
+  name="item"
+  list="stockItems"
+  value={formData.item}
+  onChange={handleChange}
+  placeholder="Type or select item"
+  required
+  style={{ width: "100%", padding: "8px" }}
+/>
+
+<datalist id="stockItems">
+  {stockItems.map((item) => (
+    <option key={item._id} value={item.name} />
+  ))}
+</datalist>
             </div>
 
             <div style={{ flex: "1 1 150px" }}>
@@ -133,7 +183,7 @@ const StockRequestForm = () => {
 
             <div style={{ flex: "1 1 200px" }}>
               <label>Department</label>
-              <select
+              {/* <select
                 name="department"
                 value={formData.department}
                 onChange={handleChange}
@@ -144,7 +194,24 @@ const StockRequestForm = () => {
                 <option value="ICU">ICU</option>
                 <option value="Cardiology">Cardiology</option>
                 <option value="Pharmacy">Pharmacy</option>
-              </select>
+              </select> */}
+           <input
+  type="text"
+  name="department"
+  list="departmentList"
+  value={formData.department}
+  onChange={handleChange}
+  placeholder="Type or select department"
+  required
+  style={{ width: "100%", padding: "8px" }}
+/>
+
+<datalist id="departmentList">
+  {departments.map((dept, index) => (
+    <option key={index} value={dept} />
+  ))}
+</datalist>
+
             </div>
           </div>
 
@@ -215,7 +282,9 @@ const StockRequestForm = () => {
                       {req.status}
                     </span>
                   </td>
-                  <td>{new Date(req.date).toLocaleDateString()}</td>
+                  <td>  {req.createdAt
+              ? new Date(req.createdAt).toLocaleDateString()
+                 : "N/A"}</td>
                 </tr>
               ))}
             </tbody>

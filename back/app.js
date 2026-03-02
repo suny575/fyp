@@ -11,6 +11,12 @@ import taskRoutes from "./routes/taskRoute.js";
 import managerRoutes from "./routes/managerRoutes.js"; // for manager summer data
 import EquipmentReportRouts from "./routes/equipmentReportRoutes.js";
 import User from "./routes/user.js";
+import alertsRoutes from "./routes/alerts.js"
+import reportsRoutes from "./routes/reports.js"
+import alertsRoutes from "./routes/alerts.js"
+import pharmacyRoutes from "./routes/pharmacyRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js"
+
 const app = express();
 
 app.use("/login", login);
@@ -26,6 +32,10 @@ app.use("/stock-requests", stockRequestRoutes);
 app.use("/allocations", allocationRoutes);
 app.use("/equipmentReportRoutes.js", EquipmentReportRouts);
 
+app.use("/alerts", alertsRoutes);
+app.use("/reports", reportsRoutes);
+app.use("/pharmacy", pharmacyRoutes);
+app.use("/admin", adminRoutes);
 app.get("/", (req, res) => {
   res.send("Hospital Equipment Maintenance API Running");
 });

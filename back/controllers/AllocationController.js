@@ -1,153 +1,9 @@
-// import Stock from "../models/stock.js";
-// import StockRequest from "../models/StockRequest.js";
-// import Allocation from "../models/Allocation.js";
 
-// // Approve a stock request and create allocation
-// export const approveStockRequest = async (req, res) => {
-//   try {
-//     const { requestId } = req.params;
-//     const userId = req.user._id; // allocatedBy
-
-//     // Find the stock request
-//     const request = await StockRequest.findById(requestId);
-//     if (!request) return res.status(404).json({ message: "Request not found" });
-
-//     // Find stock
-//     const stock = await Stock.findOne({ name: request.item });
-//     if (!stock) return res.status(404).json({ message: "Stock not found" });
-
-//     if (request.quantity > stock.quantity)
-//       return res.status(400).json({ message: "Not enough stock" });
-
-//     // Deduct stock
-//     stock.quantity -= request.quantity;
-//     await stock.save();
-
-//     // Update request status
-//     request.status = "approved";
-//     await request.save();
-
-//     // Create allocation record
-//     const allocation = new Allocation({
-//       type: "Stock",
-//       name: request.item,
-//       department: request.department,
-//       quantity: request.quantity,
-//       allocatedBy: userId,
-//     });
-//     await allocation.save();
-
-//     res.status(200).json({ message: "Stock approved and allocated", allocation });
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ error: err.message });
-//   }
-// };
-
-// // Reject a stock request
-// export const rejectStockRequest = async (req, res) => {
-//   try {
-//     const { requestId } = req.params;
-//     const request = await StockRequest.findById(requestId);
-//     if (!request) return res.status(404).json({ message: "Request not found" });
-
-//     request.status = "rejected";
-//     await request.save();
-
-//     res.status(200).json({ message: "Stock request rejected", request });
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ error: err.message });
-//   }
-// };
-
-// // Get all allocations (for history table)
-// export const getAllAllocations = async (req, res) => {
-//   try {
-//     const allocations = await Allocation.find()
-//       .populate("allocatedBy", "name email")
-//       .sort({ date: -1 });
-
-//     res.status(200).json(allocations);
-//   } catch (err) {
-//     res.status(500).json({ error: err.message });
-//   }
-// };
-
-// import Allocation from "../models/Allocation.js";
-// import Stock from "../models/stock.js";
-
-// // ✅ Get all allocations (history)
-// export const getAllAllocations = async (req, res) => {
-//   try {
-//     const allocations = await Allocation.find()
-//       .populate("allocatedBy", "name email")
-//       .populate("stockItem", "name quantity")
-//       .populate("equipment", "name");
-//     res.status(200).json(allocations);
-//   } catch (err) {
-//     res.status(500).json({ error: err.message });
-//   }
-// };
-
-// // ✅ Approve a stock request and create allocation
-// export const approveStockRequest = async (req, res) => {
-//   try {
-//     const { stockRequestId, allocatedById } = req.body;
-
-//     // Fetch the stock request
-//     const stockRequest = await StockRequest.findById(stockRequestId);
-//     if (!stockRequest) return res.status(404).json({ message: "Request not found" });
-
-//     if (stockRequest.quantity > stockRequest.availableQty) {
-//       return res.status(400).json({ message: "Insufficient stock!" });
-//     }
-
-//     // Reduce stock quantity
-//     stockRequest.availableQty -= stockRequest.quantity;
-//     await stockRequest.save();
-
-//     // Create allocation record
-//     const allocation = await Allocation.create({
-//       type: "Stock",
-//       name: stockRequest.item.name,
-//       department: stockRequest.department,
-//       quantity: stockRequest.quantity,
-//       allocatedBy: allocatedById,
-//       stockItem: stockRequest.item._id,
-//       date: new Date(),
-//     });
-
-//     // Optionally mark stock request as approved
-//     stockRequest.status = "approved";
-//     stockRequest.allocationDate = new Date();
-//     await stockRequest.save();
-
-//     res.status(201).json(allocation);
-//   } catch (err) {
-//     res.status(500).json({ error: err.message });
-//   }
-// };
-
-// // ✅ Reject stock request
-// export const rejectStockRequest = async (req, res) => {
-//   try {
-//     const { stockRequestId } = req.body;
-//     const stockRequest = await StockRequest.findById(stockRequestId);
-//     if (!stockRequest) return res.status(404).json({ message: "Request not found" });
-
-//     stockRequest.status = "rejected";
-//     await stockRequest.save();
-
-//     res.status(200).json({ message: "Request rejected" });
-//   } catch (err) {
-//     res.status(500).json({ error: err.message });
-//   }
-// };
-
+// controllers/allocationController.js
 import StockRequest from "../models/StockRequest.js";
 import Stock from "../models/stock.js";
 import Equipment from "../models/equipment.js";
+import Allocation from "../models/Allocation.js";
 
 /*
 ========================================
@@ -158,7 +14,7 @@ export const getPendingRequests = async (req, res) => {
   try {
     const requests = await StockRequest
       .find({ status: "pending" })
-      .populate("requestedBy", "name");
+      .populate("requestedBy", "name email"); // include name for frontend
 
     const formatted = await Promise.all(
       requests.map(async (r) => {
@@ -166,21 +22,21 @@ export const getPendingRequests = async (req, res) => {
 
         return {
           id: r._id,
-          name: r.item,
+          itemName: r.item,                       // frontend expects itemName
           requestedQty: r.quantity,
           department: r.department,
-          requestedBy: r.requestedBy?.name,
+          requestedByName: r.requestedBy?.name || "Unknown",
           availableQty: stock ? stock.quantity : 0,
         };
       })
     );
 
     res.status(200).json(formatted);
+
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
-
 
 /*
 ========================================
@@ -189,7 +45,7 @@ export const getPendingRequests = async (req, res) => {
 */
 export const approveStockRequest = async (req, res) => {
   try {
-    const request = await StockRequest.findById(req.params.id);
+    const request = await StockRequest.findById(req.params.id).populate("requestedBy", "name");
 
     if (!request)
       return res.status(404).json({ message: "Request not found" });
@@ -198,11 +54,10 @@ export const approveStockRequest = async (req, res) => {
       return res.status(400).json({ message: "Request already processed" });
 
     const stock = await Stock.findOne({ name: request.item });
-
     if (!stock || stock.quantity < request.quantity)
       return res.status(400).json({ message: "Insufficient stock" });
 
-    // Reduce stock safely
+    // Reduce stock
     stock.quantity -= request.quantity;
     await stock.save();
 
@@ -211,13 +66,30 @@ export const approveStockRequest = async (req, res) => {
     request.allocationDate = new Date();
     await request.save();
 
+    // Add allocation history
+    const allocation = new Allocation({
+      type: "Stock",
+      itemName: request.item,
+      department: request.department,
+      quantity: request.quantity,
+      
+      requestedBy: request.requestedBy._id,           // who requested
+      requestedByName: request.requestedBy?.name,     // name of requester
+
+      allocatedBy: req.user._id,         // the approver
+      allocatedByName: req.user.name,    // display name of approver
+      // allocatedBy: request.requestedBy._id,
+      // allocatedByName: request.requestedBy?.name || "Unknown",
+      date: request.allocationDate,
+    });
+    await allocation.save();
+
     res.status(200).json({ message: "Stock allocation approved" });
 
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
-
 
 /*
 ========================================
@@ -237,13 +109,12 @@ export const rejectStockRequest = async (req, res) => {
     request.status = "rejected";
     await request.save();
 
-    res.status(200).json({ message: "Stock allocation rejected" });
+    res.status(200).json({ message: "Stock allocation rejected", id: request._id });
 
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
-
 
 /*
 ========================================
@@ -252,28 +123,21 @@ export const rejectStockRequest = async (req, res) => {
 */
 export const getAllocationHistory = async (req, res) => {
   try {
+    // Stock allocations from Allocation collection
+    const stockAllocations = await Allocation.find({ type: "Stock" });
 
-    // Approved stock requests
-    const approvedStock = await StockRequest
-      .find({ status: "approved" })
-      .populate("requestedBy", "name");
-
-    const stockHistory = approvedStock.map(r => ({
+    const stockHistory = stockAllocations.map(r => ({
       id: r._id,
-      type: "Stock",
-      name: r.item,
+      type: r.type,
+      name: r.itemName,                      // frontend expects 'name'
       department: r.department,
       quantity: r.quantity,
-      allocatedBy: r.requestedBy?.name,
-      date: r.allocationDate
-        ? r.allocationDate.toISOString().split("T")[0]
-        : "",
+      allocatedByName: r.allocatedByName || "Unknown",
+      date: r.date ? r.date.toISOString().split("T")[0] : "",
     }));
 
     // Equipment allocations
-    const equipments = await Equipment
-      .find()
-      .populate("allocatedBy", "name");
+    const equipments = await Equipment.find().populate("allocatedBy", "name");
 
     const equipmentHistory = equipments.map(eq => ({
       id: eq._id,
@@ -281,10 +145,8 @@ export const getAllocationHistory = async (req, res) => {
       name: eq.name,
       department: eq.department,
       quantity: 1,
-      allocatedBy: eq.allocatedBy?.name,
-      date: eq.allocationDate
-        ? eq.allocationDate.toISOString().split("T")[0]
-        : "",
+      allocatedByName: eq.allocatedBy?.name || "Unknown",
+      date: eq.allocationDate ? eq.allocationDate.toISOString().split("T")[0] : "",
     }));
 
     res.status(200).json([
@@ -296,6 +158,3 @@ export const getAllocationHistory = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-
-
-

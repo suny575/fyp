@@ -1,7 +1,7 @@
 import Fault from "../models/Fault.js";
 import Task from "../models/Task.js";
 import User from "../models/user.js";
-import Equipment from "../models/Equipment.js"; // import equipment model
+import Equipment from "../models/equipment.js";
 import sendNotification from "../services/notification.service.js";
 
 // ===============================
