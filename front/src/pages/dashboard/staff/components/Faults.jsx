@@ -30,9 +30,9 @@ const Faults = () => {
   const audioChunksRef = useRef([]);
   const streamRef = useRef(null);
 
-  const [faults, setFaults] = useState([]);
+  const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [showFaults, setShowFaults] = useState(false);
+  const [showTasks, setShowTasks] = useState(false);
   const [filter, setFilter] = useState("all");
 
   const location = useLocation();
@@ -152,7 +152,6 @@ const Faults = () => {
         {
           headers: {
             Authorization: `Bearer ${token}`,
-            // DO NOT set Content-Type manually! Browser handles it for FormData
           },
         },
       );
@@ -162,24 +161,27 @@ const Faults = () => {
       setImages([]);
       setAudioURL(null);
       setVoiceFile(null);
-      setFaults((prev) => [res.data.fault, ...prev]);
+      setTasks((prev) => [res.data.fault, ...prev]);
       alert("✅ Fault submitted successfully!");
     } catch (err) {
       console.error(err);
       alert(err.response?.data?.message || "Failed to submit fault");
     }
   };
-
   // ===== Fetch Faults =====
-  const fetchFaults = async () => {
+  const fetchTasks = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("http://localhost:5000/api/faults", {
+      const res = await axios.get("http://localhost:5000/api/tasks/all", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setFaults(res.data);
+
+      // The backend already populates equipment, reportedBy, assignedTechnician
+      // So frontend can use them directly
+      setTasks(res.data);
     } catch (err) {
-      console.error("Error fetching faults:", err);
+      console.error("Error fetching tasks:", err);
+      alert("Failed to fetch tasks. Try again.");
     } finally {
       setLoading(false);
     }
@@ -188,23 +190,23 @@ const Faults = () => {
   // ===== Socket =====
   useEffect(() => {
     socket.connect();
-    socket.on("faultCreated", (newFault) =>
-      setFaults((prev) => [newFault, ...prev]),
+    socket.on("faultCreated", (newTasks) =>
+      setTasks((prev) => [newTasks, ...prev]),
     );
     socket.on("faultUpdated", (updatedFault) =>
-      setFaults((prev) =>
-        prev.map((f) => (f._id === updatedFault._id ? updatedFault : f)),
+      setTasks((prev) =>
+        prev.map((t) => (t._id === updatedFault._id ? updatedFault : t)),
       ),
     );
     return () => socket.disconnect();
   }, []);
 
-  const filteredFaults =
-    filter === "all" ? faults : faults.filter((f) => f.status === filter);
+  const filteredTasks =
+    filter === "all" ? tasks : tasks.filter((t) => t.status === filter);
 
   const getBadge = (status) => {
     switch (status) {
-      case "pending":
+      case "waiting":
         return "bg-warning text-dark";
       case "in-progress":
         return "bg-primary";
@@ -217,7 +219,7 @@ const Faults = () => {
 
   return (
     <div className="p-4">
-      <h3 className="fw-bold mb-4">Submit Equipment Fault</h3>
+      <h3 className="fw-bold mt-5 mb-4">Submit Equipment Fault</h3>
 
       <Card className="shadow-sm mb-4 border-0">
         <Card.Body>
@@ -387,16 +389,18 @@ const Faults = () => {
         <Button
           variant="secondary"
           onClick={() => {
-            fetchFaults();
-            setShowFaults(!showFaults);
+            fetchTasks();
+            setShowTasks(!showTasks);
           }}
         >
-          {showFaults ? "Hide Reported Faults" : "Show Reported Faults"}
+          {showTasks ? "Hide Reported Faults" : "Show Reported Faults"}
         </Button>
       </div>
 
+      
+
       {/* ===== Faults Display: Table for large, Cards for small ===== */}
-      {showFaults && (
+      {showTasks && (
         <>
           <div className="d-none d-lg-block">
             <Card className="shadow-sm border-0">
@@ -418,29 +422,31 @@ const Faults = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {filteredFaults.map((f) => (
+                        {filteredTasks.map((t) => (
                           <tr
-                            key={f._id}
+                            key={t._id}
                             className={
-                              f._id === highlightId ? "table-info" : ""
+                              t._id === highlightId ? "table-info" : ""
                             }
                           >
-                            <td>{f.equipment?.name || "Unknown"}</td>
+                            <td>{t.equipment?.name || "Unknown"}</td>
                             <td>
-                              <Badge className={getBadge(f.status)}>
-                                {f.status}
+                              <Badge className={getBadge(t.status)}>
+                                {t.status}
                               </Badge>
                             </td>
-                            <td>{f.priority}</td>
-                            <td>{f.reportedBy?.name || "Unknown"}</td>
-                            <td>{f.assignedTo?.name || "Not Assigned"}</td>
+                            <td>{t.priority}</td>
+                            <td>{t.reportedBy?.name || "Unknown"}</td>
                             <td>
-                              {new Date(f.createdAt).toLocaleDateString()}
+                              {t.assignedTechnician?.name || "Not Assigned"}
                             </td>
                             <td>
-                              {["pending", "waiting"].includes(f.status)
+                              {new Date(t.createdAt).toLocaleDateString()}
+                            </td>
+                            <td>
+                              {["waiting"].includes(t.status)
                                 ? "-"
-                                : f.updatedBy || "-"}
+                                : t.updatedBy || "-"}
                             </td>
                           </tr>
                         ))}
@@ -453,27 +459,27 @@ const Faults = () => {
           </div>
 
           <div className="d-block d-lg-none">
-            {filteredFaults.map((f) => (
-              <Card key={f._id} className="mb-3 shadow-sm">
+            {filteredTasks.map((t) => (
+              <Card key={t._id} className="mb-3 shadow-sm">
                 <Card.Body>
-                  <Card.Title>{f.equipment?.name || "Unknown"}</Card.Title>
+                  <Card.Title>{t.equipment?.name || "Unknown"}</Card.Title>
                   <Card.Subtitle className="mb-2 text-muted">
-                    Reported by: {f.reportedBy?.name || "Unknown"}
+                    Reported by: {t.reportedBy?.name}
                   </Card.Subtitle>
                   <Card.Text>
                     Status:{" "}
-                    <Badge className={getBadge(f.status)}>{f.status}</Badge>
+                    <Badge className={getBadge(t.status)}>{t.status}</Badge>
                     <br />
-                    Priority: {f.priority}
+                    Priority: {t.priority}
                     <br />
-                    Assigned To: {f.assignedTo?.name || "Not Assigned"}
+                    Assigned To: {t.assignedTechnician?.name || "Not Assigned"}
                     <br />
                     Updated By:{" "}
-                    {["pending", "waiting"].includes(f.status)
+                    {["pending", "waiting"].includes(t.status)
                       ? "-"
-                      : f.updatedBy || "-"}
+                      : t.updatedBy || "-"}
                   </Card.Text>
-                  <Card.Text>{f.description}</Card.Text>
+                  <Card.Text>{t.description}</Card.Text>
                 </Card.Body>
               </Card>
             ))}

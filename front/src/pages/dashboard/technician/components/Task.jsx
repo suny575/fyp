@@ -4,17 +4,14 @@ import axios from "axios";
 const Task = () => {
   const [taskList, setTaskList] = useState([]);
   const [selectedTask, setSelectedTask] = useState(null);
-  const [completionImage, setCompletionImage] = useState(null);
 
   const token = localStorage.getItem("token");
-  const loggedInUser = JSON.parse(localStorage.getItem("user"));
-  const TECH_ID = loggedInUser?._id;
 
   // Fetch tasks
   useEffect(() => {
     const fetchTasks = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/tasks", {
+        const res = await axios.get("http://localhost:5000/api/tasks/all", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setTaskList(res.data);
@@ -53,12 +50,11 @@ const Task = () => {
   // Group tasks by status
   const tasksByStatus = {
     waiting: taskList.filter((t) => t.status === "waiting"),
-    pending: taskList.filter((t) => t.status === "pending"),
-    in_progress: taskList.filter((t) => t.status === "in_progress"),
+    in_progress: taskList.filter((t) => t.status === "inProgress"),
     completed: taskList.filter((t) => t.status === "completed"),
   };
 
-  // Render single task detail
+  // Render full task details
   if (selectedTask) {
     return (
       <div>
@@ -68,18 +64,58 @@ const Task = () => {
         >
           ← Back to Tasks
         </button>
-        <div className="card td-card">
+        <div className="card td-card shadow-sm p-3">
           <div className="card-body">
-            <h4>{selectedTask.title}</h4>
-            <p>{selectedTask.description}</p>
+            <h5 className="fw-bold">
+              {selectedTask.equipment?.name || selectedTask.name}
+            </h5>
             <p>
               Priority:{" "}
               <span
-                className={`badge bg-${selectedTask.priority === "high" ? "danger" : selectedTask.priority === "medium" ? "warning" : "success"}`}
+                className={`badge bg-${
+                  selectedTask.priority === "high"
+                    ? "danger"
+                    : selectedTask.priority === "medium"
+                      ? "warning"
+                      : "success"
+                }`}
               >
                 {selectedTask.priority.toUpperCase()}
               </span>
             </p>
+            <p>{selectedTask.description}</p>
+
+            {selectedTask.media?.images?.length > 0 && (
+              <div className="mt-2">
+                {selectedTask.media.images.map((img, idx) => (
+                  <img
+                    key={idx}
+                    src={img}
+                    alt=""
+                    style={{
+                      width: "80px",
+                      height: "80px",
+                      cursor: "pointer",
+                      marginRight: "5px",
+                    }}
+                  />
+                ))}
+              </div>
+            )}
+
+            {selectedTask.media?.voiceNote && (
+              <audio
+                controls
+                src={selectedTask.media.voiceNote} // backend path is fixed
+                className="mt-2"
+              />
+            )}
+
+            {!selectedTask.media?.images?.length &&
+              !selectedTask.media?.voiceNote && (
+                <small className="text-muted">No media available</small>
+              )}
+
             <p>Status: {selectedTask.status}</p>
 
             <div className="my-3">
@@ -89,18 +125,9 @@ const Task = () => {
                 onChange={(e) => handleStatusUpdate(e.target.value)}
               >
                 <option value="waiting">Waiting</option>
-                <option value="pending">Pending</option>
-                <option value="in_progress">In Progress</option>
+                <option value="inProgress">In Progress</option>
                 <option value="completed">Completed</option>
               </select>
-
-              {selectedTask.status === "completed" && (
-                <input
-                  type="file"
-                  className="form-control"
-                  onChange={(e) => setCompletionImage(e.target.files[0])}
-                />
-              )}
             </div>
           </div>
         </div>
@@ -108,61 +135,86 @@ const Task = () => {
     );
   }
 
-  // Render tasks overview as cards (small screen) and table (large)
+  // Render task overview
   return (
     <div className="container">
       {Object.keys(tasksByStatus).map((status) => (
         <div key={status} className="mb-4">
           <h5 className="mb-2 text-capitalize">{status.replace("_", " ")}</h5>
           {tasksByStatus[status].length === 0 ? (
-            <div className="card p-2 mb-2 text-center">
+            <div className="card p-2 mb-2 text-center small">
               <small>No tasks in this status.</small>
             </div>
           ) : (
-            <div className="row g-3 d-md-none">
-              {tasksByStatus[status].map((task) => (
-                <div key={task._id} className="col-12">
-                  <div
-                    className="card td-card p-2"
-                    onClick={() => setSelectedTask(task)}
-                    style={{ cursor: "pointer" }}
-                  >
-                    <h6>{task.title}</h6>
-                    <p>Status: {task.status}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Large screen table */}
-          {tasksByStatus[status].length > 0 && (
-            <div className="d-none d-md-block table-responsive">
-              <table className="table table-hover">
-                <thead>
-                  <tr>
-                    <th>Title</th>
-                    <th>Priority</th>
-                    <th>Status</th>
-                    <th>Assigned Date</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {tasksByStatus[status].map((task) => (
-                    <tr
-                      key={task._id}
+            <>
+              {/* Small screen cards */}
+              <div className="row g-2 d-md-none">
+                {tasksByStatus[status].map((task) => (
+                  <div key={task._id} className="col-12">
+                    <div
+                      className="card p-2 td-card shadow-sm"
+                      style={{ cursor: "pointer", fontSize: "0.9rem" }}
                       onClick={() => setSelectedTask(task)}
-                      style={{ cursor: "pointer" }}
                     >
-                      <td>{task.title}</td>
-                      <td>{task.priority}</td>
-                      <td>{task.status}</td>
-                      <td>{new Date(task.createdAt).toLocaleDateString()}</td>
+                      <div className="d-flex justify-content-between align-items-center">
+                        <span className="fw-semibold">
+                          {task.equipment?.name || task.name}
+                        </span>
+                        <span
+                          className={`badge bg-${
+                            task.status === "waiting"
+                              ? "warning text-dark"
+                              : task.status === "in_progress"
+                                ? "primary"
+                                : "success"
+                          }`}
+                        >
+                          {task.status.replace("_", " ")}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Large screen table */}
+              <div className="d-none d-md-block table-responsive">
+                <table className="table table-hover">
+                  <thead>
+                    <tr>
+                      <th>Equipment</th>
+                      <th>Priority</th>
+                      <th>Status</th>
+                      <th>Assigned Date</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+
+                  <tbody>
+                    {tasksByStatus[status].map((task) => {
+                      console.log("TASK OBJECT:", task);
+                      console.log("EQUIPMENT:", task.equipment);
+
+                      return (
+                        <tr
+                          key={task._id}
+                          onClick={() => setSelectedTask(task)}
+                          style={{ cursor: "pointer" }}
+                        >
+                          <td>
+                            {task.equipment?.name || "NO EQUIPMENT FOUND"}
+                          </td>
+                          <td>{task.priority}</td>
+                          <td>{task.status.replace("_", " ")}</td>
+                          <td>
+                            {new Date(task.createdAt).toLocaleDateString()}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </div>
       ))}

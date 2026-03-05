@@ -36,7 +36,7 @@ const Overview = () => {
   const handleViewIssues = async (statTitle) => {
     try {
       const response = await fetch(
-        `/api/manager/issues?category=${encodeURIComponent(statTitle)}`,
+        `http:5000//localhost/api/manager/issues?category=${encodeURIComponent(statTitle)}`,
       );
 
       const data = response.ok
@@ -62,7 +62,8 @@ const Overview = () => {
   ];
 
   const mockSystemStats = [
-    { title: "Pending Tasks", value: 6 },
+    { title: "Waiting Tasks", value: 6 },
+    { title: "InProgress Tasks", value: 6 },
     { title: "Completed Tasks", value: 24 },
     { title: "High Priority Issues", value: 3 },
     { title: "Active Reports", value: 4 },
@@ -103,7 +104,8 @@ const Overview = () => {
 
         // SYSTEM STATS
         setSystemStats([
-          { title: "Pending Tasks", value: data.stats.pendingTasks },
+          { title: "waiting task", value: data.stats.waiting },
+          { title: "inProgress task", value: data.stats.waiting },
           { title: "Completed Tasks", value: data.stats.completedTasks },
           { title: "Active Faults", value: data.stats.activeFaults },
           { title: "Active Reports", value: data.stats.activeReports },

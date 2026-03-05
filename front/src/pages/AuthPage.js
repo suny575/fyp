@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
+import { useContext } from "react";
+import { AuthContext } from "../context/AuthContext";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/AuthPage.css";
 import axios from "axios";
@@ -13,6 +15,7 @@ const AuthPage = () => {
 
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
+  const { login, register } = useContext(AuthContext);
 
   // Input states
   const [loginEmail, setLoginEmail] = useState("");
@@ -46,10 +49,8 @@ const AuthPage = () => {
       fetchInvitation();
     }
   }, [token]);
-
   // ---- LOGIN ----
   const handleLogin = async () => {
-  
     if (!loginEmail || !loginPassword) {
       setError("Please fill in all login fields!");
       return;
@@ -57,40 +58,38 @@ const AuthPage = () => {
 
     try {
       setError("");
-      const res = await axios.post("http://localhost:5000/api/login", {
-        email: loginEmail.trim(),
-        password: loginPassword.trim(),
-      });
+      const res = await login(loginEmail.trim(), loginPassword.trim());
 
-      const { token: jwtToken, user } = res.data;
+      if (res.success) {
+        // Clear inputs
+        setLoginEmail("");
+        setLoginPassword("");
 
-      // Store auth data
-      localStorage.setItem("token", jwtToken);
-      localStorage.setItem("userId", user._id);
-      localStorage.setItem("role", user.role);
-
-      // Clear inputs
-      setLoginEmail("");
-      setLoginPassword("");
-
-      // Redirect based on role
-      if (user.role === "maintenanceManager") {
-        navigate("/manager");
-      } else if (user.role === "admin") {
-        navigate("/admin");
-      }
-      else if (user.role === "pharmacyStore") {
-        navigate("/pharmacy");}
-      
-      else if (user.role === "depStaff") {
-        navigate("/staff");
-      } else if (user.role === "technician") {
-        navigate("/technician");
+        // Redirect based on role
+        switch (res.user.role) {
+          case "maintenanceManager":
+            navigate("/manager");
+            break;
+          case "admin":
+            navigate("/admin");
+            break;
+          case "pharmacyStore":
+            navigate("/pharmacy");
+            break;
+          case "depStaff":
+            navigate("/staff");
+            break;
+          case "technician":
+            navigate("/technician");
+            break;
+          default:
+            navigate("/");
+        }
       } else {
-        navigate("/");
+        setError(res.message);
       }
     } catch (err) {
-      setError(err.response?.data?.message || "Login failed");
+      setError("Login failed");
     }
   };
 
@@ -103,20 +102,24 @@ const AuthPage = () => {
 
     try {
       setError("");
-      await axios.post("http://localhost:5000/api/register", {
-        name: registerName.trim(),
-        password: registerPassword.trim(),
+      const res = await register(
+        registerName.trim(),
+        registerPassword.trim(),
         token,
-      });
+      );
 
-      // Clear registration inputs
-      setRegisterName("");
-      setRegisterPassword("");
+      if (res.success) {
+        // Clear registration inputs
+        setRegisterName("");
+        setRegisterPassword("");
 
-      setActiveTab("login");
-      setError("Registration successful! Please login.");
+        setActiveTab("login");
+        setError("Registration successful! Please login.");
+      } else {
+        setError(res.message);
+      }
     } catch (err) {
-      setError(err.response?.data?.message || "Registration failed");
+      setError("Registration failed");
     }
   };
 
@@ -159,33 +162,47 @@ const AuthPage = () => {
         {/* Forms Container */}
         <div className="form-wrapper">
           {/* Login Form */}
-          <div className={`form-box ${activeTab === "login" ? "show" : ""}`}>
-            <h3 className="text-center mb-4">Welcome Back</h3>
-            <input
-              type="email"
-              className="form-control mb-3"
-              placeholder="Email"
-              value={loginEmail}
-              onChange={(e) => setLoginEmail(e.target.value)}
-            />
-            <input
-              type="password"
-              className="form-control mb-3"
-              placeholder="Password"
-              value={loginPassword}
-              onChange={(e) => setLoginPassword(e.target.value)}
-            />
-            <button
-              className="btn btn-primary w-100 btnl"
-              onClick={handleLogin}
+          {activeTab === "login" && (
+            <form
+              className="form-box show"
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleLogin();
+              }}
             >
-              Login
-            </button>
-          </div>
+              <h3 className="text-center mb-4">Welcome Back</h3>
+              <input
+                type="email"
+                className="form-control mb-3"
+                placeholder="Email"
+                value={loginEmail}
+                onChange={(e) => setLoginEmail(e.target.value)}
+                required
+              />
+              <input
+                type="password"
+                className="form-control mb-3"
+                placeholder="Password"
+                value={loginPassword}
+                onChange={(e) => setLoginPassword(e.target.value)}
+                autoComplete="current-password"
+                required
+              />
+              <button type="submit" className="btn btn-primary w-100 btnl">
+                Login
+              </button>
+            </form>
+          )}
 
           {/* Register Form */}
           {activeTab === "register" && (
-            <div className={`form-box show`}>
+            <form
+              className="form-box show"
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleRegister();
+              }}
+            >
               {invitationExists ? (
                 <>
                   <input
@@ -206,6 +223,7 @@ const AuthPage = () => {
                     onChange={(e) => setRegisterName(e.target.value)}
                     className="form-control mb-3"
                     placeholder="Full Name"
+                    required
                   />
                   <input
                     type="password"
@@ -213,11 +231,9 @@ const AuthPage = () => {
                     onChange={(e) => setRegisterPassword(e.target.value)}
                     className="form-control mb-3"
                     placeholder="Password"
+                    required
                   />
-                  <button
-                    className="btn btn-primary w-100 btnl"
-                    onClick={handleRegister}
-                  >
+                  <button type="submit" className="btn btn-primary w-100 btnl">
                     Register
                   </button>
                 </>
@@ -236,7 +252,7 @@ const AuthPage = () => {
                   <p>Registration is only available via invitation.</p>
                 </div>
               )}
-            </div>
+            </form>
           )}
         </div>
       </div>
