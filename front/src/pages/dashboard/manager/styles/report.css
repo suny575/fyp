@@ -119,3 +119,169 @@
   padding: 20px;
   color: #7f8c8d;
 }
+
+/* ---------- FILTER STRUCTURE ---------- */
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  margin-right: 15px;
+}
+
+.filter-group label {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.date-range {
+  display: flex;
+  gap: 8px;
+}
+
+/* ---------- MOBILE CARDS ---------- */
+
+.mobile-report-cards {
+  display: none;
+}
+
+.report-card {
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 12px;
+  border: 1px solid #e4e6ea;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.report-card p {
+  margin: 4px 0;
+  font-size: 14px;
+}
+
+/* ---------- RESPONSIVE ---------- */
+
+@media (max-width: 768px) {
+  /* hide table */
+  .table-wrapper {
+    display: none;
+  }
+
+  /* show cards */
+  .mobile-report-cards {
+    display: block;
+  }
+
+  /* stack filters nicely */
+  .filters {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .filter-group {
+    width: 100%;
+  }
+}
+
+/* ---------- CARD DESIGN ---------- */
+
+.report-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 14px;
+  border: 1px solid #e6e8ec;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.report-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
+}
+
+/* header */
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.user-name {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+/* role badges */
+
+.role-badge {
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 20px;
+  text-transform: capitalize;
+}
+
+.role-badge.technician {
+  background: #e6f4ff;
+  color: #1677ff;
+}
+
+.role-badge.depStaff {
+  background: #fff7e6;
+  color: #fa8c16;
+}
+
+.role-badge.pharmacyStore {
+  background: #f6ffed;
+  color: #52c41a;
+}
+
+/* rows */
+
+.card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.card-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+}
+
+.label {
+  color: #888;
+}
+
+.value {
+  font-weight: 500;
+}
+
+/* highlight action */
+
+.value.action {
+  color: #1890ff;
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .desktop-only {
+    display: none;
+  }
+  .mobile-only {
+    display: block;
+  }
+  .report-card {
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin-bottom: 12px;
+    border-radius: 8px;
+    background: #f9f9f9;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+}

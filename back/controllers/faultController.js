@@ -2,11 +2,9 @@ import Fault from "../models/Fault.js";
 import Task from "../models/Task.js";
 import User from "../models/user.js";
 import Equipment from "../models/equipment.js";
-import sendNotification from "../services/notification.service.js";
+import convertFaultToTask from "../services/assignment.service.js";
 
-// ===============================
 // GET ALL FAULTS
-// ===============================
 export const getFaults = async (req, res) => {
   try {
     const faults = await Fault.find()
@@ -29,40 +27,24 @@ export const getFaults = async (req, res) => {
   }
 };
 
-// ===============================
-// HELPER: LEAST BUSY TECHNICIAN
-// ===============================
-const getAvailableTechnician = async () => {
-  const techs = await User.find({ role: "technician" });
-
-  if (!techs.length) return null;
-
-  techs.sort(
-    (a, b) => (a.totalAssignedTasks || 0) - (b.totalAssignedTasks || 0),
-  );
-
-  return techs[0];
-};
-
-// ===============================
 // SUBMIT FAULT (POST)
-// ===============================
 export const submitFault = async (req, res) => {
   try {
     const { equipment, description, priority } = req.body;
     const reportedBy = req.user._id;
 
-    if (!equipment || !description)
+    if (!equipment || !description) {
       return res
         .status(400)
         .json({ message: "Equipment & description required" });
+    }
 
-    // Multer files
     const attachments = req.files || {};
-    const images = attachments.images?.map((f) => f.path) || [];
-    const voiceNote = attachments.voiceNote?.[0]?.path || "";
+    const images =
+      attachments.images?.map((f) => f.path.replace(/\\/g, "/")) || [];
+    const voiceNote =
+      attachments.voiceNote?.[0]?.path.replace(/\\/g, "/") || "";
 
-    // Prevent duplicate active fault
     const existingFault = await Fault.findOne({
       equipment,
       status: { $in: ["pending", "in-progress", "waiting"] },
@@ -75,11 +57,9 @@ export const submitFault = async (req, res) => {
       });
     }
 
-    // 🔥 STEP 0: Get department from equipment
     const equipmentObj = await Equipment.findById(equipment);
     const department = equipmentObj?.department || "Unknown";
 
-    // 🔥 STEP 1: Create Fault
     const fault = await Fault.create({
       equipment,
       department,
@@ -93,55 +73,49 @@ export const submitFault = async (req, res) => {
       status: "waiting",
     });
 
-    // 🔥 STEP 2: Assign Least Busy Technician
-    const tech = await getAvailableTechnician();
+    try {
+      const task = await convertFaultToTask(fault._id);
 
-    if (tech) {
-      fault.assignedTo = tech._id;
-      await fault.save();
+      return res.status(201).json({
+        message: "Fault submitted and task created successfully",
+        fault,
+        task,
+      });
+    } catch (err) {
+      console.error("Conversion failed:", err.message);
 
-      // increment technician workload
-      tech.totalAssignedTasks = (tech.totalAssignedTasks || 0) + 1;
-      await tech.save();
+      // Notify reporter
+      try {
+        await sendNotification({
+          recipients: [fault.reportedBy],
+          type: "system-error",
+          message:
+            "Your fault was submitted but system failed to process it. Admin has been notified.",
+          metadata: { faultId: fault._id },
+        });
+      } catch (e) {
+        console.error("Reporter notification failed");
+      }
+
+      // Notify admin
+      try {
+        const admins = await User.find({ role: "admin" });
+        await sendNotification({
+          recipients: admins.map((a) => a._id),
+          type: "system-error",
+          message: `Fault ${fault._id} failed during conversion.`,
+        });
+      } catch (e) {
+        console.error("Admin notification failed");
+      }
+
+      return res.status(500).json({
+        message: "Fault saved but system failed during processing.",
+        fault,
+      });
     }
-
-    // 🔥 STEP 3: Create Maintenance Task
-    const task = await Task.create({
-      title: `Maintenance: ${description.substring(0, 30)}`,
-      name: `Maintenance Task for ${equipmentObj.name}`, // fill name
-      equipmentRef: equipment,
-      faultRef: fault._id,
-      assignedTechnician: tech ? tech._id : null, // fix assignedTechnician
-      createdBy: reportedBy, // fix createdBy
-      department: department, // fix department
-      description, // fix description
-      priority: priority || "medium",
-      status: "waiting", // match enum in schema
-    });
-
-    // 🔥 STEP 4: Send Notifications
-    const managers = await User.find({ role: "manager" });
-    const reporter = await User.findById(reportedBy);
-
-    const recipients = [reporter, ...managers];
-    if (tech) recipients.push(tech);
-
-    res.status(201).json({
-      message: "Fault submitted successfully",
-      fault,
-      task,
-    });
-
-    await sendNotification({
-      recipients,
-      type: "task-assigned",
-      message: tech
-        ? `Task assigned to ${tech.name}`
-        : `New fault reported. Awaiting technician assignment.`,
-      metadata: { taskId: task._id, faultId: fault._id },
-    });
   } catch (err) {
-    console.error("Fault submission error:", err);
-    res.status(500).json({ message: "Server error", error: err.message });
+    console.error("Error submitting fault:", err);
+    res.status(500).json({ message: "Server error submitting fault" });
   }
 };

@@ -6,8 +6,8 @@ export const addEquipment = async (req, res) => {
     // const newEquipment = new Equipment(req.body);
     const newEquipment = new Equipment({
       ...req.body,
-      allocatedBy: req.user._id,   // 👈 comes from auth middleware
-      allocationDate: new Date()   // 👈 optional (default also works)
+      allocatedBy: req.user._id, // 👈 comes from auth middleware
+      allocationDate: new Date(), // 👈 optional (default also works)
     });
     const saved = await newEquipment.save();
     res.status(201).json(saved);
@@ -26,10 +26,14 @@ export const getAllEquipment = async (req, res) => {
   }
 };
 
+
+
 // Update equipment
 export const updateEquipment = async (req, res) => {
   try {
-    const updated = await Equipment.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const updated = await Equipment.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+    });
     res.status(200).json(updated);
   } catch (err) {
     res.status(500).json({ error: err.message });

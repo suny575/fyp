@@ -18,7 +18,7 @@ export const sidebarMenus = {
     { label: "Notifications", path: "/manager/notifications" },
     { label: "Manage users", path: "/manager/users" },
     { label: "Reports", path: "/manager/reports" },
-    { label: "Settings", path: "/manager/settings" },
+    { label: "Schedules", path: "/manager/Schedules" },
   ],
   pharmacystore: [
     { label: "Dashboard", path: "/pharmacy/dashboard" },

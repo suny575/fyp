@@ -1,17 +1,19 @@
-const express = require("express");
+import express from "express";
+import {
+  getUpcomingSchedules,
+  createSchedule,
+  getScheduleById,
+} from "../controllers/maintenanceScheduleController.js";
+
 const router = express.Router();
-const ScheduledMaintenance = require("../models/ScheduledMaintenance");
 
-router.get("/", async (req, res) => {
-  try {
-    const data = await ScheduledMaintenance.find()
-      .populate("equipment")
-      .sort({ nextDate: 1 });
+// Fetch all upcoming schedules
+router.get("/upcoming", getUpcomingSchedules);
 
-    res.json(data);
-  } catch (err) {
-    res.status(500).json({ message: "Server error" });
-  }
-});
+// Create new maintenance schedule
+router.post("/", createSchedule);
 
-module.exports = router;
+// Get single schedule by id
+router.get("/:id", getScheduleById);
+
+export default router;

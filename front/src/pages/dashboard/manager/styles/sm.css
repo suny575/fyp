@@ -1,0 +1,68 @@
+.dashboard-title {
+  color: #0b1c49; /* blue-black */
+}
+
+.card-shadow {
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+}
+
+.card-shadow:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
+}
+
+.badge-upcoming {
+  background-color: #007bff; /* blue */
+  color: white;
+}
+
+.badge-paused {
+  background-color: #6c757d; /* gray/black-ish */
+  color: white;
+}
+
+.badge-completed {
+  background-color: #28a745; /* green */
+  color: white;
+}
+
+/* Table hover */
+.table-hover tbody tr:hover {
+  background-color: #e3f2fd; /* light blue */
+}
+
+.form-card {
+  background-color: #ffffff; /* white */
+  border-radius: 12px;
+  border: 1px solid #0b1c49; /* blue-black border */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.btn-blue {
+  background-color: #007bff; /* blue */
+  color: white;
+}
+
+.btn-blue:hover {
+  background-color: #0056b3;
+  color: white;
+}
+
+.btn-blueblack {
+  background-color: #0b1c49; /* blue-black */
+  color: white;
+}
+
+.btn-blueblack:hover {
+  background-color: #060f28;
+  color: white;
+}
+
+label {
+  color: #0b1c49; /* blue-black */
+}
