@@ -1,19 +1,14 @@
-/* ===============================
-   Layout Wrapper
-================================= */
+/* Layout Wrapper */
 
 .td-wrapper {
-  margin-top: 80px;
+  margin-top: 120px;
   display: flex;
   height: 100vh;
 }
 
-/* ===============================
-   Sidebar
-================================= */
+/* Sidebar */
 
 .td-sidebar {
-  margin-top: 120px;
   width: 240px;
   background: #1f2937;
   transition: all 0.3s ease;
@@ -43,9 +38,7 @@
   color: #ffffff;
 }
 
-/* ===============================
-   Main Area
-================================= */
+/* Main Area */
 
 .td-main {
   flex: 1;
@@ -55,9 +48,7 @@
   flex-direction: column;
 }
 
-/* ===============================
-   Technician Report Card
-================================= */
+/*Technician Report Card */
 
 .td-report-card {
   background: #ffffff;
@@ -131,9 +122,7 @@
   margin-bottom: 8px;
 }
 
-/* ===============================
-   Timeline
-================================= */
+/* Timeline  */
 
 .td-timeline {
   margin-top: 12px;
@@ -151,21 +140,23 @@
   border-bottom: none;
 }
 
-.td-overdue {
+/* .td-overdue {
   border-left: 4px solid #dc3545;
   padding-left: 12px;
-}
+} */
 
-/* ===============================
-   Mobile Sidebar
-================================= */
+/*  Mobile Sidebar */
 
 @media (max-width: 768px) {
   .td-sidebar {
-    margin-top: 120px;
+    margin-top: -10px;
     left: -240px;
     position: absolute;
     /* top: 0; */
     height: 100%;
+  }
+
+  .td-sidebar.open {
+    transform: translateX(0);
   }
 }

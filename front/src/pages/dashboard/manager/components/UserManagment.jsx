@@ -26,7 +26,7 @@ const UsersManagement = () => {
 
   const [showInvite, setShowInvite] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
-  const [inviteRole, setInviteRole] = useState("depStaff");
+  const [inviteRole, setInviteRole] = useState("technician");
   const [inviteLoading, setInviteLoading] = useState(false);
   const [inviteMessage, setInviteMessage] = useState("");
   const [inviteError, setInviteError] = useState("");
@@ -59,6 +59,7 @@ const UsersManagement = () => {
         `http://localhost:5000/api/manager/users?all=${showAll}${
           debouncedSearch ? `&search=${debouncedSearch}` : ""
         }${roleFilter ? `&role=${roleFilter}` : ""}`,
+
         { headers: { Authorization: `Bearer ${token}` } },
       );
 
@@ -82,7 +83,6 @@ const UsersManagement = () => {
     fetchUsers();
   }, [debouncedSearch, roleFilter]);
 
-  // ==============================
   // Invite User
   // ==============================
   const handleInviteSubmit = async (e) => {
@@ -97,7 +97,7 @@ const UsersManagement = () => {
         { email: inviteEmail, role: inviteRole },
         { headers: { Authorization: `Bearer ${token}` } },
       );
-      setInviteMessage(res.data.message || "Invitation sent!");
+      setInviteMessage("Invitation sent Succesfully!");
       setInviteEmail("");
       fetchUsers();
     } catch (err) {
@@ -166,7 +166,7 @@ const UsersManagement = () => {
       <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap">
         <h2 className="fw-bold text-primary">Users Management</h2>
         <Button variant="dark" onClick={() => setShowInvite(!showInvite)}>
-          {showInvite ? "Close Invite" : "+ Invite Staff"}
+          {showInvite ? "Close Invite" : "+ Invite Users"}
         </Button>
       </div>
 

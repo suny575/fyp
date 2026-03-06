@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
@@ -6,20 +5,20 @@ const StockRequestForm = () => {
   const [formData, setFormData] = useState({
     item: "",
     quantity: "",
-    department: ""
+    department: "",
   });
 
   const [requests, setRequests] = useState([]);
   // 🔥 NEW STATES
-const [stockItems, setStockItems] = useState([]);
-const [departments, setDepartments] = useState([]);
+  const [stockItems, setStockItems] = useState([]);
+  const [departments, setDepartments] = useState([]);
 
   // ===== Fetch requests from backend =====
   const fetchRequests = async () => {
     try {
       const token = localStorage.getItem("token");
       const res = await axios.get("http://localhost:5000/api/stock-requests", {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
       setRequests(res.data);
     } catch (err) {
@@ -33,29 +32,28 @@ const [departments, setDepartments] = useState([]);
           department: "ICU",
           requestedBy: "DeptStaff1",
           status: "pending",
-          date: "2026-02-14"
-        }
+          date: "2026-02-14",
+        },
       ]);
     }
   };
 
   // ===== Fetch stock items for suggestions =====
-const fetchStockItems = async () => {
-  try {
-    const res = await axios.get("http://localhost:5000/api/stock");
-    
-    setStockItems(res.data);
+  const fetchStockItems = async () => {
+    try {
+      const res = await axios.get("http://localhost:5000/api/stock");
 
-    // Extract unique departments from stock
-    const uniqueDepartments = [
-      ...new Set(res.data.map(item => item.department).filter(Boolean))
-    ];
-    setDepartments(uniqueDepartments);
+      setStockItems(res.data);
 
-  } catch (err) {
-    console.error("Failed to fetch stock items:", err.message);
-  }
-};
+      // Extract unique departments from stock
+      const uniqueDepartments = [
+        ...new Set(res.data.map((item) => item.department).filter(Boolean)),
+      ];
+      setDepartments(uniqueDepartments);
+    } catch (err) {
+      console.error("Failed to fetch stock items:", err.message);
+    }
+  };
 
   useEffect(() => {
     fetchRequests();
@@ -65,7 +63,7 @@ const fetchStockItems = async () => {
   const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
@@ -74,29 +72,28 @@ const fetchStockItems = async () => {
     const token = localStorage.getItem("token");
     const requestedBy = localStorage.getItem("username") || "DeptStaff";
 
-       // 🔒 Validate item exists in stock
-  const itemExists = stockItems.some(
-    (stock) => stock.name.toLowerCase() === formData.item.toLowerCase()
-  );
+    // 🔒 Validate item exists in stock
+    const itemExists = stockItems.some(
+      (stock) => stock.name.toLowerCase() === formData.item.toLowerCase(),
+    );
 
-  if (!itemExists) {
-    alert("This item is not registered in stock!");
-    return; // ⛔ STOP submission
-  }
-
+    if (!itemExists) {
+      alert("This item is not registered in stock!");
+      return; // ⛔ STOP submission
+    }
 
     const newRequest = {
       ...formData,
       requestedBy,
       status: "pending",
-      date: new Date().toISOString()
+      date: new Date().toISOString(),
     };
 
     try {
       const res = await axios.post(
         "http://localhost:5000/api/stock-requests",
         newRequest,
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
       setRequests([res.data, ...requests]);
       setFormData({ item: "", quantity: "", department: "" });
@@ -119,7 +116,7 @@ const fetchStockItems = async () => {
   };
 
   return (
-    <div style={{ padding: "20px" }}>
+    <div>
       <h3 style={{ fontWeight: "bold", marginBottom: "20px" }}>
         Request Stock Materials
       </h3>
@@ -131,42 +128,29 @@ const fetchStockItems = async () => {
           padding: "20px",
           borderRadius: "8px",
           boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
-          marginBottom: "30px"
+          marginBottom: "30px",
         }}
       >
         <form onSubmit={handleSubmit}>
           <div style={{ display: "flex", gap: "15px", flexWrap: "wrap" }}>
             <div style={{ flex: "1 1 200px" }}>
               <label>Item</label>
-              {/* <select
+              <input
+                type="text"
                 name="item"
+                list="stockItems"
                 value={formData.item}
                 onChange={handleChange}
+                placeholder="Type or select item"
                 required
                 style={{ width: "100%", padding: "8px" }}
-              >
-                <option value="">Select item</option>
-                <option value="Syringes">Syringes</option>
-                <option value="Face Masks">Face Masks</option>
-                <option value="Gloves">Gloves</option>
-              </select> */}
+              />
 
-              <input
-  type="text"
-  name="item"
-  list="stockItems"
-  value={formData.item}
-  onChange={handleChange}
-  placeholder="Type or select item"
-  required
-  style={{ width: "100%", padding: "8px" }}
-/>
-
-<datalist id="stockItems">
-  {stockItems.map((item) => (
-    <option key={item._id} value={item.name} />
-  ))}
-</datalist>
+              <datalist id="stockItems">
+                {stockItems.map((item) => (
+                  <option key={item._id} value={item.name} />
+                ))}
+              </datalist>
             </div>
 
             <div style={{ flex: "1 1 150px" }}>
@@ -183,35 +167,22 @@ const fetchStockItems = async () => {
 
             <div style={{ flex: "1 1 200px" }}>
               <label>Department</label>
-              {/* <select
+             <input
+                type="text"
                 name="department"
+                list="departmentList"
                 value={formData.department}
                 onChange={handleChange}
+                placeholder="Type or select department"
                 required
                 style={{ width: "100%", padding: "8px" }}
-              >
-                <option value="">Select department</option>
-                <option value="ICU">ICU</option>
-                <option value="Cardiology">Cardiology</option>
-                <option value="Pharmacy">Pharmacy</option>
-              </select> */}
-           <input
-  type="text"
-  name="department"
-  list="departmentList"
-  value={formData.department}
-  onChange={handleChange}
-  placeholder="Type or select department"
-  required
-  style={{ width: "100%", padding: "8px" }}
-/>
+              />
 
-<datalist id="departmentList">
-  {departments.map((dept, index) => (
-    <option key={index} value={dept} />
-  ))}
-</datalist>
-
+              <datalist id="departmentList">
+                {departments.map((dept, index) => (
+                  <option key={index} value={dept} />
+                ))}
+              </datalist>
             </div>
           </div>
 
@@ -224,7 +195,7 @@ const fetchStockItems = async () => {
                 padding: "8px 20px",
                 border: "none",
                 borderRadius: "5px",
-                cursor: "pointer"
+                cursor: "pointer",
               }}
             >
               Submit Request
@@ -238,14 +209,14 @@ const fetchStockItems = async () => {
         style={{
           background: "#fff",
           borderRadius: "8px",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.05)"
+          boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
         }}
       >
         <div
           style={{
             padding: "15px",
             borderBottom: "1px solid #eee",
-            fontWeight: "bold"
+            fontWeight: "bold",
           }}
         >
           Request History
@@ -265,8 +236,13 @@ const fetchStockItems = async () => {
             </thead>
             <tbody>
               {requests.map((req) => (
-                <tr key={req._id || req.id} style={{ borderBottom: "1px solid #eee" }}>
-                  <td style={{ padding: "10px" }}>{req.item?.name || req.item}</td>
+                <tr
+                  key={req._id || req.id}
+                  style={{ borderBottom: "1px solid #eee" }}
+                >
+                  <td style={{ padding: "10px" }}>
+                    {req.item?.name || req.item}
+                  </td>
                   <td>{req.quantity}</td>
                   <td>{req.department}</td>
                   <td>{req.requestedBy?.name || req.requestedBy}</td>
@@ -276,15 +252,18 @@ const fetchStockItems = async () => {
                         ...getBadgeStyle(req.status),
                         padding: "4px 10px",
                         borderRadius: "12px",
-                        fontSize: "12px"
+                        fontSize: "12px",
                       }}
                     >
                       {req.status}
                     </span>
                   </td>
-                  <td>  {req.createdAt
-              ? new Date(req.createdAt).toLocaleDateString()
-                 : "N/A"}</td>
+                  <td>
+                    {" "}
+                    {req.createdAt
+                      ? new Date(req.createdAt).toLocaleDateString()
+                      : "N/A"}
+                  </td>
                 </tr>
               ))}
             </tbody>

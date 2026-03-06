@@ -20,7 +20,7 @@ const Overview = () => {
             headers: { Authorization: `Bearer ${token}` },
           }),
 
-          axios.get("http://localhost:5000/api/tasks", {
+          axios.get("http://localhost:5000/api/tasks/all", {
             headers: { Authorization: `Bearer ${token}` },
           }),
           axios.get("http://localhost:5000/api/stock-requests", {
@@ -52,7 +52,7 @@ const Overview = () => {
   if (error) return <div className="alert alert-danger m-3">{error}</div>;
 
   const recentFaults = faults.slice(0, 10);
-  const waitingCount = faults.filter((f) => f.status === "waiting").length;
+  const waitingCount = tasks.filter((f) => f.status === "waiting").length;
   const inProgressCount = tasks.filter((t) => t.status === "inProgress").length;
   const completedCount = tasks.filter((t) => t.status === "completed").length;
 

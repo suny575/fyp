@@ -6,7 +6,7 @@ import protect from "../middleware/authMiddleware.js";
 const router = express.Router();
 router.use(protect);
 
-// GET all tasks for logged-in technician
+// GET all tasks for logged-in technician and all task for manager
 router.get("/", async (req, res) => {
   try {
     const tasks = await Task.find({ assignedTechnician: req.user._id });
@@ -17,11 +17,36 @@ router.get("/", async (req, res) => {
   }
 });
 
+router.get("/allTasks", async (req, res) => {
+  try {
+    const tasks = await Task.find(); 
+    res.json(tasks);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// routes/taskRoutes.js
+router.get("/all", async (req, res) => {
+  try {
+    const tasks = await Task.find()
+      .populate("equipment", "name")
+      .populate("assignedTechnician", "name")
+      .populate("reportedBy", "name");
+
+    res.json(tasks);
+  } catch (err) {
+    console.error("Fetch all tasks error:", err.message);
+    res.status(500).json({ message: "Server error fetching all tasks" });
+  }
+});
+
 // Update task status
 router.put("/:id/status", async (req, res) => {
   try {
     const { status } = req.body;
-    const allowedStatuses = ["waiting", "pending", "in_progress", "completed"];
+    const allowedStatuses = ["waiting", "inProgress", "completed"];
     if (!allowedStatuses.includes(status))
       return res.status(400).json({ message: "Invalid status" });
 

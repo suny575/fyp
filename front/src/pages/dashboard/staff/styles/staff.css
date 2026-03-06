@@ -1,0 +1,15 @@
+/* Layout Wrapper*/
+
+.td-wrapper {
+  display: flex;
+  height: 100vh;
+  margin-top: 10px;
+}
+
+.td-main {
+  flex: 1;
+  background: #f3f4f6;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}

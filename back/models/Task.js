@@ -3,15 +3,21 @@ import mongoose from "mongoose";
 
 const TaskSchema = new mongoose.Schema(
   {
-    name: {
-      type: String,
+    // Reference to Equipment model, to get equipment name
+    equipment: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Equipment",
       required: true,
-      trim: true,
     },
 
     description: {
       type: String,
       required: true,
+    },
+
+    media: {
+      images: [String],
+      voiceNote: String,
     },
 
     department: {
@@ -27,23 +33,26 @@ const TaskSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ["waiting", "pendimg", "in_progress", "completed"],
+      enum: ["waiting", "inProgress", "completed"],
       default: "waiting",
     },
 
+    // Who the system assigned to fix this task
     assignedTechnician: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
 
+    // Reference to the original fault
     faultRef: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Fault",
       required: true,
     },
 
-    createdBy: {
+    // Who reported this task (department staff)
+    reportedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,

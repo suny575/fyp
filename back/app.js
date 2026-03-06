@@ -25,6 +25,15 @@ import taskRoutes from "./routes/taskRoute.js";
 import managerRoutes from "./routes/managerRoutes.js"; // for manager summer data
 import EquipmentReportRouts from "./routes/equipmentReportRoutes.js";
 import User from "./routes/user.js";
+import alertsRoutes from "./routes/alerts.js";
+import reportsRoutes from "./routes/reports.js";
+// import alertsRoutes from "./routes/alerts.js"
+import pharmacyRoutes from "./routes/pharmacyRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";
+import Notification from "./models/Notification.js";
+import Schedule from "./routes/scheduledMaintenanceRoutes.js";
+import maintenanceLog from "./routes/maintenanceLogRoutes.js";
+import workOrder from "./routes/workOrderRoutes.js";
 const app = express();
 
 app.use(express.json());
@@ -40,7 +49,10 @@ app.use("/equipment", equipmentRoutes);
 app.use("/stock", stockRoutes);
 app.use("/stock-requests", stockRequestRoutes);
 app.use("/allocations", allocationRoutes);
+app.use("/equipmentReportRoutes.js", EquipmentReportRouts);
+app.use("/schedules", Schedule);
 app.use("/alerts", alertsRoutes);
+app.use("/notifications", Notification);
 app.use("/reports", reportsRoutes);
 app.use("/pharmacy", pharmacyRoutes);
 app.use("/admin", adminRoutes);
@@ -52,6 +64,8 @@ app.use("/admin/settings", adminSettingsRoutes);
 
 
 
+app.use("/maintenanceLog", maintenanceLog);
+app.use("/workOrder", workOrder);
 app.get("/", (req, res) => {
   res.send("Hospital Equipment Maintenance API Running");
 });

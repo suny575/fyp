@@ -30,14 +30,13 @@ const faultSchema = new mongoose.Schema(
       images: [{ type: String }],
       voiceNote: { type: String },
     },
-
     department: {
       type: String,
       required: true,
     },
     status: {
       type: String,
-      enum: ["pending", "approved", "rejected", "waiting"],
+      enum: ["waiting", "approved", "rejected", "convertedToTask"],
       default: "pending",
     },
     priority: {

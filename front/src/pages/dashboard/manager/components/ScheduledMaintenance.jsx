@@ -1,65 +1,231 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
-import "bootstrap/dist/css/bootstrap.min.css";
-import "../styles/ScheduledMaintenance.css";
+import React, { useEffect, useState, useContext } from "react";
+import { AuthContext } from "../../../../context/AuthContext.jsx";
+import SetSchedule from "./SetSchedule";
+import "../styles/sm.css";
 
 const ScheduledMaintenance = () => {
-  const [maintenances, setMaintenances] = useState([]);
+  const { token } = useContext(AuthContext);
+  const [schedules, setSchedules] = useState([]);
+  const [equipments, setEquipments] = useState([]);
+  const [technicians, setTechnicians] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedEquipment, setSelectedEquipment] = useState("");
 
   useEffect(() => {
-    fetchScheduled();
-  }, []);
+    fetchSchedules();
+    fetchEquipments();
+    fetchTechnicians();
+  }, [token]);
 
-  const fetchScheduled = async () => {
+  const fetchSchedules = async () => {
     try {
-      const res = await axios.get("/api/scheduledMaintenance");
-      setMaintenances(res.data);
+      const res = await fetch("http://localhost:5000/api/schedules/upcoming", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      setSchedules(data);
+      setLoading(false);
     } catch (err) {
-      console.error("Error fetching scheduled maintenance");
+      console.error("Failed to fetch schedules:", err);
+      setLoading(false);
     }
   };
 
+  const fetchEquipments = async () => {
+    try {
+      const res = await fetch("http://localhost:5000/api/equipment", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      setEquipments(data);
+    } catch (err) {
+      console.error("Failed to fetch equipments:", err);
+    }
+  };
+
+  const fetchTechnicians = async () => {
+    try {
+      const res = await fetch(
+        "http://localhost:5000/api/manager/users?role=technician",
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      const data = await res.json();
+      setTechnicians(data);
+    } catch (err) {
+      console.error("Failed to fetch technicians", err);
+    }
+  };
+
+  const assignTechnician = async (scheduleId, techId) => {
+    if (!techId) return;
+    try {
+      await fetch(
+        `http://localhost:5000/api/schedules/${scheduleId}/assign-technician`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ technicianId: techId }),
+        },
+      );
+      alert("Technician assigned!");
+      fetchSchedules();
+    } catch (err) {
+      console.error(err);
+      alert("Failed to assign technician");
+    }
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "upcoming":
+        return "badge-upcoming";
+      case "paused":
+        return "badge-paused";
+      case "completed":
+        return "badge-completed";
+      default:
+        return "badge-upcoming";
+    }
+  };
+
+  if (loading) return <p className="text-center mt-10">Loading schedules...</p>;
+
   return (
-    <div className="container mt-5 scheduled-page">
-      <h2 className="mb-4 text-center fw-bold">
-        Upcoming Scheduled Maintenance
-      </h2>
+    <div className="container my-4">
+      <h1 className="text-center mb-4 dashboard-title">
+        Scheduled Maintenance
+      </h1>
 
-      <div className="row">
-        {maintenances.length === 0 && (
-          <p className="text-center text-muted">No upcoming maintenance.</p>
-        )}
+      {/* Set Maintenance Schedule Form */}
+      <SetSchedule onScheduleCreated={fetchSchedules} equipments={equipments} />
 
-        {maintenances.map((item) => (
-          <div className="col-md-6 col-lg-4 mb-4" key={item._id}>
-            <div className="card shadow-sm h-100 maintenance-card">
-              <div className="card-body">
-                <h5 className="card-title fw-semibold">
-                  {item.equipment?.name || "Equipment"}
-                </h5>
+      {/* Equipment Filter */}
+      <div className="mb-4 d-flex align-items-center flex-wrap gap-2">
+        <label className="fw-bold me-2">Filter by Equipment:</label>
+        <select
+          className="form-select w-auto"
+          value={selectedEquipment}
+          onChange={(e) => setSelectedEquipment(e.target.value)}
+        >
+          <option value="">All Equipments</option>
+          {equipments.map((eq) => (
+            <option key={eq._id} value={eq._id}>
+              {eq.name}
+            </option>
+          ))}
+        </select>
+      </div>
 
-                <p className="mb-1">
-                  <strong>Interval:</strong> {item.interval}
-                </p>
+      {/* Table for large screens */}
+      <div className="d-none d-md-block overflow-auto">
+        <table className="table table-striped table-hover table-bordered bg-white shadow-sm">
+          <thead className="table-dark">
+            <tr>
+              <th>Equipment</th>
+              <th>Maintenance Type</th>
+              <th>Next Date</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {schedules
+              .filter(
+                (sch) =>
+                  !selectedEquipment || sch.equipment._id === selectedEquipment,
+              )
+              .map((schedule) => (
+                <tr key={schedule._id}>
+                  <td>{schedule.equipment.name}</td>
+                  <td>{schedule.maintenanceType}</td>
+                  <td>
+                    {new Date(
+                      schedule.nextMaintenanceDate,
+                    ).toLocaleDateString()}
+                  </td>
+                  <td>
+                    <span
+                      className={`badge ${getStatusColor(schedule.status)}`}
+                    >
+                      {schedule.status}
+                    </span>
+                  </td>
+                  <td>
+                    <select
+                      className="form-select form-select-sm"
+                      onChange={(e) =>
+                        assignTechnician(schedule._id, e.target.value)
+                      }
+                      defaultValue=""
+                    >
+                      <option value="" disabled>
+                        Assign Technician
+                      </option>
+                      {technicians.map((t) => (
+                        <option key={t._id} value={t._id}>
+                          {t.name}
+                        </option>
+                      ))}
+                    </select>
+                  </td>
+                </tr>
+              ))}
+          </tbody>
+        </table>
+      </div>
 
-                <p className="mb-1">
-                  <strong>Next Date:</strong>{" "}
-                  {new Date(item.nextDate).toLocaleDateString()}
-                </p>
-
-                <span
-                  className={`badge ${
-                    item.status === "upcoming"
-                      ? "bg-warning text-dark"
-                      : "bg-success"
-                  }`}
-                >
-                  {item.status}
-                </span>
+      {/* Cards for mobile */}
+      <div className="d-md-none row row-cols-1 g-3">
+        {schedules
+          .filter(
+            (sch) =>
+              !selectedEquipment || sch.equipment._id === selectedEquipment,
+          )
+          .map((schedule) => (
+            <div key={schedule._id} className="col">
+              <div className="card card-shadow">
+                <div className="card-body">
+                  <h5 className="card-title">{schedule.equipment.name}</h5>
+                  <p className="card-text">
+                    {schedule.maintenanceType} maintenance
+                  </p>
+                  <p className="card-text">
+                    Next:{" "}
+                    {new Date(
+                      schedule.nextMaintenanceDate,
+                    ).toLocaleDateString()}
+                  </p>
+                  <p className="card-text">
+                    Status:{" "}
+                    <span
+                      className={`badge ${getStatusColor(schedule.status)}`}
+                    >
+                      {schedule.status}
+                    </span>
+                  </p>
+                  <select
+                    className="form-select form-select-sm mt-2"
+                    onChange={(e) =>
+                      assignTechnician(schedule._id, e.target.value)
+                    }
+                    defaultValue=""
+                  >
+                    <option value="" disabled>
+                      Assign Technician
+                    </option>
+                    {technicians.map((t) => (
+                      <option key={t._id} value={t._id}>
+                        {t.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))}
       </div>
     </div>
   );
