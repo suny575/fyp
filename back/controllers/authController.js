@@ -1,6 +1,7 @@
 import User from "../models/User.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import AdminNotification from "../models/AdminNotification.js";
 
 // Register user
 export const registerUser = async (req, res) => {
@@ -19,6 +20,13 @@ export const registerUser = async (req, res) => {
     password: hashedPassword,
     role,
   });
+
+  //  // ⬅️ Add notification for successful registration
+  // await AdminNotification.create({
+  //   type: "System",
+  //   message: `User ${user.name} (${user.role}) has registered with email ${user.email}`,
+  //   time: new Date(),
+  // });
 
   const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
     expiresIn: "7d",
@@ -39,10 +47,34 @@ export const registerUser = async (req, res) => {
 export const loginUser = async (req, res) => {
   const { email, password } = req.body;
   const user = await User.findOne({ email });
-  if (!user) return res.status(401).json({ message: "Invalid credentials" });
+  // ⬅️ Add notification if user not found (unauthorized)
+
+  if (!user) 
+     {
+    await AdminNotification.create({
+      type: "Critical",
+      message: `Unauthorized login attempt for email ${email}`,
+      // time: new Date(),
+      time: new Date().toLocaleString(),
+    });
+    
+    
+    return res.status(401).json({ message: "Invalid credentials" });}
 
   const match = await bcrypt.compare(password, user.password);
-  if (!match) return res.status(401).json({ message: "Invalid credentials" });
+
+  // ⬅️ Add notification if password wrong
+
+  if (!match)
+    {
+    await AdminNotification.create({
+      type: "Critical",
+      message: `Unauthorized login attempt for email ${email}`,
+      // time: new Date(),
+      time: new Date().toLocaleString(),
+    });
+
+     return res.status(401).json({ message: "Invalid credentials" });}
 
   const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
     expiresIn: "7d",
