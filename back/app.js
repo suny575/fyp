@@ -9,26 +9,21 @@ import allocationRoutes from "./routes/allocationRoutes.js";
 import alertsRoutes from "./routes/alerts.js";
 import reportsRoutes from "./routes/reports.js";
 import pharmacyRoutes from "./routes/pharmacyRoutes.js";
-import adminRoutes from "./routes/adminRoutes.js";
+// import adminRoutes from "./routes/adminRoutes.js";
 import notificationRoutesAdmin from "./routes/notificationRoutesAdmin.js";
 import adminReports from "./routes/adminReports.js";
 import logsRoutesAdmin from "./routes/logsRoutesAdmin.js";
 import adminSettingsRoutes from "./routes/adminSettingsRoutes.js";
 
-
-
-// import technicianRoutes from "./routes/technicianRoute.js";
-
-// import technicianRoutes from "./routes/technicianRoute.js";
 import faultRoutes from "./routes/faultRoutes.js";
 import taskRoutes from "./routes/taskRoute.js";
 import managerRoutes from "./routes/managerRoutes.js"; // for manager summer data
 import EquipmentReportRouts from "./routes/equipmentReportRoutes.js";
 import User from "./routes/user.js";
-import alertsRoutes from "./routes/alerts.js";
-import reportsRoutes from "./routes/reports.js";
+// import alertsRoutes from "./routes/alerts.js";
+// import reportsRoutes from "./routes/reports.js";
 // import alertsRoutes from "./routes/alerts.js"
-import pharmacyRoutes from "./routes/pharmacyRoutes.js";
+// import pharmacyRoutes from "./routes/pharmacyRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import Notification from "./models/Notification.js";
 import Schedule from "./routes/scheduledMaintenanceRoutes.js";
