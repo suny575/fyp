@@ -1,25 +1,22 @@
 
-.dashboard-container {
+ .dashboard-container {
   padding: 20px;
-}
+} 
 
-.dashboard-title {
+ .dashboard-title {
   margin-bottom: 25px;
   font-size: 24px;
   font-weight: 600;
-}
+} 
 
-.cards-grid {
-  /* display: grid; 
-  grid-template-columns: repeat(4, 1fr); /* 4 cards first row */
-  /* gap: 50px; */
+ .cards-grid {
    display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* flexible columns */
   gap: 25px; /* space between cards */
-  margin-top: 20px;
-}
+  margin-top: 20px; 
+} 
 
-.dashboard-card {
+ .dashboard-card {
   background: #ffffff;
   padding: 25px;
   border-radius: 12px;
@@ -52,7 +49,7 @@
   border-radius: 6px;
   cursor: pointer;
   transition: 0.3s ease;
-}
+} 
 
 .dashboard-card button:hover {
   background-color: #357abd;

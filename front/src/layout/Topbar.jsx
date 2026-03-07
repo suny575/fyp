@@ -11,6 +11,7 @@ const Topbar = ({ toggleSidebar, isDesktop }) => {
     name: "",
     email: "",
     password: "",
+    
   });
   const wrapperRef = useRef(null);
 

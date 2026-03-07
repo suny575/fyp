@@ -20,7 +20,7 @@ export const sidebarMenus = {
     { label: "Reports", path: "/manager/reports" },
     { label: "Schedules", path: "/manager/Schedules" },
   ],
-  pharmacystore: [
+  pharmacyStore: [
     { label: "Dashboard", path: "/pharmacy/dashboard" },
     { label: "Equipment", path: "/pharmacy/equipment" },
     { label: "Stock", path: "/pharmacy/stock" },

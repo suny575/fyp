@@ -10,6 +10,7 @@ import Reports from "./components/Reports";
 import Notifications from "./components/Notifications";
 import Settings from "./components/Settings";
 import SystemLogs from "./components/SystemLogs";
+import Layout from "../../../layout/layout.jsx";
 // import EditProfile from "./components/EditProfile";
 
 // import "./styles/AdminDashboard.css";
@@ -23,7 +24,8 @@ const AdminDashboard = () => {
     //   <div className="main-content">
     //     <Topbar />
 
-        <div className="content-area">
+        // <div className="content-area">
+          <Layout>
           <Routes>
             <Route index element={<DashboardHome />} />
             <Route path="dashboardhome" element={<DashboardHome/>} />
@@ -35,7 +37,8 @@ const AdminDashboard = () => {
             <Route path="system-logs" element={<SystemLogs />} />
             {/* <Route path="edit-profile" element={<EditProfile />} /> */}
           </Routes>
-        </div>
+          </Layout>
+        // </div>
     //   </div>
     // </div>
   );
