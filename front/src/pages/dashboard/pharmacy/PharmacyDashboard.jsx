@@ -12,6 +12,7 @@ import StockManagement from "./components/StockManagement";
 import Allocation from "./components/Allocation";
 import Reports from "./components/Reports";
 import Alerts from "./components/Alerts";
+import Layout from "../../../layout/layout.jsx";
 
 // import "./styles/PharmacyDashboard.css";
 
@@ -23,7 +24,8 @@ const PharmacyDashboard = () => {
     //   <div className="pharmacy-main">
     //     <PharmacyTopbar />
 
-        <div className="pharmacy-content">
+        // <div className="pharmacy-content">
+          <Layout>
           <Routes>
             {/* Default page */}
             <Route index element={< PharmacyHome/>} />
@@ -37,7 +39,8 @@ const PharmacyDashboard = () => {
             <Route path="alerts" element={<Alerts />} />
             {/* <Route path="edit-profile" element={<PharmacyEditProfile />} /> */}
           </Routes>
-        </div>
+          </Layout>
+        // </div>
     //   </div>
     // </div>
   );

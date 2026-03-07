@@ -21,7 +21,7 @@ export const sidebarMenus = {
     { label: "Schedules", path: "/manager/Schedules" },
   ],
   pharmacystore: [
-    { label: "Dashboard", path: "/pharmacy/dashboard" },
+    { label: "Dashboard", path: "/pharmacy" },
     { label: "Equipment", path: "/pharmacy/equipment" },
     { label: "Stock", path: "/pharmacy/stock" },
     { label: "Allocation", path: "/pharmacy/allocation" },
@@ -30,11 +30,11 @@ export const sidebarMenus = {
   ],
 
   admin: [
-    { label: "Dashboard", path: "/admin" },
+    { label: "Dashboard", path: "/admin/dashboardhome" },
     { label: "Managers", path: "/admin/managers" },
     { label: "Notifications", path: "/admin/notifications" },
     { label: "Reports", path: "/admin/reports" },
-    { label: "Settings", path: "/admin/reports" },
-    { label: "System Log", path: "/admin/reports" },
+    { label: "Settings", path: "/admin/settings" },
+    { label: "System Log", path: "/admin/system-logs" },
   ],
 };
