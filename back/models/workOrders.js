@@ -5,6 +5,7 @@ const WorkOrderSchema = new mongoose.Schema(
     schedule: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "MaintenanceSchedule",
+      required: true,
     },
 
     equipment: {

@@ -1,5 +1,5 @@
 import MaintenanceSchedule from "../models/MaintenanceSchedule.js";
-import Equipment from "../models/Equipment.js";
+import { calculateNextMaintenanceDate } from "../services/calculateNextMaintenance.js";
 
 export const getUpcomingSchedules = async (req, res) => {
   try {
@@ -15,8 +15,27 @@ export const getUpcomingSchedules = async (req, res) => {
 
 export const createSchedule = async (req, res) => {
   try {
-    const schedule = new MaintenanceSchedule(req.body);
+    const { equipment, frequency, startDate, customIntervalDays, priority } =
+      req.body;
+
+    const nextMaintenanceDate = calculateNextMaintenanceDate(
+      startDate,
+      frequency,
+      customIntervalDays || null,
+    );
+
+    const schedule = new MaintenanceSchedule({
+      equipment,
+      frequency,
+      startDate,
+      customIntervalDays,
+      priority,
+      nextMaintenanceDate,
+      createdBy: req.user.id,
+    });
+
     await schedule.save();
+
     res.status(201).json(schedule);
   } catch (err) {
     res.status(400).json({ message: err.message });

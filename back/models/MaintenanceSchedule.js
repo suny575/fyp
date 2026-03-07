@@ -1,60 +1,58 @@
 import mongoose from "mongoose";
 
 const maintenanceScheduleSchema = new mongoose.Schema(
-{
+  {
     equipment: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Equipment",
-        required: true
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Equipment",
+      required: true,
     },
 
     maintenanceType: {
-        type: String,
-        enum: ["preventive", "inspection", "calibration"],
-        default: "preventive"
+      type: String,
+      enum: ["preventive", "inspection", "calibration"],
+      default: "preventive",
     },
 
     frequency: {
-        type: String,
-        enum: ["weekly", "monthly", "yearly", "custom"],
-        required: true
-    },
-
-    intervalDays: {
-        type: Number
+      type: String,
+      enum: ["weekly", "monthly", "yearly", "custom"],
+      required: true,
     },
 
     startDate: {
-        type: Date,
-        required: true
-    },
-
-    nextMaintenanceDate: {
-        type: Date,
-        required: true
+      type: Date,
+      required: true,
     },
 
     priority: {
-        type: String,
-        enum: ["low", "medium", "high", "critical"],
-        default: "medium"
+      type: String,
+      enum: ["low", "medium", "high", "critical"],
+      default: "medium",
     },
 
-    status: {
-        type: String,
-        enum: ["upcoming", "paused", "completed"],
-        default: "upcoming"
+    customIntervalDays: {
+      type: Number,
+      default: null,
+      required: false,
+    },
+
+    nextMaintenanceDate: {
+      type: Date,
+      required: true,
     },
 
     createdBy: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User"
-    }
-
-},
-{ timestamps: true }
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+  },
+  { timestamps: true },
 );
 
-const maintenanceSchedule =  mongoose.model("MaintenanceSchedule", maintenanceScheduleSchema);
+const maintenanceSchedule = mongoose.model(
+  "MaintenanceSchedule",
+  maintenanceScheduleSchema,
+);
 
 export default maintenanceSchedule;

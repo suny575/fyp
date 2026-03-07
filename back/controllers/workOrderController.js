@@ -3,6 +3,29 @@ import MaintenanceSchedule from "../models/MaintenanceSchedule.js";
 import Equipment from "../models/equipment.js";
 import User from "../models/user.js";
 
+const calculateNextMaintenanceDate = (currentDate, frequency, intervalDays) => {
+  const nextDate = new Date(currentDate);
+
+  switch (frequency) {
+    case "weekly":
+      nextDate.setDate(nextDate.getDate() + 7);
+      break;
+    case "monthly":
+      nextDate.setMonth(nextDate.getMonth() + 1);
+      break;
+    case "yearly":
+      nextDate.setFullYear(nextDate.getFullYear() + 1);
+      break;
+    case "custom":
+      nextDate.setDate(nextDate.getDate() + intervalDays);
+      break;
+    default:
+      break;
+  }
+
+  return nextDate;
+};
+
 export const getWorkOrders = async (req, res) => {
   try {
     const workOrders = await WorkOrder.find()
@@ -55,6 +78,46 @@ export const assignTechnician = async (req, res) => {
     res.json(workOrder);
   } catch (err) {
     res.status(400).json({ message: err.message });
+  }
+};
+
+export const updateWorkOrderStatus = async (req, res) => {
+  try {
+    const workOrder = await WorkOrder.findById(req.params.id).populate(
+      "schedule",
+    );
+
+    if (!workOrder) {
+      return res.status(404).json({ message: "Work order not found" });
+    }
+
+    const { status } = req.body;
+
+    workOrder.status = status;
+    await workOrder.save();
+
+    // 🔥 IF maintenance completed → update next schedule
+    if (status === "completed") {
+      const schedule = await MaintenanceSchedule.findById(
+        workOrder.schedule._id,
+      );
+
+      if (schedule) {
+        const nextDate = calculateNextMaintenanceDate(
+          schedule.nextMaintenanceDate,
+          schedule.frequency,
+          schedule.intervalDays,
+        );
+
+        schedule.nextMaintenanceDate = nextDate;
+
+        await schedule.save();
+      }
+    }
+
+    res.json(workOrder);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 };
 

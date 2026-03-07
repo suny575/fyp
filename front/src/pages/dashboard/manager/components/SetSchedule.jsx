@@ -8,7 +8,7 @@ const SetSchedule = ({ onScheduleCreated, equipments }) => {
     equipment: "",
     maintenanceType: "preventive",
     frequency: "monthly",
-    intervalDays: 30,
+    customIntervalDays: 30,
     startDate: "",
     priority: "medium",
   });
@@ -27,14 +27,14 @@ const SetSchedule = ({ onScheduleCreated, equipments }) => {
         equipment: "",
         maintenanceType: "preventive",
         frequency: "monthly",
-        intervalDays: 30,
         startDate: "",
         priority: "medium",
+        customIntervalDays: 30,
       });
       onScheduleCreated();
     } catch (err) {
-      console.error(err);
-      alert("Failed to create schedule");
+      console.error("Schedule error:", err.response?.data);
+      alert(err.response?.data?.message || "Failed to create schedule");
     }
   };
 
@@ -102,12 +102,10 @@ const SetSchedule = ({ onScheduleCreated, equipments }) => {
                 <label className="fw-bold">Interval (Days):</label>
                 <input
                   type="number"
-                  name="intervalDays"
-                  value={formData.intervalDays}
+                  name="customIntervalDays"
+                  value={formData.customIntervalDays}
                   onChange={handleChange}
                   className="form-control"
-                  min="1"
-                  required
                 />
               </div>
             )}
