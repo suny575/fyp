@@ -2,6 +2,7 @@ import User from "../models/user.js";
 import Invitation from "../models/invitation.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import AdminNotification from "../models/AdminNotification.js";
 
 // Generate JWT
 const generateToken = (user) => {
