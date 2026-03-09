@@ -1,6 +1,6 @@
 import express from "express";
 import EquipmentReport from "../models/EquipmentReport.js";
-import Equipment from "../models/Equipment.js";
+import Equipment from "../models/equipment.js";
 import protect from "../middleware/authMiddleware.js";
 
 const router = express.Router();

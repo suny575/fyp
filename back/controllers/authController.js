@@ -12,7 +12,6 @@ const generateToken = (user) => {
 };
 
 // ================= LOGIN =================
-// ================= LOGIN =================
 export const loginUser = async (req, res) => {
   try {
     let { email, password } = req.body;
@@ -93,7 +92,7 @@ export const registerUser = async (req, res) => {
         message: "User already registered",
       });
 
-    // const hashedPassword = await bcrypt.hash(password, 10);
+   const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await User.create({
       name,
@@ -104,8 +103,8 @@ export const registerUser = async (req, res) => {
     });
 
     invitation.used = true;
-    await invitation.save();
 
+    await invitation.save();
     const jwtToken = generateToken(user);
 
     res.status(201).json({
