@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
 import axios from "axios";
 import { AuthContext } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
+import io from "socket.io-client";
+
+const socket = io("http://localhost:5000");
 
 const Topbar = ({ toggleSidebar, isDesktop }) => {
   const { user, token } = useContext(AuthContext);
@@ -11,28 +15,46 @@ const Topbar = ({ toggleSidebar, isDesktop }) => {
     name: "",
     email: "",
     password: "",
-    
   });
   const wrapperRef = useRef(null);
+  const navigate = useNavigate();
+  const unreadCount = notifications.filter((n) => !n.read).length;
 
   // Fetch notifications for current user
   useEffect(() => {
     const fetchNotifications = async () => {
-      if (!token || !user) return;
+      if (!token) return;
+
       try {
         const res = await axios.get("http://localhost:5000/api/notifications", {
           headers: { Authorization: `Bearer ${token}` },
         });
-        const userNotifs = res.data.filter((n) => n.recipient?._id === user._id);
-        setNotifications(userNotifs);
+
+        setNotifications(res.data);
       } catch (err) {
         console.error("Failed to fetch notifications:", err.message);
       }
     };
+
     fetchNotifications();
+
     const interval = setInterval(fetchNotifications, 40000);
+
     return () => clearInterval(interval);
-  }, [user, token]);
+  }, [token]);
+
+  //socket notifcation linstener
+  useEffect(() => {
+    if (!user) return;
+
+    socket.emit("join", user._id);
+
+    socket.on("newNotification", (notif) => {
+      setNotifications((prev) => [notif, ...prev]);
+    });
+
+    return () => socket.off("newNotification");
+  }, [user]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -61,7 +83,7 @@ const Topbar = ({ toggleSidebar, isDesktop }) => {
       const res = await axios.put(
         `http://localhost:5000/api/users/${user._id}`,
         { ...editData },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
       alert("Profile updated!");
       setEditOpen(false);
@@ -118,7 +140,9 @@ const Topbar = ({ toggleSidebar, isDesktop }) => {
           ref={wrapperRef}
         >
           {/* Notifications */}
+
           <button
+            onClick={() => navigate("/staff/notifications")}
             style={{
               position: "relative",
               background: "#fff",
@@ -131,7 +155,7 @@ const Topbar = ({ toggleSidebar, isDesktop }) => {
             }}
           >
             🔔
-            {notifications.length > 0 && (
+            {unreadCount > 0 && (
               <span
                 style={{
                   position: "absolute",
@@ -148,7 +172,7 @@ const Topbar = ({ toggleSidebar, isDesktop }) => {
                   alignItems: "center",
                 }}
               >
-                {notifications.length}
+                {unreadCount}
               </span>
             )}
           </button>
@@ -215,7 +239,11 @@ const Topbar = ({ toggleSidebar, isDesktop }) => {
               {!editOpen && (
                 <button
                   onClick={() => {
-                    setEditData({ name: user.name, email: user.email, password: "" });
+                    setEditData({
+                      name: user.name,
+                      email: user.email,
+                      password: "",
+                    });
                     setEditOpen(true);
                   }}
                   style={{
@@ -239,7 +267,11 @@ const Topbar = ({ toggleSidebar, isDesktop }) => {
                     placeholder="Name"
                     value={editData.name}
                     onChange={handleEditChange}
-                    style={{ width: "100%", padding: "0.3rem", marginBottom: "0.3rem" }}
+                    style={{
+                      width: "100%",
+                      padding: "0.3rem",
+                      marginBottom: "0.3rem",
+                    }}
                   />
                   <input
                     type="email"
@@ -247,7 +279,11 @@ const Topbar = ({ toggleSidebar, isDesktop }) => {
                     placeholder="Email"
                     value={editData.email}
                     onChange={handleEditChange}
-                    style={{ width: "100%", padding: "0.3rem", marginBottom: "0.3rem" }}
+                    style={{
+                      width: "100%",
+                      padding: "0.3rem",
+                      marginBottom: "0.3rem",
+                    }}
                   />
                   <input
                     type="password"
@@ -255,17 +291,36 @@ const Topbar = ({ toggleSidebar, isDesktop }) => {
                     placeholder="Password"
                     value={editData.password}
                     onChange={handleEditChange}
-                    style={{ width: "100%", padding: "0.3rem", marginBottom: "0.3rem" }}
+                    style={{
+                      width: "100%",
+                      padding: "0.3rem",
+                      marginBottom: "0.3rem",
+                    }}
                   />
                   <button
                     onClick={handleSaveEdit}
-                    style={{ width: "100%", padding: "0.4rem", border: "none", background: "#0B79FF", color: "#fff", cursor: "pointer", marginBottom: "0.3rem" }}
+                    style={{
+                      width: "100%",
+                      padding: "0.4rem",
+                      border: "none",
+                      background: "#0B79FF",
+                      color: "#fff",
+                      cursor: "pointer",
+                      marginBottom: "0.3rem",
+                    }}
                   >
                     Save
                   </button>
                   <button
                     onClick={() => setEditOpen(false)}
-                    style={{ padding: "0.5rem", border: "none", background: "#696060", color: "#000", cursor: "pointer", borderRadius: "5px" }}
+                    style={{
+                      padding: "0.5rem",
+                      border: "none",
+                      background: "#696060",
+                      color: "#000",
+                      cursor: "pointer",
+                      borderRadius: "5px",
+                    }}
                   >
                     Cancel
                   </button>
@@ -274,7 +329,14 @@ const Topbar = ({ toggleSidebar, isDesktop }) => {
 
               <button
                 onClick={handleLogout}
-                style={{ margin: ".5rem", padding: "0.5rem", border: "none", background: "#f91a1a", color: "#fff", cursor: "pointer" }}
+                style={{
+                  margin: ".5rem",
+                  padding: "0.5rem",
+                  border: "none",
+                  background: "#f91a1a",
+                  color: "#fff",
+                  cursor: "pointer",
+                }}
               >
                 Logout
               </button>

@@ -7,22 +7,28 @@ import { Server } from "socket.io";
 import cors from "cors";
 import connectDB from "./config/db.js";
 import appRoutes from "./app.js";
+import { startMaintenanceScheduler } from "./schedulers/maintenanceScheduler.js";
+
 const PORT = process.env.PORT || 5000;
+
 connectDB();
 
 const app = express();
 
 // ===== MIDDLEWARE =====
 app.use(cors({ origin: "http://localhost:3000", credentials: true }));
-app.use(express.json()); // for POST JSON requests
+app.use(express.json());
 
 // ===== ROUTES =====
-app.use("/api", appRoutes); // mount all your API routes
+app.use("/api", appRoutes);
 
 // ===== SOCKET.IO =====
 const server = http.createServer(app);
 
-const io = new Server(server, {
+// declare first (important)
+let io;
+
+io = new Server(server, {
   cors: {
     origin: "http://localhost:3000",
     methods: ["GET", "POST"],
@@ -46,7 +52,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("join", (userId) => {
-    socket.join(userId); // each user get their private room
+    socket.join(userId); // each user gets their private room
   });
 });
 
@@ -54,4 +60,11 @@ io.on("connection", (socket) => {
 app.set("io", io);
 app.set("onlineUsers", onlineUsers);
 
-server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+server.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+  startMaintenanceScheduler();
+});
+
+// exports
+export { io, server };
+export default io;

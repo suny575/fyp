@@ -8,12 +8,6 @@ const maintenanceScheduleSchema = new mongoose.Schema(
       required: true,
     },
 
-    maintenanceType: {
-      type: String,
-      enum: ["preventive", "inspection", "calibration"],
-      default: "preventive",
-    },
-
     frequency: {
       type: String,
       enum: ["weekly", "monthly", "yearly", "custom"],
@@ -34,7 +28,6 @@ const maintenanceScheduleSchema = new mongoose.Schema(
     customIntervalDays: {
       type: Number,
       default: null,
-      required: false,
     },
 
     nextMaintenanceDate: {

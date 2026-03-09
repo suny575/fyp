@@ -3,6 +3,7 @@ import Invitation from "../models/invitation.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import AdminNotification from "../models/AdminNotification.js";
+import { sendNotification } from "../services/notification.service.js"; // ✅ correct import
 
 // Generate JWT
 const generateToken = (user) => {
@@ -12,7 +13,7 @@ const generateToken = (user) => {
 };
 
 // ================= LOGIN =================
-// ================= LOGIN =================
+
 export const loginUser = async (req, res) => {
   try {
     let { email, password } = req.body;
@@ -34,6 +35,9 @@ export const loginUser = async (req, res) => {
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
+    console.log("Entered password:", password);
+    console.log("Stored hash:", user.password);
+    console.log("Match result:", isMatch);
 
     if (!isMatch) {
       console.warn(
@@ -66,7 +70,7 @@ export const loginUser = async (req, res) => {
   }
 };
 
-// ================= REGISTER (INVITATION BASED) =================
+// ================= REGISTER (INVITATION BASED)
 export const registerUser = async (req, res) => {
   try {
     const { name, password, token } = req.body;
@@ -93,7 +97,7 @@ export const registerUser = async (req, res) => {
         message: "User already registered",
       });
 
-    // const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await User.create({
       name,
@@ -116,6 +120,17 @@ export const registerUser = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
+      },
+    });
+
+    await sendNotification({
+      trigger: "NEW_USER_REGISTERED",
+      recipientUsers: [maintenanceManager],
+      payload: {
+        username: newUser.name,
+        role: newUser.role,
+        userId: newUser._id,
+        link: `/users/${newUser._id}`,
       },
     });
   } catch (error) {

@@ -4,7 +4,7 @@ import Layout from "../../../layout/layout.jsx";
 import Overview from "./components/Overview.js";
 import Fault from "./components/Faults.jsx";
 import StockRequestForm from "./components/StockRequestForm.js";
-import Notifications from "./components/Notifications.jsx";
+// import Notifications from "./components/Notifications.jsx";
 
 const DepStaffDashboard = () => {
   return (
@@ -13,7 +13,7 @@ const DepStaffDashboard = () => {
         <Route path="overview" element={<Overview />} />
         <Route path="faults" element={<Fault />} />
         <Route path="stocks" element={<StockRequestForm />} />
-        <Route path="notifications" element={<Notifications />} />
+        {/* <Route path="notifications" element={<Notifications />} /> */}
         <Route path="*" element={<Navigate to="overview" />} />
       </Routes>
     </Layout>

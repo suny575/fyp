@@ -1,53 +1,52 @@
-import nodemailer from "nodemailer";
-import Notification from "../models/Notification.js";
+// services/notificationTemplates.js
+import io from "../server.js";
 
-// Configure email transporter
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
-
-export const sendNotification = async ({
-  recipients = [],
-  type,
-  message,
-  metadata = {},
-}) => {
-  try {
-    if (!Array.isArray(recipients)) {
-      console.error("Recipients is not an array:", recipients);
-      return;
-    }
-
-    for (const user of recipients) {
-      if (!user?._id) continue;
-
-      // ✅ Save to database using correct field name: recipient
-      await Notification.create({
-        recipient: user._id, // MATCHES YOUR SCHEMA
-        type,
-        message,
-        metadata,
-      });
-
-      // ✅ Send email if available
-      if (user.email) {
-        await transporter.sendMail({
-          from: process.env.EMAIL_USER,
-          to: user.email,
-          subject: "Maintenance System Notification",
-          html: `<p>${message}</p>`,
-        });
-      }
-
-      console.log(`Notification sent to ${user.name}`);
-    }
-  } catch (err) {
-    console.error("Notification error:", err);
+export const sendNotification = ({ trigger, recipientUsers, payload }) => {
+  for (const userId of recipientUsers) {
+    io.to(userId.toString()).emit("newNotification", {
+      trigger,
+      payload,
+    });
   }
 };
 
-export default sendNotification;
+export const notificationTemplates = {
+  WORKORDER_ASSIGNED: (user, data) => ({
+    title: "New Work Order Assigned",
+    message: `Hi ${user.name}, a new work order (#${data.workOrderId}) has been assigned to you for ${data.equipmentName} scheduled on ${data.scheduledDate}.`,
+    emailSubject: "New Work Order Assigned",
+    emailBody: `Hello ${user.name},<br>You have a new work order (#${data.workOrderId}) for ${data.equipmentName} scheduled on ${data.scheduledDate}. Please start your task promptly.<br>Link: <a href="${data.link}">${data.link}</a>`,
+  }),
+  TASK_CREATED: (user, data) => ({
+    title: "New Task Assigned",
+    message: `Hi ${user.name}, you have been assigned a new task (from a reported fault on ${data.equipmentName}).`,
+    emailSubject: "New Task Assigned",
+    emailBody: `Hello ${user.name},<br>You have been assigned a new task from a reported fault on ${data.equipmentName}. Please start your task.<br>Link: <a href="${data.link}">${data.link}</a>`,
+  }),
+  SCHEDULE_CREATED: (user, data) => ({
+    title: "New Schedule Created",
+    message: `Hi ${user.name}, a new maintenance schedule for ${data.equipmentName} has been created.`,
+    emailSubject: "New Maintenance Schedule",
+    emailBody: `Hello ${user.name},<br>A new maintenance schedule has been created for ${data.equipmentName}.<br>Link: <a href="${data.link}">${data.link}</a>`,
+  }),
+  WORKORDER_CREATED: (user, data) => ({
+    title: "Work Order Created",
+    message: `Hi ${user.name}, a work order (#${data.workOrderId}) has been created for schedule #${data.scheduleId}, but no technician is assigned yet.`,
+    emailSubject: "Work Order Created",
+    emailBody: `Hello ${user.name},<br>A work order (#${data.workOrderId}) has been created for schedule #${data.scheduleId}, but no technician is assigned yet.<br>Link: <a href="${data.link}">${data.link}</a>`,
+  }),
+  FAULT_REPORTED: (user, data) => ({
+    title: "Fault Report Submitted",
+    message: `Hi ${user.name}, your maintenance request for ${data.equipmentName} has been received.`,
+    emailSubject: "Fault Report Received",
+    emailBody: `Hello ${user.name},<br>Your maintenance request for ${data.equipmentName} has been received.<br>Link: <a href="${data.link}">${data.link}</a>`,
+  }),
+  NEW_USER_REGISTERED: (user, data) => ({
+    title: "New User Registered",
+    message: `Hi ${user.name}, user ${data.username} with role ${data.role} has registered.`,
+    emailSubject: "New User Registration",
+    emailBody: `Hello ${user.name},<br>User ${data.username} with role ${data.role} has registered.<br>Link: <a href="${data.link}">${data.link}</a>`,
+  }),
+};
+
+export default notificationTemplates;

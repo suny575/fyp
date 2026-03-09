@@ -2,11 +2,12 @@ import React, { useState } from "react";
 import axios from "axios";
 import "../styles/sm.css";
 
+const token = localStorage.getItem("token");
+
 const SetSchedule = ({ onScheduleCreated, equipments }) => {
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
     equipment: "",
-    maintenanceType: "preventive",
     frequency: "monthly",
     customIntervalDays: 30,
     startDate: "",
@@ -19,22 +20,32 @@ const SetSchedule = ({ onScheduleCreated, equipments }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     try {
-      await axios.post("http://localhost:5000/api/schedules", formData);
-      alert("Maintenance Schedule Created!");
-      setShowForm(false);
-      setFormData({
-        equipment: "",
-        maintenanceType: "preventive",
-        frequency: "monthly",
-        startDate: "",
-        priority: "medium",
-        customIntervalDays: 30,
+      const dataToSend = {
+        equipment: formData.equipment,
+        frequency: formData.frequency,
+        startDate: formData.startDate,
+        priority: formData.priority,
+      };
+
+      if (formData.frequency === "custom") {
+        dataToSend.customIntervalDays = formData.customIntervalDays;
+      }
+
+      await axios.post("http://localhost:5000/api/schedules", dataToSend, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
+
+      alert("Maintenance Schedule Created!");
+
+      setShowForm(false);
+
       onScheduleCreated();
-    } catch (err) {
-      console.error("Schedule error:", err.response?.data);
-      alert(err.response?.data?.message || "Failed to create schedule");
+    } catch (error) {
+      console.log("Schedule error:", error.response?.data || error.message);
     }
   };
 
@@ -65,20 +76,6 @@ const SetSchedule = ({ onScheduleCreated, equipments }) => {
                     {eq.name}
                   </option>
                 ))}
-              </select>
-            </div>
-
-            <div className="form-group">
-              <label className="fw-bold">Maintenance Type:</label>
-              <select
-                name="maintenanceType"
-                value={formData.maintenanceType}
-                onChange={handleChange}
-                className="form-select"
-              >
-                <option value="preventive">Preventive</option>
-                <option value="inspection">Inspection</option>
-                <option value="calibration">Calibration</option>
               </select>
             </div>
 

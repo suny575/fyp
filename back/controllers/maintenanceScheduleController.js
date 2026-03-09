@@ -1,11 +1,13 @@
 import MaintenanceSchedule from "../models/MaintenanceSchedule.js";
 import { calculateNextMaintenanceDate } from "../services/calculateNextMaintenance.js";
+import { generateWorkOrderFromSchedule } from "./workOrderController.js";
+import { sendNotification } from "../services/notification.service.js"; // ✅ correct import
 
 export const getUpcomingSchedules = async (req, res) => {
   try {
     const schedules = await MaintenanceSchedule.find()
-      .populate("equipment")
-      .populate("createdBy")
+      .populate("equipment", "name")
+      .populate("createdBy", "name")
       .sort({ nextMaintenanceDate: 1 });
     res.json(schedules);
   } catch (err) {
@@ -15,6 +17,8 @@ export const getUpcomingSchedules = async (req, res) => {
 
 export const createSchedule = async (req, res) => {
   try {
+    console.log("Incoming data:", req.body);
+
     const { equipment, frequency, startDate, customIntervalDays, priority } =
       req.body;
 
@@ -31,11 +35,22 @@ export const createSchedule = async (req, res) => {
       customIntervalDays,
       priority,
       nextMaintenanceDate,
-      createdBy: req.user.id,
+      createdBy: req.user._id,
     });
 
     await schedule.save();
+//optional but
+await sendNotification({
+  trigger: "SCHEDULE_CREATED",
+  recipientUsers: [maintenanceManager],
+  payload: {
+    scheduleId: schedule._id,
+    equipmentName: schedule.equipment.name,
+    link: `/schedules/${schedule._id}`
+  }
+});
 
+    await generateWorkOrderFromSchedule(schedule._id);
     res.status(201).json(schedule);
   } catch (err) {
     res.status(400).json({ message: err.message });

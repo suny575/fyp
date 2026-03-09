@@ -4,18 +4,18 @@ export const sidebarMenus = {
     { label: "Overview", path: "/technician/overview" },
     { label: "Tasks", path: "/technician/tasks" },
     { label: "Reports", path: "/technician/report" },
-    { label: "Notifications", path: "/technician/notifications" },
+    // { label: "Notifications", path: "/technician/notifications" },
   ],
   depstaff: [
     { label: "Overview", path: "/staff/overview" },
     { label: "Faults", path: "/staff/faults" },
     { label: "Stock Requests", path: "/staff/stocks" },
-    { label: "Notifications", path: "/staff/notifications" },
+    // { label: "Notifications", path: "/staff/notifications" },
   ],
 
   maintenancemanager: [
     { label: "Overview", path: "/manager/overview" },
-    { label: "Notifications", path: "/manager/notifications" },
+    // { label: "Notifications", path: "/manager/notifications" },
     { label: "Manage users", path: "/manager/users" },
     { label: "Reports", path: "/manager/reports" },
     { label: "Schedules", path: "/manager/Schedules" },

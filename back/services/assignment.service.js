@@ -1,8 +1,7 @@
 import User from "../models/user.js";
 import Task from "../models/Task.js";
 import Fault from "../models/Fault.js";
-import sendNotification from "./notification.service.js";
-
+import { sendNotification } from "../services/notification.service.js"; // ✅ correct import
 const convertFaultToTask = async (faultId) => {
   const fault = await Fault.findById(faultId)
     .populate("reportedBy")
@@ -59,14 +58,16 @@ const convertFaultToTask = async (faultId) => {
   // 🔔 Notify technician (ISOLATED — will NOT break conversion)
   try {
     await sendNotification({
-      recipients: [selectedTech._id],
-      type: "task-assigned",
-      message: `New task assigned for equipment: ${fault.equipment?.name}`,
-      metadata: { taskId: task._id },
+      trigger: "TASK_CREATED",
+      recipientUsers: [task.assignedTechnician],
+      payload: {
+        workOrderId: task._id,
+        equipmentName: fault?.equipment?.name || "Equipment",
+        link: `/tasks/${task._id}`,
+      },
     });
   } catch (notifyErr) {
     console.error("Technician notification failed:", notifyErr.message);
-    // Do NOT throw — task is already created successfully
   }
 
   return task;

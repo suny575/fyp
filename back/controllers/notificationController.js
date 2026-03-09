@@ -1,10 +1,11 @@
-import Notification from "../models/Notification.js";
+// controllers/notificationController.js
+import Notification from "../models/notification.js";
 
-// Get all notifications for logged-in user
+// Get notifications for logged-in user
 export const getNotifications = async (req, res) => {
   try {
     const notifications = await Notification.find({
-      userId: req.user._id, // must match service
+      recipient: req.user._id, // fixed from old code
     }).sort({ createdAt: -1 });
 
     res.json(notifications);
@@ -12,6 +13,3 @@ export const getNotifications = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
-const uniqueRecipients = [
-  ...new Map(recipients.map((user) => [user._id.toString(), user])).values(),
-];
