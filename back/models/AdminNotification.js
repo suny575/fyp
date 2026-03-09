@@ -9,10 +9,6 @@ const notificationSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// const Notification =
-//   mongoose.models.Notification ||
-//   mongoose.model("Notification", notificationSchema);
-
 const Notification =
   mongoose.models.AdminNotification ||
   mongoose.model("AdminNotification", notificationSchema);

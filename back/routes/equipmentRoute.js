@@ -1,14 +1,3 @@
-// import express from "express";
-// import { addEquipment, getAllEquipment, updateEquipment, deleteEquipment } from "../controllers/equipmentController.js";
-
-// const router = express.Router();
-
-// router.post("/", addEquipment);
-// router.get("/", getAllEquipment);
-// router.put("/:id", updateEquipment);
-// router.delete("/:id", deleteEquipment);
-
-// export default router;
 
 import express from "express";
 import {

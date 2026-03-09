@@ -108,8 +108,8 @@ export const registerUser = async (req, res) => {
     });
 
     invitation.used = true;
-    await invitation.save();
 
+    await invitation.save();
     const jwtToken = generateToken(user);
 
     res.status(201).json({

@@ -1,36 +1,4 @@
-// import LogsAdmin from "../models/LogsAdmin.js";
 
-// // GET all system logs
-// export const getSystemLogs = async (req, res) => {
-//   try {
-//     const logs = await LogsAdmin.find().sort({ time: -1 }); // newest first
-//     res.json(logs);
-//   } catch (error) {
-//     console.error("System Logs Error:", error);
-//     res.status(500).json({ message: error.message });
-//   }
-// };
-
-// // POST a new log (e.g., when Admin invites manager)
-// export const createSystemLog = async (req, res) => {
-//   try {
-//     const { type, severity, description, user, details } = req.body;
-
-//     const newLog = new LogsAdmin({
-//       type,
-//       severity,
-//       description,
-//       user,
-//       details,
-//     });
-
-//     await newLog.save();
-//     res.status(201).json(newLog);
-//   } catch (error) {
-//     console.error("Create Log Error:", error);
-//     res.status(500).json({ message: error.message });
-//   }
-// };
 
 
 import LogsAdmin from "../models/LogsAdmin.js";
