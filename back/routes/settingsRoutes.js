@@ -1,6 +1,7 @@
-const express = require("express");
+import express from "express";
+import SystemSettings from "./SystemSettings.js";
+
 const router = express.Router();
-const SystemSettings = require("../models/SystemSettings");
 
 router.patch("/qrscan", async (req, res) => {
   const { enabled } = req.body;
@@ -22,4 +23,4 @@ router.get("/qrscan", async (req, res) => {
   res.json({ enabled: settings?.qrScanEnabled ?? true });
 });
 
-module.exports = router;
+export default router;

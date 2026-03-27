@@ -74,64 +74,6 @@ export const submitFault = async (req, res) => {
       status: "waiting",
     });
 
-    //send confirmation msg to reporter
-
-    //     try {
-    //       await sendNotification({
-    //         trigger: "FAULT_REPORTED",
-    //         recipientUsers: [fault.reportedBy],
-    //         payload: {
-    //           faultId: fault._id,
-    //           equipmentName: fault.equipment.name,
-    //           link: `/faults/${fault._id}`,
-    //         },
-    //       });
-    //       const task = await convertFaultToTask(fault._id);
-
-    //       return res.status(201).json({
-    //         message: "Fault submitted and task created successfully",
-    //         fault,
-    //         task,
-    //       });
-    //     } catch (err) {
-    //       console.error("Conversion failed:", err.message);
-
-    //       // Notify reporter
-    //       try {
-    //         await sendNotification({
-    //           recipients: [fault.reportedBy],
-    //           type: "system-error",
-    //           message:
-    //             "Your fault was submitted but system failed to process it. Admin has been notified.",
-    //           metadata: { faultId: fault._id },
-    //         });
-    //       } catch (e) {
-    //         console.error("Reporter notification failed");
-    //       }
-
-    //       // Notify admin
-    //       try {
-    //         const admins = await User.find({ role: "admin" });
-    //         await sendNotification({
-    //           recipients: admins.map((a) => a._id),
-    //           type: "system-error",
-    //           message: `Fault ${fault._id} failed during conversion.`,
-    //         });
-    //       } catch (e) {
-    //         console.error("Admin notification failed");
-    //       }
-
-    //       return res.status(500).json({
-    //         message: "Fault saved but system failed during processing.",
-    //         fault,
-    //       });
-    //     }
-    //   } catch (err) {
-    //     console.error("Error submitting fault:", err);
-    //     res.status(500).json({ message: "Server error submitting fault" });
-    //   }
-    // };
-
     // Send confirmation notification to reporter (NON BLOCKING)
     try {
       sendNotification({

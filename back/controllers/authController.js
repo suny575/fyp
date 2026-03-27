@@ -2,23 +2,26 @@ import User from "../models/user.js";
 import Invitation from "../models/invitation.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import AdminNotification from "../models/AdminNotification.js";
-import { sendNotification } from "../services/notification.service.js"; // ✅ correct import
 
-// Generate JWT
+const serializeUser = (user) => ({
+  id: user._id.toString(),
+  _id: user._id.toString(),
+  name: user.name,
+  email: user.email,
+  role: user.role,
+  profileImage: user.profileImage || "",
+});
+
 const generateToken = (user) => {
   return jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
     expiresIn: "7d",
   });
 };
 
-// ================= LOGIN =================
-
 export const loginUser = async (req, res) => {
   try {
     let { email, password } = req.body;
 
-    // Trim inputs to remove extra spaces
     email = email?.trim();
     password = password?.trim();
 
@@ -57,12 +60,7 @@ export const loginUser = async (req, res) => {
     res.status(200).json({
       message: "Login successful",
       token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-      },
+      user: serializeUser(user),
     });
   } catch (error) {
     console.error("Login error:", error);
@@ -70,15 +68,15 @@ export const loginUser = async (req, res) => {
   }
 };
 
-// ================= REGISTER (INVITATION BASED)
 export const registerUser = async (req, res) => {
   try {
     const { name, password, token } = req.body;
 
-    if (!name || !password || !token)
+    if (!name || !password || !token) {
       return res.status(400).json({
         message: "Name, password and invitation token are required",
       });
+    }
 
     const invitation = await Invitation.findOne({
       token,
@@ -86,52 +84,36 @@ export const registerUser = async (req, res) => {
       expiresAt: { $gt: new Date() },
     });
 
-    if (!invitation)
+    if (!invitation) {
       return res.status(400).json({
         message: "Invalid or expired invitation",
       });
+    }
 
     const existingUser = await User.findOne({ email: invitation.email });
-    if (existingUser)
+    if (existingUser) {
       return res.status(409).json({
         message: "User already registered",
       });
-
-    const hashedPassword = await bcrypt.hash(password, 10);
+    }
 
     const user = await User.create({
       name,
       email: invitation.email,
       role: invitation.role,
-      password: password,
+      password,
       status: "active",
     });
 
     invitation.used = true;
-
     await invitation.save();
+
     const jwtToken = generateToken(user);
 
     res.status(201).json({
       message: "Registration successful",
       token: jwtToken,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-      },
-    });
-
-    await sendNotification({
-      trigger: "NEW_USER_REGISTERED",
-      recipientUsers: [maintenanceManager],
-      payload: {
-        username: newUser.name,
-        role: newUser.role,
-        userId: newUser._id,
-        link: `/users/${newUser._id}`,
-      },
+      user: serializeUser(user),
     });
   } catch (error) {
     console.error("Registration error:", error);
@@ -139,15 +121,9 @@ export const registerUser = async (req, res) => {
   }
 };
 
-//get me
 export const getMe = async (req, res) => {
   try {
-    res.status(200).json({
-      id: req.user._id,
-      name: req.user.name,
-      email: req.user.email,
-      role: req.user.role,
-    });
+    res.status(200).json(serializeUser(req.user));
   } catch (error) {
     res.status(500).json({ message: "Server error fetching user" });
   }

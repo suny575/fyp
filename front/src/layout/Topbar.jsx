@@ -1,99 +1,126 @@
-import React, { useState, useEffect, useRef, useContext } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import io from "socket.io-client";
+import NotificationBell from "../components/notifications/NotificationBell";
+import { useAuth } from "../context/AuthContext";
 
-const socket = io("http://localhost:5000");
+const API_BASE_URL = "http://localhost:5000";
+
+const getProfileImageUrl = (profileImage) => {
+  if (!profileImage) return "";
+  if (profileImage.startsWith("http")) return profileImage;
+  return `${API_BASE_URL}${profileImage}`;
+};
 
 const Topbar = ({ toggleSidebar, isDesktop }) => {
-  const { user, token } = useContext(AuthContext);
+  const { user, token, logout, updateUser } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
-  const [notifications, setNotifications] = useState([]);
+  const [saving, setSaving] = useState(false);
   const [editData, setEditData] = useState({
     name: "",
     email: "",
     password: "",
   });
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState("");
   const wrapperRef = useRef(null);
+  const fileInputRef = useRef(null);
   const navigate = useNavigate();
-  const unreadCount = notifications.filter((n) => !n.read).length;
 
-  // Fetch notifications for current user
-  useEffect(() => {
-    const fetchNotifications = async () => {
-      if (!token) return;
-
-      try {
-        const res = await axios.get("http://localhost:5000/api/notifications", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        setNotifications(res.data);
-      } catch (err) {
-        console.error("Failed to fetch notifications:", err.message);
-      }
-    };
-
-    fetchNotifications();
-
-    const interval = setInterval(fetchNotifications, 40000);
-
-    return () => clearInterval(interval);
-  }, [token]);
-
-  //socket notifcation linstener
-  useEffect(() => {
-    if (!user) return;
-
-    socket.emit("join", user._id);
-
-    socket.on("newNotification", (notif) => {
-      setNotifications((prev) => [notif, ...prev]);
-    });
-
-    return () => socket.off("newNotification");
-  }, [user]);
-
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {
         setDropdownOpen(false);
         setEditOpen(false);
+        setSelectedImage(null);
+        setPreviewUrl("");
       }
     };
+
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
+
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    window.location.href = "/login";
+    logout();
+    navigate("/auth");
   };
 
   const handleEditChange = (e) => {
     setEditData({ ...editData, [e.target.name]: e.target.value });
   };
 
+  const closeEditPanel = () => {
+    setEditOpen(false);
+    setSelectedImage(null);
+    setPreviewUrl("");
+  };
+
+  const handleOpenEdit = () => {
+    setEditData({
+      name: user?.name || "",
+      email: user?.email || "",
+      password: "",
+    });
+    setEditOpen(true);
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
+
+    setSelectedImage(file);
+    setPreviewUrl(URL.createObjectURL(file));
+  };
+
   const handleSaveEdit = async () => {
     try {
-      const res = await axios.put(
-        `http://localhost:5000/api/users/${user._id}`,
-        { ...editData },
-        { headers: { Authorization: `Bearer ${token}` } },
-      );
+      setSaving(true);
+
+      const formData = new FormData();
+      formData.append("name", editData.name.trim());
+      formData.append("email", editData.email.trim());
+
+      if (editData.password.trim()) {
+        formData.append("password", editData.password.trim());
+      }
+
+      if (selectedImage) {
+        formData.append("profileImage", selectedImage);
+      }
+
+      const res = await axios.put(`${API_BASE_URL}/api/profile`, formData, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      updateUser(res.data.user);
       alert("Profile updated!");
-      setEditOpen(false);
+      closeEditPanel();
+      setDropdownOpen(false);
     } catch (err) {
-      console.error("Failed to update profile:", err.message);
-      alert("Update failed!");
+      console.error("Failed to update profile:", err.response?.data || err.message);
+      alert(err.response?.data?.message || "Update failed!");
+    } finally {
+      setSaving(false);
     }
   };
 
   const initial = user?.name?.charAt(0).toUpperCase() || "U";
+  const avatarSrc = previewUrl || getProfileImageUrl(user?.profileImage);
+  const profileButtonLabel = avatarSrc ? "Change Profile" : "Set Profile";
 
   return (
     <div
@@ -110,25 +137,23 @@ const Topbar = ({ toggleSidebar, isDesktop }) => {
         zIndex: 1000,
       }}
     >
-      {/* Left: Hamburger */}
       <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
         {!isDesktop && (
           <button
             onClick={toggleSidebar}
             style={{
-              fontSize: "1.5rem",
+              fontSize: "1rem",
               background: "transparent",
               border: "none",
               color: "#3312ef",
               cursor: "pointer",
             }}
           >
-            ☰
+            Menu
           </button>
         )}
       </div>
 
-      {/* Right: Notifications & Profile */}
       {user && (
         <div
           style={{
@@ -139,49 +164,11 @@ const Topbar = ({ toggleSidebar, isDesktop }) => {
           }}
           ref={wrapperRef}
         >
-          {/* Notifications */}
+          <NotificationBell />
 
-          <button
-            onClick={() => navigate("/staff/notifications")}
-            style={{
-              position: "relative",
-              background: "#fff",
-              borderRadius: "0.5rem",
-              width: "2.5rem",
-              height: "2.5rem",
-              border: "none",
-              fontSize: "1.2rem",
-              cursor: "pointer",
-            }}
-          >
-            🔔
-            {unreadCount > 0 && (
-              <span
-                style={{
-                  position: "absolute",
-                  top: "-0.3rem",
-                  right: "-0.3rem",
-                  background: "red",
-                  color: "#fff",
-                  borderRadius: "50%",
-                  fontSize: "0.7rem",
-                  width: "1rem",
-                  height: "1rem",
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                {unreadCount}
-              </span>
-            )}
-          </button>
-
-          {/* Profile */}
           <div
             onClick={() => setDropdownOpen(!dropdownOpen)}
             style={{
-              background: "#0B79FF",
               width: "2.5rem",
               height: "2.5rem",
               borderRadius: "50%",
@@ -190,19 +177,30 @@ const Topbar = ({ toggleSidebar, isDesktop }) => {
               justifyContent: "center",
               cursor: "pointer",
               fontWeight: "bold",
+              overflow: "hidden",
+              background: avatarSrc ? "#fff" : "#0B79FF",
+              border: "2px solid #0B79FF",
+              color: "#fff",
             }}
           >
-            {initial}
+            {avatarSrc ? (
+              <img
+                src={avatarSrc}
+                alt={`${user.name} profile`}
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              />
+            ) : (
+              initial
+            )}
           </div>
 
-          {/* Dropdown */}
           {dropdownOpen && (
             <div
               style={{
                 position: "absolute",
                 right: "1rem",
                 top: "3.5rem",
-                width: "240px",
+                width: "260px",
                 background: "#fff",
                 color: "#000",
                 borderRadius: "0.5rem",
@@ -215,9 +213,8 @@ const Topbar = ({ toggleSidebar, isDesktop }) => {
               <div style={{ padding: "1rem", textAlign: "center" }}>
                 <div
                   style={{
-                    background: "#0B79FF",
-                    width: "3rem",
-                    height: "3rem",
+                    width: "3.5rem",
+                    height: "3.5rem",
                     borderRadius: "50%",
                     margin: "0 auto",
                     display: "flex",
@@ -226,9 +223,20 @@ const Topbar = ({ toggleSidebar, isDesktop }) => {
                     color: "#fff",
                     fontWeight: "bold",
                     fontSize: "1.2rem",
+                    overflow: "hidden",
+                    background: avatarSrc ? "#fff" : "#0B79FF",
+                    border: "2px solid #0B79FF",
                   }}
                 >
-                  {initial}
+                  {avatarSrc ? (
+                    <img
+                      src={avatarSrc}
+                      alt={`${user.name} profile`}
+                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                    />
+                  ) : (
+                    initial
+                  )}
                 </div>
                 <h6 style={{ margin: "0.5rem 0 0 0" }}>{user.name}</h6>
                 <small>{user.email}</small>
@@ -238,14 +246,7 @@ const Topbar = ({ toggleSidebar, isDesktop }) => {
 
               {!editOpen && (
                 <button
-                  onClick={() => {
-                    setEditData({
-                      name: user.name,
-                      email: user.email,
-                      password: "",
-                    });
-                    setEditOpen(true);
-                  }}
+                  onClick={handleOpenEdit}
                   style={{
                     padding: "0.5rem",
                     border: "none",
@@ -253,6 +254,8 @@ const Topbar = ({ toggleSidebar, isDesktop }) => {
                     color: "#fff",
                     cursor: "pointer",
                     marginTop: "0.3rem",
+                    marginLeft: "0.5rem",
+                    borderRadius: "6px",
                   }}
                 >
                   Edit Profile
@@ -261,6 +264,39 @@ const Topbar = ({ toggleSidebar, isDesktop }) => {
 
               {editOpen && (
                 <div style={{ padding: "0.5rem" }}>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    style={{ display: "none" }}
+                  />
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    style={{
+                      width: "100%",
+                      padding: "0.5rem",
+                      border: "1px solid #0B79FF",
+                      background: "#f4f8ff",
+                      color: "#0B79FF",
+                      cursor: "pointer",
+                      borderRadius: "6px",
+                      marginBottom: "0.5rem",
+                    }}
+                  >
+                    {profileButtonLabel}
+                  </button>
+                  {selectedImage && (
+                    <p
+                      style={{
+                        fontSize: "12px",
+                        color: "#555",
+                        margin: "0 0 0.5rem 0",
+                      }}
+                    >
+                      Selected: {selectedImage.name}
+                    </p>
+                  )}
                   <input
                     type="text"
                     name="name"
@@ -307,17 +343,19 @@ const Topbar = ({ toggleSidebar, isDesktop }) => {
                       color: "#fff",
                       cursor: "pointer",
                       marginBottom: "0.3rem",
+                      opacity: saving ? 0.7 : 1,
                     }}
+                    disabled={saving}
                   >
-                    Save
+                    {saving ? "Saving..." : "Save"}
                   </button>
                   <button
-                    onClick={() => setEditOpen(false)}
+                    onClick={closeEditPanel}
                     style={{
                       padding: "0.5rem",
                       border: "none",
                       background: "#696060",
-                      color: "#000",
+                      color: "#fff",
                       cursor: "pointer",
                       borderRadius: "5px",
                     }}
@@ -336,6 +374,7 @@ const Topbar = ({ toggleSidebar, isDesktop }) => {
                   background: "#f91a1a",
                   color: "#fff",
                   cursor: "pointer",
+                  borderRadius: "6px",
                 }}
               >
                 Logout

@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const temporaryPermissionSchema = new mongoose.Schema({
   user: {
@@ -9,7 +9,8 @@ const temporaryPermissionSchema = new mongoose.Schema({
   expiresAt: Date,
 });
 
-module.exports = mongoose.model(
-  "TemporaryPermission",
-  temporaryPermissionSchema,
-);
+const TemporaryPermission =
+  mongoose.models.TemporaryPermission ||
+  mongoose.model("TemporaryPermission", temporaryPermissionSchema);
+
+export default TemporaryPermission;

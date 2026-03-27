@@ -17,13 +17,14 @@ const userSchema = new mongoose.Schema({
     required: true,
   },
 
-   status: {
+  status: {
     type: String,
     enum: ["pending", "active", "inactive"],
     default: "pending",
   },
-  
+
   approved: { type: Boolean, default: false },
+  profileImage: { type: String, default: "" },
   createdAt: { type: Date, default: Date.now },
 
   technicianProfile: {

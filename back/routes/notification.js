@@ -1,26 +1,22 @@
-const express = require("express");
+import express from "express";
+import {
+  getNotifications,
+  markNotificationRead,
+  deleteNotification,
+  clearAllNotifications,
+} from "../controllers/notificationController.js";
+import protect from "../middleware/authMiddleware.js";
+
 const router = express.Router();
-const Notification = require("../models/Notification");
 
-// Create notification
-router.post("/", async (req, res) => {
-  try {
-    const notification = new Notification(req.body);
-    await notification.save();
-    res.status(201).json(notification);
-  } catch (err) {
-    res.status(500).send("Server error");
-  }
-});
+// Get logged-in user's notifications
+router.get("/", protect, getNotifications);
 
-// Get notifications
-router.get("/", async (req, res) => {
-  try {
-    const notifications = await Notification.find();
-    res.json(notifications);
-  } catch (err) {
-    res.status(500).send("Server error");
-  }
-});
+// Mark notification as read
+router.patch("/:id/read", protect, markNotificationRead);
+//delete sindle notification
+router.delete("/:id", protect, deleteNotification);
+//clear all notification
+router.delete("/", protect, clearAllNotifications);
 
-module.exports = router;
+export default router;

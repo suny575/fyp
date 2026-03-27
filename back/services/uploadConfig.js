@@ -13,9 +13,13 @@ ensureFolder("uploads/audio");
 // Storage config
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    if (file.fieldname === "images") cb(null, "uploads/images");
-    else if (file.fieldname === "voiceNote") cb(null, "uploads/audio");
-    else cb(null, "uploads"); // fallback
+    if (file.fieldname === "images" || file.fieldname === "profileImage") {
+      cb(null, "uploads/images");
+    } else if (file.fieldname === "voiceNote") {
+      cb(null, "uploads/audio");
+    } else {
+      cb(null, "uploads"); // fallback
+    }
   },
   filename: function (req, file, cb) {
     const ext = path.extname(file.originalname);
@@ -25,7 +29,7 @@ const storage = multer.diskStorage({
 
 // Filter files
 const fileFilter = (req, file, cb) => {
-  if (file.fieldname === "images") {
+  if (file.fieldname === "images" || file.fieldname === "profileImage") {
     if (!file.mimetype.startsWith("image/"))
       return cb(new Error("Only images allowed"), false);
   } else if (file.fieldname === "voiceNote") {
