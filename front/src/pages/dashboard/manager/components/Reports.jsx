@@ -1,11 +1,23 @@
 import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import "../styles/report.css";
 import { AuthContext } from "../../../../context/AuthContext.jsx";
+
+const formatDateForInput = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+const parseDateInput = (value, endOfDay = false) => {
+  const [year, month, day] = value.split("-").map(Number);
+  return endOfDay
+    ? new Date(year, month - 1, day, 23, 59, 59, 999)
+    : new Date(year, month - 1, day, 0, 0, 0, 0);
+};
 
 const Reports = () => {
   const { token } = useContext(AuthContext); // get auth token
@@ -211,8 +223,18 @@ const Reports = () => {
         <div className="filter-group">
           <label>Filter by date</label>
           <div className="date-range">
-            <DatePicker selected={startDate} onChange={setStartDate} />
-            <DatePicker selected={endDate} onChange={setEndDate} />
+            <input
+              type="date"
+              className="date-input"
+              value={formatDateForInput(startDate)}
+              onChange={(e) => setStartDate(parseDateInput(e.target.value))}
+            />
+            <input
+              type="date"
+              className="date-input"
+              value={formatDateForInput(endDate)}
+              onChange={(e) => setEndDate(parseDateInput(e.target.value, true))}
+            />
           </div>
         </div>
 

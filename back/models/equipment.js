@@ -8,6 +8,11 @@ const equipmentSchema = new mongoose.Schema(
     serial: { type: String, required: true, unique: true },
     purchaseDate: { type: Date, required: true },
     department: { type: String, required: true },
+    hospital: {
+      type: String,
+      trim: true,
+      index: true,
+    },
     allocatedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

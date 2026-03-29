@@ -1,7 +1,15 @@
 import { io } from "socket.io-client";
 
+// create a single socket instance
 const socket = io("http://localhost:5000", {
   transports: ["websocket", "polling"],
+  autoConnect: false,
 });
 
-socket.emit("register", userId); // send user ID after login
+// function to join the user-specific room
+export const connectSocket = (userId) => {
+  if (!socket.connected) socket.connect();
+  socket.emit("join", userId);
+};
+
+export default socket;

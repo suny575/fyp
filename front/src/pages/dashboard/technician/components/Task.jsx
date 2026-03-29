@@ -1,20 +1,54 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
+const normalizeTaskStatus = (status) => {
+  const normalized = status?.trim();
+
+  if (normalized === "in_progress") return "inProgress";
+
+  return normalized;
+};
+
 const Task = () => {
   const [taskList, setTaskList] = useState([]);
   const [selectedTask, setSelectedTask] = useState(null);
 
   const token = localStorage.getItem("token");
 
+  const formatStatusLabel = (status) => {
+    switch (normalizeTaskStatus(status)) {
+      case "inProgress":
+        return "In Progress";
+      case "waiting":
+        return "Waiting";
+      case "completed":
+        return "Completed";
+      default:
+        return status;
+    }
+  };
+
+  const getStatusBadgeClass = (status) => {
+    switch (normalizeTaskStatus(status)) {
+      case "waiting":
+        return "warning text-dark";
+      case "inProgress":
+        return "primary";
+      case "completed":
+        return "success";
+      default:
+        return "secondary";
+    }
+  };
+
   // Fetch tasks
   useEffect(() => {
     const fetchTasks = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/tasks/all", {
+        const res = await axios.get("http://localhost:5000/api/tasks", {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setTaskList(res.data);
+        setTaskList(Array.isArray(res.data) ? res.data : []);
       } catch (error) {
         console.error("Backend fetch failed:", error.message);
         setTaskList([]);
@@ -49,9 +83,15 @@ const Task = () => {
 
   // Group tasks by status
   const tasksByStatus = {
-    waiting: taskList.filter((t) => t.status === "waiting"),
-    in_progress: taskList.filter((t) => t.status === "inProgress"),
-    completed: taskList.filter((t) => t.status === "completed"),
+    waiting: taskList.filter(
+      (t) => normalizeTaskStatus(t.status) === "waiting",
+    ),
+    in_progress: taskList.filter(
+      (t) => normalizeTaskStatus(t.status) === "inProgress",
+    ),
+    completed: taskList.filter(
+      (t) => normalizeTaskStatus(t.status) === "completed",
+    ),
   };
 
   // Render full task details
@@ -161,15 +201,9 @@ const Task = () => {
                           {task.equipment?.name || task.name}
                         </span>
                         <span
-                          className={`badge bg-${
-                            task.status === "waiting"
-                              ? "warning text-dark"
-                              : task.status === "in_progress"
-                                ? "primary"
-                                : "success"
-                          }`}
+                          className={`badge bg-${getStatusBadgeClass(task.status)}`}
                         >
-                          {task.status.replace("_", " ")}
+                          {formatStatusLabel(task.status)}
                         </span>
                       </div>
                     </div>
@@ -204,7 +238,7 @@ const Task = () => {
                             {task.equipment?.name || "NO EQUIPMENT FOUND"}
                           </td>
                           <td>{task.priority}</td>
-                          <td>{task.status.replace("_", " ")}</td>
+                          <td>{formatStatusLabel(task.status)}</td>
                           <td>
                             {new Date(task.createdAt).toLocaleDateString()}
                           </td>

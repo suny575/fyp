@@ -1,5 +1,4 @@
-// models/Settings.js
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const settingsSchema = new mongoose.Schema({
   maintenanceInterval: {
@@ -30,4 +29,7 @@ const settingsSchema = new mongoose.Schema({
   },
 });
 
-module.exports = mongoose.model("Settings", settingsSchema);
+const Settings =
+  mongoose.models.Settings || mongoose.model("Settings", settingsSchema);
+
+export default Settings;

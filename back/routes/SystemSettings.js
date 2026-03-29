@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const settingsSchema = new mongoose.Schema({
   qrScanEnabled: {
@@ -7,4 +7,8 @@ const settingsSchema = new mongoose.Schema({
   },
 });
 
-module.exports = mongoose.model("SystemSettings", settingsSchema);
+const SystemSettings =
+  mongoose.models.SystemSettings ||
+  mongoose.model("SystemSettings", settingsSchema);
+
+export default SystemSettings;

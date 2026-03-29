@@ -5,16 +5,13 @@ import {
   getWorkOrderById,
   updateWorkOrderStatus,
 } from "../controllers/workOrderController.js";
+import protect from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// Get all work orders
+router.use(protect);
 router.get("/", getWorkOrders);
-
-// Assign technician to work order
 router.post("/:id/assign-technician", assignTechnician);
-
-// Get single work order
 router.get("/:id", getWorkOrderById);
 router.put("/status/:id", updateWorkOrderStatus);
 

@@ -11,13 +11,19 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../styles/overview.css";
 
+const normalizeTaskStatus = (status) => {
+  const normalized = status?.trim();
+
+  if (normalized === "in_progress") return "inProgress";
+
+  return normalized;
+};
+
 const Overview = () => {
   const [tasks, setTasks] = useState([]);
   const navigate = useNavigate();
 
   const token = localStorage.getItem("token");
-  const loggedInUser = JSON.parse(localStorage.getItem("user"));
-  const TECH_ID = loggedInUser?._id;
 
   // Fetch tasks assigned to this technician
   const fetchTasks = async () => {
@@ -25,11 +31,7 @@ const Overview = () => {
       const res = await axios.get("http://localhost:5000/api/tasks", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      // Filter tasks assigned to current technician
-      const techTasks = res.data.filter(
-        (t) => t.assignedTechnician && t.assignedTechnician._id === TECH_ID,
-      );
-      setTasks(techTasks);
+      setTasks(Array.isArray(res.data) ? res.data : []);
     } catch (error) {
       console.error("Backend fetch failed:", error.message);
       setTasks([]);
@@ -45,13 +47,19 @@ const Overview = () => {
   }, [token]);
 
   // Status counts
-  const waiting = tasks.filter((t) => t.status === "waiting").length;
-  const inProgress = tasks.filter((t) => t.status === "inProgress").length;
-  const completed = tasks.filter((t) => t.status === "completed").length;
+  const waiting = tasks.filter(
+    (t) => normalizeTaskStatus(t.status) === "waiting",
+  ).length;
+  const inProgress = tasks.filter(
+    (t) => normalizeTaskStatus(t.status) === "inProgress",
+  ).length;
+  const completed = tasks.filter(
+    (t) => normalizeTaskStatus(t.status) === "completed",
+  ).length;
 
   const chartData = [
     { name: "Waiting", value: waiting },
-    { name: "In-Progress", value: inProgress },
+    { name: "In Progress", value: inProgress },
     { name: "Completed", value: completed },
   ];
 
@@ -60,13 +68,13 @@ const Overview = () => {
     {
       title: "Report Equipment Issue",
       desc: "Report equipment needing attention",
-      onClick: () => navigate("/report"),
+      onClick: () => navigate("/technician/report"),
       color: "#0d6efd",
     },
     {
       title: "View Assigned Tasks",
       desc: "Check your current tasks",
-      onClick: () => navigate("/tasks"),
+      onClick: () => navigate("/technician/tasks"),
       color: "#198754",
     },
     {
@@ -85,13 +93,11 @@ const Overview = () => {
       {/* Status KPI Cards */}
       <div className="row g-3 mb-4">
         {chartData.map((item) => (
-          <div key={item.name} className="col-md-3 col-sm-6">
+          <div key={item.name} className="col-12 col-sm-6 col-lg-4">
             <div
               className="card td-card p-2 shadow-sm"
               style={{ cursor: "pointer" }}
-              onClick={() =>
-                navigate(`/tasks?status=${item.name.toLowerCase()}`)
-              }
+              onClick={() => navigate("/technician/tasks")}
             >
               <div className="card-body text-center">
                 <h6 className="mb-2">{item.name}</h6>
@@ -110,9 +116,9 @@ const Overview = () => {
                         fill={
                           item.name === "Completed"
                             ? "#198754"
-                            : item.name === "Pending"
+                            : item.name === "Waiting"
                               ? "#ffc107"
-                              : item.name === "In-Progress"
+                              : item.name === "In Progress"
                                 ? "#0d6efd"
                                 : "#dc3545"
                         }

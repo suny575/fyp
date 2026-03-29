@@ -2,6 +2,11 @@ import mongoose from "mongoose";
 
 const notificationSchema = new mongoose.Schema(
   {
+    hospital: {
+      type: String,
+      trim: true,
+      index: true,
+    },
     recipient: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

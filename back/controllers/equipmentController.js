@@ -1,13 +1,16 @@
 import Equipment from "../models/equipment.js";
+import {
+  resolveHospitalName,
+  withHospitalScope,
+} from "../utils/hospitalScope.js";
 
-// Create new equipment
 export const addEquipment = async (req, res) => {
   try {
-    // const newEquipment = new Equipment(req.body);
     const newEquipment = new Equipment({
       ...req.body,
-      allocatedBy: req.user._id, // 👈 comes from auth middleware
-      allocationDate: new Date(), // 👈 optional (default also works)
+      hospital: resolveHospitalName(req.user.hospital),
+      allocatedBy: req.user._id,
+      allocationDate: new Date(),
     });
     const saved = await newEquipment.save();
     res.status(201).json(saved);
@@ -16,34 +19,45 @@ export const addEquipment = async (req, res) => {
   }
 };
 
-// Get all equipment
 export const getAllEquipment = async (req, res) => {
   try {
-    const equipments = await Equipment.find();
+    const equipments = await Equipment.find(withHospitalScope({}, req.user.hospital));
     res.status(200).json(equipments);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
-
-
-// Update equipment
 export const updateEquipment = async (req, res) => {
   try {
-    const updated = await Equipment.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    });
+    const updated = await Equipment.findOneAndUpdate(
+      withHospitalScope({ _id: req.params.id }, req.user.hospital),
+      req.body,
+      {
+        new: true,
+      },
+    );
+
+    if (!updated) {
+      return res.status(404).json({ message: "Equipment not found" });
+    }
+
     res.status(200).json(updated);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
-// Delete equipment
 export const deleteEquipment = async (req, res) => {
   try {
-    await Equipment.findByIdAndDelete(req.params.id);
+    const deleted = await Equipment.findOneAndDelete(
+      withHospitalScope({ _id: req.params.id }, req.user.hospital),
+    );
+
+    if (!deleted) {
+      return res.status(404).json({ message: "Equipment not found" });
+    }
+
     res.status(200).json({ message: "Deleted successfully" });
   } catch (err) {
     res.status(500).json({ error: err.message });

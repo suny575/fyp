@@ -1,8 +1,8 @@
-const express = require("express");
-const router = express.Router();
-const MaintenanceLog = require("../models/MaintenanceLog");
+import express from "express";
+import MaintenanceLog from "../models/maintenanceLog.js";
 
-// Create log
+const router = express.Router();
+
 router.post("/", async (req, res) => {
   try {
     const log = new MaintenanceLog(req.body);
@@ -13,14 +13,16 @@ router.post("/", async (req, res) => {
   }
 });
 
-// Get all logs
 router.get("/", async (req, res) => {
   try {
-    const logs = await MaintenanceLog.find().populate("equipment performedBy", "name");
+    const logs = await MaintenanceLog.find().populate(
+      "equipment performedBy",
+      "name",
+    );
     res.json(logs);
   } catch (err) {
     res.status(500).send("Server error");
   }
 });
 
-module.exports = router;
+export default router;

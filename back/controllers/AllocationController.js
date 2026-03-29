@@ -1,159 +1,149 @@
-
-// controllers/allocationController.js
 import StockRequest from "../models/StockRequest.js";
 import Stock from "../models/stock.js";
 import Equipment from "../models/equipment.js";
 import Allocation from "../models/Allocation.js";
+import {
+  resolveHospitalName,
+  withHospitalScope,
+} from "../utils/hospitalScope.js";
 
-/*
-========================================
-1️⃣ GET PENDING STOCK REQUESTS
-========================================
-*/
 export const getPendingRequests = async (req, res) => {
   try {
-    const requests = await StockRequest
-      .find({ status: "pending" })
-      .populate("requestedBy", "name email"); // include name for frontend
+    const requests = await StockRequest.find(
+      withHospitalScope({ status: "pending" }, req.user.hospital),
+    ).populate("requestedBy", "name email hospital");
 
     const formatted = await Promise.all(
-      requests.map(async (r) => {
-        const stock = await Stock.findOne({ name: r.item });
+      requests.map(async (request) => {
+        const stock = await Stock.findOne(
+          withHospitalScope({ name: request.item }, req.user.hospital),
+        );
 
         return {
-          id: r._id,
-          itemName: r.item,                       // frontend expects itemName
-          requestedQty: r.quantity,
-          department: r.department,
-          requestedByName: r.requestedBy?.name || "Unknown",
+          id: request._id,
+          itemName: request.item,
+          requestedQty: request.quantity,
+          department: request.department,
+          requestedByName: request.requestedBy?.name || "Unknown",
           availableQty: stock ? stock.quantity : 0,
         };
-      })
+      }),
     );
 
     res.status(200).json(formatted);
-
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
-/*
-========================================
-2️⃣ APPROVE STOCK REQUEST
-========================================
-*/
 export const approveStockRequest = async (req, res) => {
   try {
-    const request = await StockRequest.findById(req.params.id).populate("requestedBy", "name");
+    const request = await StockRequest.findOne(
+      withHospitalScope({ _id: req.params.id }, req.user.hospital),
+    ).populate("requestedBy", "name hospital");
 
-    if (!request)
+    if (!request) {
       return res.status(404).json({ message: "Request not found" });
+    }
 
-    if (request.status !== "pending")
+    if (request.status !== "pending") {
       return res.status(400).json({ message: "Request already processed" });
+    }
 
-    const stock = await Stock.findOne({ name: request.item });
-    if (!stock || stock.quantity < request.quantity)
+    const stock = await Stock.findOne(
+      withHospitalScope({ name: request.item }, req.user.hospital),
+    );
+
+    if (!stock || stock.quantity < request.quantity) {
       return res.status(400).json({ message: "Insufficient stock" });
+    }
 
-    // Reduce stock
     stock.quantity -= request.quantity;
     await stock.save();
 
-    // Update request
     request.status = "approved";
     request.allocationDate = new Date();
     await request.save();
 
-    // Add allocation history
     const allocation = new Allocation({
       type: "Stock",
       itemName: request.item,
+      hospital: resolveHospitalName(req.user.hospital),
       department: request.department,
       quantity: request.quantity,
-      
-      requestedBy: request.requestedBy._id,           // who requested
-      requestedByName: request.requestedBy?.name,     // name of requester
-
-      allocatedBy: req.user._id,         // the approver
-      allocatedByName: req.user.name,    // display name of approver
-      // allocatedBy: request.requestedBy._id,
-      // allocatedByName: request.requestedBy?.name || "Unknown",
+      requestedBy: request.requestedBy?._id,
+      requestedByName: request.requestedBy?.name,
+      allocatedBy: req.user._id,
+      allocatedByName: req.user.name,
       date: request.allocationDate,
     });
     await allocation.save();
 
     res.status(200).json({ message: "Stock allocation approved" });
-
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
-/*
-========================================
-3️⃣ REJECT STOCK REQUEST
-========================================
-*/
 export const rejectStockRequest = async (req, res) => {
   try {
-    const request = await StockRequest.findById(req.params.id);
+    const request = await StockRequest.findOne(
+      withHospitalScope({ _id: req.params.id }, req.user.hospital),
+    );
 
-    if (!request)
+    if (!request) {
       return res.status(404).json({ message: "Request not found" });
+    }
 
-    if (request.status !== "pending")
+    if (request.status !== "pending") {
       return res.status(400).json({ message: "Request already processed" });
+    }
 
     request.status = "rejected";
     await request.save();
 
-    res.status(200).json({ message: "Stock allocation rejected", id: request._id });
-
+    res.status(200).json({
+      message: "Stock allocation rejected",
+      id: request._id,
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
-/*
-========================================
-4️⃣ GET ALLOCATION HISTORY
-========================================
-*/
 export const getAllocationHistory = async (req, res) => {
   try {
-    // Stock allocations from Allocation collection
-    const stockAllocations = await Allocation.find({ type: "Stock" });
+    const stockAllocations = await Allocation.find(
+      withHospitalScope({ type: "Stock" }, req.user.hospital),
+    );
 
-    const stockHistory = stockAllocations.map(r => ({
-      id: r._id,
-      type: r.type,
-      name: r.itemName,                      // frontend expects 'name'
-      department: r.department,
-      quantity: r.quantity,
-      allocatedByName: r.allocatedByName || "Unknown",
-      date: r.date ? r.date.toISOString().split("T")[0] : "",
+    const stockHistory = stockAllocations.map((record) => ({
+      id: record._id,
+      type: record.type,
+      name: record.itemName,
+      department: record.department,
+      quantity: record.quantity,
+      allocatedByName: record.allocatedByName || "Unknown",
+      date: record.date ? record.date.toISOString().split("T")[0] : "",
     }));
 
-    // Equipment allocations
-    const equipments = await Equipment.find().populate("allocatedBy", "name");
+    const equipments = await Equipment.find(
+      withHospitalScope({}, req.user.hospital),
+    ).populate("allocatedBy", "name");
 
-    const equipmentHistory = equipments.map(eq => ({
-      id: eq._id,
+    const equipmentHistory = equipments.map((equipment) => ({
+      id: equipment._id,
       type: "Equipment",
-      name: eq.name,
-      department: eq.department,
+      name: equipment.name,
+      department: equipment.department,
       quantity: 1,
-      allocatedByName: eq.allocatedBy?.name || "Unknown",
-      date: eq.allocationDate ? eq.allocationDate.toISOString().split("T")[0] : "",
+      allocatedByName: equipment.allocatedBy?.name || "Unknown",
+      date: equipment.allocationDate
+        ? equipment.allocationDate.toISOString().split("T")[0]
+        : "",
     }));
 
-    res.status(200).json([
-      ...equipmentHistory,
-      ...stockHistory
-    ]);
-
+    res.status(200).json([...equipmentHistory, ...stockHistory]);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

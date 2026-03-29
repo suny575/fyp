@@ -4,6 +4,7 @@ import Invitation from "../models/invitation.js";
 import User from "../models/user.js";
 import protect from "../middleware/authMiddleware.js";
 import nodemailer from "nodemailer";
+import { resolveHospitalName } from "../utils/hospitalScope.js";
 
 const router = express.Router();
 const transporter = nodemailer.createTransport({
@@ -25,7 +26,7 @@ transporter
 // =====================
 router.post("/", protect, async (req, res) => {
   try {
-    const { email, role } = req.body;
+    const { email, role, hospital } = req.body;
     if (!email || !role)
       return res.status(400).json({ message: "Email and role required" });
 
@@ -46,6 +47,10 @@ router.post("/", protect, async (req, res) => {
     const invitation = await Invitation.create({
       email,
       role,
+      hospital: resolveHospitalName(
+        req.user.role === "admin" ? hospital : req.user.hospital,
+        req.user.hospital,
+      ),
       token,
       used: false,
       expiresAt: Date.now() + 1000 * 60 * 60 * 24, // 24h
@@ -92,6 +97,7 @@ router.get("/verify/:token", async (req, res) => {
     res.json({
       email: invitation.email,
       role: invitation.role,
+      hospital: resolveHospitalName(invitation.hospital),
     });
   } catch (err) {
     res.status(500).json({ message: "Server error verifying invitation" });

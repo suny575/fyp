@@ -1,13 +1,26 @@
 // src/context/AuthContext.jsx
-import React, { createContext, useState, useEffect } from "react";
+import { createContext, useState, useEffect, useContext } from "react";
 import axios from "axios";
 
 export const AuthContext = createContext();
 
+const normalizeUser = (user) => {
+  if (!user) return null;
+
+  const normalizedId = user._id || user.id || null;
+
+  return {
+    ...user,
+    id: normalizedId,
+    _id: normalizedId,
+    profileImage: user.profileImage || "",
+  };
+};
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
     const storedUser = localStorage.getItem("user");
-    return storedUser ? JSON.parse(storedUser) : null;
+    return storedUser ? normalizeUser(JSON.parse(storedUser)) : null;
   });
 
   const [token, setToken] = useState(() => {
@@ -22,7 +35,9 @@ export const AuthProvider = ({ children }) => {
     const storedUser = localStorage.getItem("user");
     if (storedToken && storedUser) {
       setToken(storedToken);
-      setUser(JSON.parse(storedUser));
+      const normalizedUser = normalizeUser(JSON.parse(storedUser));
+      setUser(normalizedUser);
+      localStorage.setItem("user", JSON.stringify(normalizedUser));
     }
     setLoading(false);
   }, []);
@@ -35,15 +50,17 @@ export const AuthProvider = ({ children }) => {
         password,
       });
 
+      const normalizedUser = normalizeUser(res.data.user);
+
       // Update context state
       setToken(res.data.token);
-      setUser(res.data.user);
+      setUser(normalizedUser);
 
       // Save to localStorage
       localStorage.setItem("token", res.data.token);
-      localStorage.setItem("user", JSON.stringify(res.data.user));
+      localStorage.setItem("user", JSON.stringify(normalizedUser));
 
-      return { success: true, user: res.data.user };
+      return { success: true, user: normalizedUser };
     } catch (err) {
       console.error("Login failed:", err.response?.data || err.message);
       return {
@@ -68,13 +85,24 @@ export const AuthProvider = ({ children }) => {
       // localStorage.setItem("token", res.data.token);
       // localStorage.setItem("user", JSON.stringify(res.data.user));
 
-      return { success: true, user: res.data.user };
+      return { success: true, user: normalizeUser(res.data.user) };
     } catch (err) {
       console.error("Registration failed:", err.response?.data || err.message);
       return {
         success: false,
         message: err.response?.data?.message || "Registration failed",
       };
+    }
+  };
+
+  const updateUser = (nextUser) => {
+    const normalizedUser = normalizeUser(nextUser);
+    setUser(normalizedUser);
+
+    if (normalizedUser) {
+      localStorage.setItem("user", JSON.stringify(normalizedUser));
+    } else {
+      localStorage.removeItem("user");
     }
   };
 
@@ -94,10 +122,14 @@ export const AuthProvider = ({ children }) => {
         loading,
         login,
         register,
+        updateUser,
         logout,
       }}
     >
       {children}
     </AuthContext.Provider>
   );
+};
+export const useAuth = () => {
+  return useContext(AuthContext);
 };

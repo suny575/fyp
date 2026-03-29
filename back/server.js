@@ -5,12 +5,17 @@ import http from "http";
 import express from "express";
 import { Server } from "socket.io";
 import cors from "cors";
+import path from "path";
+import { fileURLToPath } from "url";
 import connectDB from "./config/db.js";
 import appRoutes from "./app.js";
 import { startMaintenanceScheduler } from "./schedulers/maintenanceScheduler.js";
 import { getAdminSettings } from "./services/adminSettingsService.js";
+import { setIo } from "./services/socket.service.js";
 
 const PORT = process.env.PORT || 5000;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 connectDB();
 
@@ -19,6 +24,7 @@ const app = express();
 // ===== MIDDLEWARE =====
 app.use(cors({ origin: "http://localhost:3000", credentials: true }));
 app.use(express.json());
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // ===== ROUTES =====
 app.use("/api", appRoutes);
@@ -37,11 +43,13 @@ io = new Server(server, {
   },
 });
 
+setIo(io);
+
 let onlineUsers = {};
 
 io.on("connection", (socket) => {
-  console.log("User connected:", socket.id);
-   console.log(process.env.MONGO_URI);
+  // console.log("User connected:", socket.id);
+  //  console.log(process.env.MONGO_URI);
 
   socket.on("register", (userId) => {
     onlineUsers[userId] = socket.id;

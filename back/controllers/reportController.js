@@ -1,7 +1,6 @@
-// controllers/reportController.js
-const Task = require("../models/Task");
+import Task from "../models/Task.js";
 
-exports.getFullReport = async (req, res) => {
+export const getFullReport = async (req, res) => {
   try {
     const { startDate, endDate, role } = req.query;
 
@@ -18,7 +17,6 @@ exports.getFullReport = async (req, res) => {
       matchStage.role = role;
     }
 
-    // 1️⃣ KPI Overview
     const kpi = await Task.aggregate([
       { $match: matchStage },
       {
@@ -36,7 +34,6 @@ exports.getFullReport = async (req, res) => {
       },
     ]);
 
-    // 2️⃣ Role Breakdown
     const roleBreakdown = await Task.aggregate([
       { $match: matchStage },
       {
@@ -48,7 +45,6 @@ exports.getFullReport = async (req, res) => {
       },
     ]);
 
-    // 3️⃣ Trend Over Time
     const trend = await Task.aggregate([
       { $match: matchStage },
       {

@@ -1,24 +1,25 @@
 import Fault from "../models/Fault.js";
-import Task from "../models/Task.js";
 import User from "../models/user.js";
 import Equipment from "../models/equipment.js";
 import convertFaultToTask from "../services/assignment.service.js";
-import { sendNotification } from "../services/notification.service.js"; // ✅ correct import
+import { sendNotification } from "../services/notification.service.js";
+import {
+  resolveHospitalName,
+  withHospitalScope,
+} from "../utils/hospitalScope.js";
 
-// GET ALL FAULTS
 export const getFaults = async (req, res) => {
   try {
-    const faults = await Fault.find()
+    const faults = await Fault.find(withHospitalScope({}, req.user.hospital))
       .sort({ createdAt: -1 })
-      .populate("equipment", "name")
-      .populate("department", "name")
-      .populate("reportedBy", "name")
-      .populate("assignedTo", "name")
-      .populate("updatedBy", "name");
+      .populate("equipment", "name department hospital")
+      .populate("reportedBy", "name hospital")
+      .populate("assignedTo", "name hospital")
+      .populate("updatedBy", "name hospital");
 
-    const faultsWithUpdatedBy = faults.map((f) => ({
-      ...f.toObject(),
-      updatedByName: f.updatedBy ? f.updatedBy.name : "-",
+    const faultsWithUpdatedBy = faults.map((fault) => ({
+      ...fault.toObject(),
+      updatedByName: fault.updatedBy ? fault.updatedBy.name : "-",
     }));
 
     res.json(faultsWithUpdatedBy);
@@ -28,11 +29,11 @@ export const getFaults = async (req, res) => {
   }
 };
 
-// SUBMIT FAULT (POST)
 export const submitFault = async (req, res) => {
   try {
     const { equipment, description, priority } = req.body;
     const reportedBy = req.user._id;
+    const hospital = resolveHospitalName(req.user.hospital);
 
     if (!equipment || !description) {
       return res
@@ -42,14 +43,29 @@ export const submitFault = async (req, res) => {
 
     const attachments = req.files || {};
     const images =
-      attachments.images?.map((f) => f.path.replace(/\\/g, "/")) || [];
+      attachments.images?.map((file) => file.path.replace(/\\/g, "/")) || [];
     const voiceNote =
       attachments.voiceNote?.[0]?.path.replace(/\\/g, "/") || "";
 
-    const existingFault = await Fault.findOne({
-      equipment,
-      status: { $in: ["pending", "in-progress", "waiting"] },
-    });
+    const equipmentObj = await Equipment.findOne(
+      withHospitalScope({ _id: equipment }, hospital),
+    );
+
+    if (!equipmentObj) {
+      return res.status(404).json({
+        message: "Equipment not found for your hospital",
+      });
+    }
+
+    const existingFault = await Fault.findOne(
+      withHospitalScope(
+        {
+          equipment,
+          status: { $in: ["pending", "in-progress", "waiting"] },
+        },
+        hospital,
+      ),
+    );
 
     if (existingFault) {
       return res.status(400).json({
@@ -58,12 +74,10 @@ export const submitFault = async (req, res) => {
       });
     }
 
-    const equipmentObj = await Equipment.findById(equipment);
-    const department = equipmentObj?.department || "Unknown";
-
     const fault = await Fault.create({
       equipment,
-      department,
+      department: equipmentObj.department || "Unknown",
+      hospital,
       description,
       priority: priority || "medium",
       reportedBy,
@@ -74,67 +88,8 @@ export const submitFault = async (req, res) => {
       status: "waiting",
     });
 
-    //send confirmation msg to reporter
-
-    //     try {
-    //       await sendNotification({
-    //         trigger: "FAULT_REPORTED",
-    //         recipientUsers: [fault.reportedBy],
-    //         payload: {
-    //           faultId: fault._id,
-    //           equipmentName: fault.equipment.name,
-    //           link: `/faults/${fault._id}`,
-    //         },
-    //       });
-    //       const task = await convertFaultToTask(fault._id);
-
-    //       return res.status(201).json({
-    //         message: "Fault submitted and task created successfully",
-    //         fault,
-    //         task,
-    //       });
-    //     } catch (err) {
-    //       console.error("Conversion failed:", err.message);
-
-    //       // Notify reporter
-    //       try {
-    //         await sendNotification({
-    //           recipients: [fault.reportedBy],
-    //           type: "system-error",
-    //           message:
-    //             "Your fault was submitted but system failed to process it. Admin has been notified.",
-    //           metadata: { faultId: fault._id },
-    //         });
-    //       } catch (e) {
-    //         console.error("Reporter notification failed");
-    //       }
-
-    //       // Notify admin
-    //       try {
-    //         const admins = await User.find({ role: "admin" });
-    //         await sendNotification({
-    //           recipients: admins.map((a) => a._id),
-    //           type: "system-error",
-    //           message: `Fault ${fault._id} failed during conversion.`,
-    //         });
-    //       } catch (e) {
-    //         console.error("Admin notification failed");
-    //       }
-
-    //       return res.status(500).json({
-    //         message: "Fault saved but system failed during processing.",
-    //         fault,
-    //       });
-    //     }
-    //   } catch (err) {
-    //     console.error("Error submitting fault:", err);
-    //     res.status(500).json({ message: "Server error submitting fault" });
-    //   }
-    // };
-
-    // Send confirmation notification to reporter (NON BLOCKING)
     try {
-      sendNotification({
+      await sendNotification({
         trigger: "FAULT_REPORTED",
         recipientUsers: [fault.reportedBy],
         payload: {
@@ -143,8 +98,8 @@ export const submitFault = async (req, res) => {
           link: `/faults/${fault._id}`,
         },
       });
-    } catch (e) {
-      console.error("Reporter notification failed");
+    } catch (notifyErr) {
+      console.error("Reporter notification failed:", notifyErr.message);
     }
 
     try {
@@ -158,7 +113,6 @@ export const submitFault = async (req, res) => {
     } catch (err) {
       console.error("Conversion failed:", err.message);
 
-      // Notify reporter
       try {
         await sendNotification({
           trigger: "SYSTEM_ERROR",
@@ -169,30 +123,30 @@ export const submitFault = async (req, res) => {
             faultId: fault._id,
           },
         });
-      } catch (e) {
-        console.error("Reporter notification failed");
+      } catch (notifyErr) {
+        console.error("Reporter notification failed:", notifyErr.message);
       }
 
-      // Notify admin
       try {
-        const admins = await User.find({ role: "admin" });
+        const admins = await User.find(
+          withHospitalScope({ role: "admin" }, hospital),
+        );
 
         await sendNotification({
           trigger: "SYSTEM_ERROR",
-          recipientUsers: admins.map((a) => a._id),
+          recipientUsers: admins.map((admin) => admin._id),
           payload: {
             message: `Fault ${fault._id} failed during conversion.`,
           },
         });
-      } catch (e) {
-        console.error("Admin notification failed");
+      } catch (notifyErr) {
+        console.error("Admin notification failed:", notifyErr.message);
       }
 
-      // Delete fault so reporter can resubmit
       try {
         await Fault.findByIdAndDelete(fault._id);
-      } catch (e) {
-        console.error("Failed to delete faulty record");
+      } catch (deleteErr) {
+        console.error("Failed to delete faulty record:", deleteErr.message);
       }
 
       return res.status(500).json({

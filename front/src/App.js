@@ -1,6 +1,3 @@
-
-
-
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
@@ -20,30 +17,35 @@ import ManagerDashboard from "./pages/dashboard/manager/ManagerDashboard.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import TDashboard from "./pages/dashboard/technician/tdashBoard.jsx";
 import Footer from "./pages/Footer.jsx";
-
+import NotificationsPage from "./pages/NotificationsPage.jsx";
+import { NotificationsProvider } from "./pages/NotificationsPage";
 
 function App() {
   return (
     <AuthProvider>
-      <Router>
-        <Navbar />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/aboutus" element={<AboutUs />} />
-        
-          <Route path="/auth" element={<AuthPage />} />
-          <Route path="/howitworks" element={<HowItWorks />} />
-          <Route path="/staff/*" element={<DepStaffDashboard />} />
-          <Route path="/contactus" element={<ContactUs />} />
-          <Route path="/manager/*" element={<ManagerDashboard />} />
+      <NotificationsProvider>
+        <Router>
+          <Navbar />
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/aboutus" element={<AboutUs />} />
 
-           <Route path="/admin/*" element={<AdminDashboard />} />
-        <Route path="/pharmacy/*" element={<PharmacyDashboard />} />
+            <Route path="/auth" element={<AuthPage />} />
+            <Route path="/howitworks" element={<HowItWorks />} />
+            <Route path="/staff/*" element={<DepStaffDashboard />} />
+            <Route path="/contactus" element={<ContactUs />} />
+            <Route path="/manager/*" element={<ManagerDashboard />} />
 
-          <Route path="/technician/*" element={<TDashboard />} />
-        </Routes>
+            <Route path="/admin/*" element={<AdminDashboard />} />
+            <Route path="/pharmacy/*" element={<PharmacyDashboard />} />
+
+            <Route path="/technician/*" element={<TDashboard />} />
+
+            <Route path="/notifications" element={<NotificationsPage />} />
+          </Routes>
           <Footer />
-      </Router>
+        </Router>
+      </NotificationsProvider>
     </AuthProvider>
   );
 }
