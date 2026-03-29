@@ -83,8 +83,14 @@ const Overview = () => {
             headers: { Authorization: `Bearer ${token}` },
           },
         );
-
         const tasksData = await tasksRes.json();
+        const schedulesRes = await fetch(
+          "http://localhost:5000/api/schedules/upcoming",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          },
+        );
+        const schedulesData = await schedulesRes.json();
         // Count tasks by status
 
         const waiting = tasksData.filter(
@@ -101,6 +107,12 @@ const Overview = () => {
           { title: "Waiting Tasks", value: waiting },
           { title: "In Progress Tasks", value: inProgress }, // display-friendly
           { title: "Completed Tasks", value: completed },
+          {
+            title: "Scheduled Maintenance",
+            value: Array.isArray(schedulesData) ? schedulesData.length : 0,
+            route: "/manager/schedules",
+            buttonLabel: "Open Schedule",
+          },
         ]);
 
         // If backend wraps tasks in `data` or `tasks`:
@@ -174,9 +186,11 @@ const Overview = () => {
               <h3>{stat.value}</h3>
               <button
                 className="btn btn-info btn-sm mt-3"
-                onClick={() => handleViewIssues(stat.title)}
+                onClick={() =>
+                  stat.route ? navigate(stat.route) : handleViewIssues(stat.title)
+                }
               >
-                View
+                {stat.buttonLabel || "View"}
               </button>
             </div>
           </div>

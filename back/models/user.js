@@ -5,6 +5,11 @@ const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
+  hospital: {
+    type: String,
+    trim: true,
+    index: true,
+  },
   role: {
     type: String,
     enum: [

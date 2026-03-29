@@ -6,15 +6,16 @@ import "../styles/StockManagement.css";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
 
+const MOCK_DATA = [
+  { _id: "1", name: "Paracetamol", batch: "B123", category: "Consumable", quantity: 50, expiry: "2026-04-12" },
+  { _id: "2", name: "Syringe 5ml", batch: "SP-456", category: "Spare Part", quantity: 30, expiry: "" },
+  { _id: "3", name: "Syringe", batch: "AC-789", category: "Accessory", quantity: 100, expiry: "" },
+];
+
 const StockManagement = () => {
+  const token = localStorage.getItem("token");
 
   // ================= MOCK DATA =================
-  const mockData = [
-    { _id: "1", name: "Paracetamol", batch: "B123", category: "Consumable", quantity: 50, expiry: "2026-04-12" },
-    { _id: "2", name: "Syringe 5ml", batch: "SP-456", category: "Spare Part", quantity: 30, expiry: "" },
-    { _id: "3", name: "Syringe", batch: "AC-789", category: "Accessory", quantity: 100, expiry: "" },
-  ];
-
   const [stockList, setStockList] = useState([]);
   const [useMock, setUseMock] = useState(false);
 
@@ -38,7 +39,9 @@ const StockManagement = () => {
   useEffect(() => {
     const fetchStock = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/stock");
+        const res = await axios.get("http://localhost:5000/api/stock", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         setStockList(res.data);
         // 👉 Extract unique categories from backend data
 const uniqueCategories = [
@@ -48,12 +51,12 @@ setCategories(uniqueCategories);
         setUseMock(false);
       } catch (err) {
         console.error("Backend failed, using mock data", err.message);
-        setStockList(mockData);
+        setStockList(MOCK_DATA);
         setUseMock(true);
       }
     };
     fetchStock();
-  }, []);
+  }, [token]);
 
   // ================= HIGHLIGHT SUPPORT =================
   const location = useLocation();
@@ -109,7 +112,10 @@ setCategories(uniqueCategories);
         if (isEdit) {
           const res = await axios.put(
             `http://localhost:5000/api/stock/${selectedId}`,
-            formData
+            formData,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            },
           );
           setStockList(
             stockList.map((item) =>
@@ -119,7 +125,10 @@ setCategories(uniqueCategories);
         } else {
           const res = await axios.post(
             "http://localhost:5000/api/stock",
-            formData
+            formData,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            },
           );
           setStockList([...stockList, res.data]);
         }
@@ -146,7 +155,12 @@ setCategories(uniqueCategories);
       if (useMock) {
         setStockList(stockList.filter((item) => item._id !== selectedId));
       } else {
-        await axios.delete(`http://localhost:5000/api/stock/${selectedId}`);
+        await axios.delete(
+          `http://localhost:5000/api/stock/${selectedId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          },
+        );
         setStockList(stockList.filter((item) => item._id !== selectedId));
       }
     } catch (err) {

@@ -3,6 +3,7 @@ import User from "../models/user.js";
 import notificationTemplates from "./notificationTemplates.js";
 import sendEmail from "./email.service.js";
 import { getIo } from "./socket.service.js";
+import { resolveHospitalName } from "../utils/hospitalScope.js";
 
 export const sendNotification = async ({
   trigger,
@@ -16,6 +17,7 @@ export const sendNotification = async ({
     const template = notificationTemplates[trigger](user, payload);
 
     const notification = await Notification.create({
+      hospital: resolveHospitalName(user.hospital),
       recipient: userId,
       type: trigger,
       title: template.title,

@@ -16,13 +16,18 @@
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
 }
 
-.badge-upcoming {
+.badge-pending {
   background-color: #007bff; /* blue */
   color: white;
 }
 
-.badge-paused {
-  background-color: #6c757d; /* gray/black-ish */
+.badge-assigned {
+  background-color: #fd7e14; /* orange */
+  color: white;
+}
+
+.badge-in-progress {
+  background-color: #6c757d; /* gray */
   color: white;
 }
 

@@ -12,6 +12,11 @@ const allocationSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  hospital: {
+    type: String,
+    trim: true,
+    index: true,
+  },
   department: {             // which department received it
     type: String,
     required: true,

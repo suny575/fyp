@@ -314,6 +314,7 @@ const PharmacyReports = () => {
   useEffect(() => {
     const fetchReports = async () => {
       try {
+        const token = localStorage.getItem("token");
         const query = new URLSearchParams({
           reportType,
           dateFrom,
@@ -321,7 +322,9 @@ const PharmacyReports = () => {
         }).toString();
 
     
-        const res = await fetch(`http://localhost:5000/api/reports?${query}`);
+        const res = await fetch(`http://localhost:5000/api/reports?${query}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         const data = await res.json();
 
         setFilteredData(data.records || []);

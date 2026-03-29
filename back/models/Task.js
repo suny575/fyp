@@ -14,6 +14,11 @@ const TaskSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    hospital: {
+      type: String,
+      trim: true,
+      index: true,
+    },
 
     media: {
       images: [String],

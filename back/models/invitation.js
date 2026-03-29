@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 const invitationSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   role: { type: String, required: true },
+  hospital: { type: String, trim: true, index: true },
   status: { type: String, default: "pending" },
   used: { type: Boolean, default: false },
   token: { type: String, required: true, unique: true },

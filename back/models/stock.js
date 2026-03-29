@@ -7,6 +7,7 @@ const stockSchema = new mongoose.Schema(
     category: { type: String, required: true },
     quantity: { type: Number, required: true },
     expiry: { type: Date },
+    hospital: { type: String, trim: true, index: true },
   },
   { timestamps: true }
 );

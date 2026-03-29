@@ -26,6 +26,11 @@ const faultSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    hospital: {
+      type: String,
+      trim: true,
+      index: true,
+    },
     media: {
       images: [{ type: String }],
       voiceNote: { type: String },
@@ -37,7 +42,7 @@ const faultSchema = new mongoose.Schema(
     status: {
       type: String,
       enum: ["waiting", "approved", "rejected", "convertedToTask"],
-      default: "pending",
+      default: "waiting",
     },
     priority: {
       type: String,

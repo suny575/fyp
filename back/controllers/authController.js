@@ -2,6 +2,10 @@ import User from "../models/user.js";
 import Invitation from "../models/invitation.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import {
+  ensureUserHospital,
+  resolveHospitalName,
+} from "../utils/hospitalScope.js";
 
 const serializeUser = (user) => ({
   id: user._id.toString(),
@@ -9,13 +13,22 @@ const serializeUser = (user) => ({
   name: user.name,
   email: user.email,
   role: user.role,
+  hospital: resolveHospitalName(user.hospital),
   profileImage: user.profileImage || "",
 });
 
 const generateToken = (user) => {
-  return jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
-    expiresIn: "7d",
-  });
+  return jwt.sign(
+    {
+      id: user._id,
+      role: user.role,
+      hospital: resolveHospitalName(user.hospital),
+    },
+    process.env.JWT_SECRET,
+    {
+      expiresIn: "7d",
+    },
+  );
 };
 
 export const loginUser = async (req, res) => {
@@ -53,6 +66,7 @@ export const loginUser = async (req, res) => {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
+    await ensureUserHospital(user);
     const token = generateToken(user);
 
     console.log(`Login successful for user: ${email}`);
@@ -101,6 +115,7 @@ export const registerUser = async (req, res) => {
       name,
       email: invitation.email,
       role: invitation.role,
+      hospital: resolveHospitalName(invitation.hospital),
       password,
       status: "active",
     });
@@ -123,6 +138,7 @@ export const registerUser = async (req, res) => {
 
 export const getMe = async (req, res) => {
   try {
+    await ensureUserHospital(req.user);
     res.status(200).json(serializeUser(req.user));
   } catch (error) {
     res.status(500).json({ message: "Server error fetching user" });

@@ -80,16 +80,36 @@ const ScheduledMaintenance = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case "upcoming":
-        return "badge-upcoming";
-      case "paused":
-        return "badge-paused";
+      case "pending":
+        return "badge-pending";
+      case "assigned":
+        return "badge-assigned";
+      case "in_progress":
+      case "inProgress":
+        return "badge-in-progress";
       case "completed":
         return "badge-completed";
       default:
-        return "badge-upcoming";
+        return "badge-pending";
     }
   };
+
+  const formatStatusLabel = (status) => {
+    if (!status) return "Pending";
+
+    switch (status) {
+      case "in_progress":
+        return "In Progress";
+      case "inProgress":
+        return "In Progress";
+      default:
+        return status.charAt(0).toUpperCase() + status.slice(1);
+    }
+  };
+
+  const filteredSchedules = schedules.filter(
+    (sch) => !selectedEquipment || sch.equipment?._id === selectedEquipment,
+  );
 
   if (loading) return <p className="text-center mt-10">Loading schedules...</p>;
 
@@ -125,22 +145,15 @@ const ScheduledMaintenance = () => {
           <thead className="table-dark">
             <tr>
               <th>Equipment</th>
-              <th>Maintenance Type</th>
               <th>Next Date</th>
               <th>Status</th>
               <th>Action</th>
             </tr>
           </thead>
           <tbody>
-            {schedules
-              .filter(
-                (sch) =>
-                  !selectedEquipment || sch.equipment._id === selectedEquipment,
-              )
-              .map((schedule) => (
+            {filteredSchedules.map((schedule) => (
                 <tr key={schedule._id}>
-                  <td>{schedule.equipment.name}</td>
-                  <td>{schedule.maintenanceType}</td>
+                  <td>{schedule.equipment?.name || "Unknown equipment"}</td>
                   <td>
                     {new Date(
                       schedule.nextMaintenanceDate,
@@ -150,7 +163,7 @@ const ScheduledMaintenance = () => {
                     <span
                       className={`badge ${getStatusColor(schedule.status)}`}
                     >
-                      {schedule.status}
+                      {formatStatusLabel(schedule.status)}
                     </span>
                   </td>
                   <td>
@@ -172,26 +185,20 @@ const ScheduledMaintenance = () => {
                     </select>
                   </td>
                 </tr>
-              ))}
+            ))}
           </tbody>
         </table>
       </div>
 
       {/* Cards for mobile */}
       <div className="d-md-none row row-cols-1 g-3">
-        {schedules
-          .filter(
-            (sch) =>
-              !selectedEquipment || sch.equipment._id === selectedEquipment,
-          )
-          .map((schedule) => (
+        {filteredSchedules.map((schedule) => (
             <div key={schedule._id} className="col">
               <div className="card card-shadow">
                 <div className="card-body">
-                  <h5 className="card-title">{schedule.equipment.name}</h5>
-                  <p className="card-text">
-                    {schedule.maintenanceType} maintenance
-                  </p>
+                  <h5 className="card-title">
+                    {schedule.equipment?.name || "Unknown equipment"}
+                  </h5>
                   <p className="card-text">
                     Next:{" "}
                     {new Date(
@@ -203,7 +210,7 @@ const ScheduledMaintenance = () => {
                     <span
                       className={`badge ${getStatusColor(schedule.status)}`}
                     >
-                      {schedule.status}
+                      {formatStatusLabel(schedule.status)}
                     </span>
                   </p>
                   <select
@@ -225,7 +232,7 @@ const ScheduledMaintenance = () => {
                 </div>
               </div>
             </div>
-          ))}
+        ))}
       </div>
     </div>
   );

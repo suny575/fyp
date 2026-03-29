@@ -7,6 +7,11 @@ const maintenanceScheduleSchema = new mongoose.Schema(
       ref: "Equipment",
       required: true,
     },
+    hospital: {
+      type: String,
+      trim: true,
+      index: true,
+    },
 
     frequency: {
       type: String,

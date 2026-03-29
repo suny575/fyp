@@ -6,8 +6,10 @@ import {
   updateManagerStatus,
   getManagers,
 } from "../controllers/adminController.js";
+import protect from "../middleware/authMiddleware.js";
 
 const router = express.Router();
+router.use(protect);
 
 // Routes
 router.post("/invite-manager", inviteManager);

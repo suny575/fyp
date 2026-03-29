@@ -1,15 +1,20 @@
-// routes/taskRoutes.js
 import express from "express";
 import Task from "../models/Task.js";
 import protect from "../middleware/authMiddleware.js";
+import { withHospitalScope } from "../utils/hospitalScope.js";
 
 const router = express.Router();
 router.use(protect);
 
-// GET all tasks for logged-in technician and all task for manager
 router.get("/", async (req, res) => {
   try {
-    const tasks = await Task.find({ assignedTechnician: req.user._id });
+    const tasks = await Task.find(
+      withHospitalScope({ assignedTechnician: req.user._id }, req.user.hospital),
+    )
+      .populate("equipment", "name department hospital")
+      .populate("assignedTechnician", "name hospital")
+      .populate("reportedBy", "name hospital");
+
     res.json(tasks);
   } catch (err) {
     console.error("Fetch tasks error:", err.message);
@@ -19,7 +24,7 @@ router.get("/", async (req, res) => {
 
 router.get("/allTasks", async (req, res) => {
   try {
-    const tasks = await Task.find(); 
+    const tasks = await Task.find(withHospitalScope({}, req.user.hospital));
     res.json(tasks);
   } catch (err) {
     console.error(err);
@@ -27,13 +32,12 @@ router.get("/allTasks", async (req, res) => {
   }
 });
 
-// routes/taskRoutes.js
 router.get("/all", async (req, res) => {
   try {
-    const tasks = await Task.find()
-      .populate("equipment", "name")
-      .populate("assignedTechnician", "name")
-      .populate("reportedBy", "name");
+    const tasks = await Task.find(withHospitalScope({}, req.user.hospital))
+      .populate("equipment", "name department hospital")
+      .populate("assignedTechnician", "name hospital")
+      .populate("reportedBy", "name hospital");
 
     res.json(tasks);
   } catch (err) {
@@ -42,18 +46,24 @@ router.get("/all", async (req, res) => {
   }
 });
 
-// Update task status
 router.put("/:id/status", async (req, res) => {
   try {
     const { status } = req.body;
     const allowedStatuses = ["waiting", "inProgress", "completed"];
-    if (!allowedStatuses.includes(status))
+    if (!allowedStatuses.includes(status)) {
       return res.status(400).json({ message: "Invalid status" });
+    }
 
-    const task = await Task.findOne({
-      _id: req.params.id,
-      assignedTechnician: req.user._id,
-    });
+    const task = await Task.findOne(
+      withHospitalScope(
+        {
+          _id: req.params.id,
+          assignedTechnician: req.user._id,
+        },
+        req.user.hospital,
+      ),
+    );
+
     if (!task) return res.status(404).json({ message: "Task not found" });
 
     task.status = status;

@@ -12,6 +12,11 @@ const WorkOrderSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Equipment",
     },
+    hospital: {
+      type: String,
+      trim: true,
+      index: true,
+    },
 
     technician: {
       type: mongoose.Schema.Types.ObjectId,

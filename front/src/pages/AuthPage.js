@@ -12,6 +12,7 @@ const AuthPage = () => {
   const [invitationExists, setInvitationExists] = useState(false);
   const [registerRole, setRegisterRole] = useState("");
   const [registerEmail, setRegisterEmail] = useState("");
+  const [registerHospital, setRegisterHospital] = useState("");
 
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
@@ -40,6 +41,7 @@ const AuthPage = () => {
           );
           setRegisterEmail(res.data.email);
           setRegisterRole(res.data.role);
+          setRegisterHospital(res.data.hospital || "");
           setInvitationExists(true);
           setActiveTab("register");
         } catch {
@@ -214,6 +216,12 @@ const AuthPage = () => {
                   <input
                     type="text"
                     value={registerRole}
+                    readOnly
+                    className="form-control mb-3"
+                  />
+                  <input
+                    type="text"
+                    value={registerHospital}
                     readOnly
                     className="form-control mb-3"
                   />

@@ -2,71 +2,76 @@ import express from "express";
 import User from "../models/user.js";
 import Invitation from "../models/invitation.js";
 import protect from "../middleware/authMiddleware.js";
+import { withHospitalScope } from "../utils/hospitalScope.js";
 
 const router = express.Router();
 
-// ==============================
-// GET USERS (ShowAll OR limited)
-// ==============================
 router.get("/", protect, async (req, res) => {
   try {
-    const showAll = req.query.all === "true"; // boolean from frontend
+    const showAll = req.query.all === "true";
     const search = req.query.search || "";
     const roleFilter = req.query.role || "";
 
     const roles = roleFilter
       ? [roleFilter]
       : ["technician", "pharmacyStore", "depStaff"];
+
     let combined = [];
 
-    for (let role of roles) {
-      // Fetch all users for this role
-      const users = await User.find({ role }).lean();
-      const activeOrInactive = users.map((u) => ({
-        id: u._id.toString(),
-        name: u.name || "Registered User",
-        email: u.email,
-        role: u.role,
-        status: u.status || "active",
+    for (const role of roles) {
+      const users = await User.find(
+        withHospitalScope({ role }, req.user.hospital),
+      ).lean();
+
+      const activeOrInactive = users.map((user) => ({
+        id: user._id.toString(),
+        name: user.name || "Registered User",
+        email: user.email,
+        hospital: user.hospital,
+        role: user.role,
+        status: user.status || "active",
       }));
 
-      // Fetch all pending invitations for this role
-      const invitations = await Invitation.find({
-        role,
-        used: false,
-        expiresAt: { $gt: new Date() },
-      }).lean();
+      const invitations = await Invitation.find(
+        withHospitalScope(
+          {
+            role,
+            used: false,
+            expiresAt: { $gt: new Date() },
+          },
+          req.user.hospital,
+        ),
+      ).lean();
 
-      const pending = invitations.map((i) => ({
-        id: i._id.toString(),
+      const pending = invitations.map((invite) => ({
+        id: invite._id.toString(),
         name: "Pending Registration",
-        email: i.email,
-        role: i.role,
+        email: invite.email,
+        hospital: invite.hospital,
+        role: invite.role,
         status: "pending",
       }));
 
       let merged = [...activeOrInactive, ...pending];
 
-      // Only slice if showAll is false
       if (!showAll) {
         const activeUsers = merged
-          .filter((u) => u.status === "active")
+          .filter((user) => user.status === "active")
           .slice(0, 3);
         const pendingUsers = merged
-          .filter((u) => u.status === "pending")
+          .filter((user) => user.status === "pending")
           .slice(0, 3);
-        const inactiveUsers = merged.filter((u) => u.status === "inactive");
+        const inactiveUsers = merged.filter((user) => user.status === "inactive");
         merged = [...activeUsers, ...pendingUsers, ...inactiveUsers];
       }
 
       combined = [...combined, ...merged];
     }
 
-    // Apply search filter
     if (search.length >= 2) {
       const lowerSearch = search.toLowerCase();
-      combined = combined.filter((u) =>
-        u.name.toLowerCase().includes(lowerSearch),
+      combined = combined.filter((user) =>
+        user.name.toLowerCase().includes(lowerSearch),
       );
     }
 
@@ -77,18 +82,25 @@ router.get("/", protect, async (req, res) => {
   }
 });
 
-// ==============================
-// DELETE USER OR PENDING INVITE
-// ==============================
 router.delete("/:id", protect, async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
+    const user = await User.findOne(
+      withHospitalScope({ _id: req.params.id }, req.user.hospital),
+    );
+
     if (user) {
       await user.deleteOne();
     } else {
-      const invite = await Invitation.findById(req.params.id);
-      if (invite) await invite.deleteOne();
+      const invite = await Invitation.findOne(
+        withHospitalScope({ _id: req.params.id }, req.user.hospital),
+      );
+      if (invite) {
+        await invite.deleteOne();
+      } else {
+        return res.status(404).json({ message: "User or invite not found" });
+      }
     }
+
     res.json({ message: "Deleted successfully" });
   } catch (err) {
     console.error("Delete error:", err);
@@ -96,17 +108,15 @@ router.delete("/:id", protect, async (req, res) => {
   }
 });
 
-// ==============================
-// ACTIVATE / DEACTIVATE USER
-// ==============================
 router.patch("/:id/status", protect, async (req, res) => {
   try {
     const { status } = req.body;
-    const user = await User.findByIdAndUpdate(
-      req.params.id,
+    const user = await User.findOneAndUpdate(
+      withHospitalScope({ _id: req.params.id }, req.user.hospital),
       { status },
       { new: true },
     );
+
     if (!user) return res.status(404).json({ message: "User not found" });
     res.json({ staff: { id: user._id.toString(), status: user.status } });
   } catch (err) {

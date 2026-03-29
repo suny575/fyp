@@ -41,7 +41,10 @@ const StockRequestForm = () => {
   // ===== Fetch stock items for suggestions =====
   const fetchStockItems = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/stock");
+      const token = localStorage.getItem("token");
+      const res = await axios.get("http://localhost:5000/api/stock", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       setStockItems(res.data);
 
