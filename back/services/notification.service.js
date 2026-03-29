@@ -1,11 +1,18 @@
 // services/notificationTemplates.js
 import io from "../server.js";
+import { getAdminSettings } from "./adminSettingsService.js";
 
-export const sendNotification = ({ trigger, recipientUsers, payload }) => {
+export const sendNotification = async ({ trigger, recipientUsers, payload }) => {
+  const settings = await getAdminSettings();
+
+  // Respect in-app notification toggle
+  if (settings && settings.inAppNotifications === false) return;
+
   for (const userId of recipientUsers) {
     io.to(userId.toString()).emit("newNotification", {
       trigger,
       payload,
+      sound: settings?.soundAlert ?? false,
     });
   }
 };

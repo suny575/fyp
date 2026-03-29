@@ -4,6 +4,7 @@ import User from "../models/user.js"; // ✅ updated to your new User model
 import Invitation from "../models/invitation.js"; // ✅ for invited managers
 import Notification from "../models/AdminNotification.js";
 import Report from "../models/ReportsAdmin.js";
+import LogsAdmin from "../models/LogsAdmin.js";
 
 const router = express.Router();
 
@@ -11,27 +12,34 @@ const router = express.Router();
 router.get("/reports", async (req, res) => {
   try {
     // ================= Managers =================
-    // Active registered managers
-    const users = await User.find({ role: "maintenanceManager" })
-      .select("name email role createdAt");
+    // Registered managers (use actual status from the User record)
+    const users = await User.find({ role: "maintenanceManager" }).select(
+      "name email role createdAt status"
+    );
 
     const userData = users.map((u) => ({
       name: u.name || "",
       email: u.email,
-      status: "Active",
+      // keep the stored status so active/inactive changes are reflected
+      status: u.status || "active",
       date: u.createdAt?.toISOString().split("T")[0],
     }));
 
-    // Pending invited managers
-    const invitations = await Invitation.find({ role: "maintenanceManager" });
+    // Pending invitations (only managers that have NOT registered yet)
+    const invitations = await Invitation.find({
+      role: "maintenanceManager",
+      used: false,
+      status: "pending",
+    });
+
     const invitationData = invitations.map((i) => ({
-      name: i.name || "", // you can optionally store name on invitation later
+      name: i.name || "", // optional name field on invitation
       email: i.email,
-      status: i.status?.charAt(0).toUpperCase() + i.status.slice(1) || "Pending",
+      status: "pending",
       date: i.createdAt?.toISOString().split("T")[0],
     }));
 
-    const managersData = [...userData, ...invitationData]; // combine registered + invited
+    const managersData = [...userData, ...invitationData]; // combine registered + pending invites
 
     // ================= Alerts =================
     const alerts = await Notification.find();
@@ -72,6 +80,47 @@ router.get("/reports", async (req, res) => {
     });
   } catch (error) {
     console.error("Reports Error:", error);
+    res.status(500).json({ message: "Server Error" });
+  }
+});
+
+// DASHBOARD STATS (Admin Overview)
+router.get("/dashboard-stats", async (req, res) => {
+  try {
+    const managers = await User.find({ role: "maintenanceManager" });
+    const totalManagers = managers.length;
+    const activeManagers = managers.filter((m) => m.status === "active").length;
+    const inactiveManagers = managers.filter((m) => m.status === "inactive").length;
+
+    const criticalAlerts = await Notification.countDocuments({ type: "Critical" });
+    const systemAlerts = await Notification.countDocuments({ type: "System" });
+
+    const reportsGenerated = await Report.countDocuments();
+
+    // Total logs for activity count; also keep last 5 entries if needed later
+    const totalLogs = await LogsAdmin.countDocuments();
+
+    const recentActivity = await LogsAdmin.find()
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .select("event description user createdAt type severity");
+
+    res.json({
+      managers: {
+        total: totalManagers,
+        active: activeManagers,
+        inactive: inactiveManagers,
+      },
+      alerts: {
+        critical: criticalAlerts,
+        system: systemAlerts,
+      },
+      reportsGenerated,
+      recentActivity,
+      totalLogs,
+    });
+  } catch (error) {
+    console.error("Dashboard stats error:", error);
     res.status(500).json({ message: "Server Error" });
   }
 });

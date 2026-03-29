@@ -1,6 +1,4 @@
 
-
-
 import LogsAdmin from "../models/LogsAdmin.js";
 
 // Create a log

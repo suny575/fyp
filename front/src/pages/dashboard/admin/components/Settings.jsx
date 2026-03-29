@@ -6,13 +6,10 @@ import "../styles/Settings.css";
 
 const Settings = () => {
   const defaultSettings = {
-    enableCriticalAlerts: true,
     autoRestart: false,
     maxLoginAttempts: 5,
     minPasswordLength: 8,
     requireStrongPassword: true,
-    sessionTimeout: 30,
-    emailNotifications: true,
     inAppNotifications: true,
     soundAlert: false,
   };
@@ -73,18 +70,6 @@ const Settings = () => {
           <p>Control system protection and monitoring options.</p>
 
           <div className="setting-item">
-            <span>Enable Critical Alerts</span>
-            <label className="switch">
-              <input
-                type="checkbox"
-                checked={settings.enableCriticalAlerts}
-                onChange={() => handleToggle("enableCriticalAlerts")}
-              />
-              <span className="slider"></span>
-            </label>
-          </div>
-
-          <div className="setting-item">
             <span>Auto Restart on Crash</span>
             <label className="switch">
               <input
@@ -129,60 +114,8 @@ const Settings = () => {
               <span className="slider"></span>
             </label>
           </div>
-
-          <div className="setting-item">
-            <span>Session Timeout (minutes)</span>
-            <input
-              type="number"
-              name="sessionTimeout"
-              value={settings.sessionTimeout}
-              onChange={handleChange}
-              className="number-input"
-            />
-          </div>
         </div>
 
-        {/* Notification Preferences */}
-        <div className="settings-card">
-          <h3>🔔 Notification Preferences</h3>
-          <p>Choose how admin receives alerts and notifications.</p>
-
-          <div className="setting-item">
-            <span>Email Notifications</span>
-            <label className="switch">
-              <input
-                type="checkbox"
-                checked={settings.emailNotifications}
-                onChange={() => handleToggle("emailNotifications")}
-              />
-              <span className="slider"></span>
-            </label>
-          </div>
-
-          <div className="setting-item">
-            <span>In-App Notifications</span>
-            <label className="switch">
-              <input
-                type="checkbox"
-                checked={settings.inAppNotifications}
-                onChange={() => handleToggle("inAppNotifications")}
-              />
-              <span className="slider"></span>
-            </label>
-          </div>
-
-          <div className="setting-item">
-            <span>Enable Sound Alert</span>
-            <label className="switch">
-              <input
-                type="checkbox"
-                checked={settings.soundAlert}
-                onChange={() => handleToggle("soundAlert")}
-              />
-              <span className="slider"></span>
-            </label>
-          </div>
-        </div>
       </div>
 
       {/* Bottom Buttons */}

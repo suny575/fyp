@@ -17,11 +17,15 @@ const userSchema = new mongoose.Schema({
     required: true,
   },
 
-   status: {
+  status: {
     type: String,
     enum: ["pending", "active", "inactive"],
     default: "pending",
   },
+
+  // Login security controls
+  failedLoginAttempts: { type: Number, default: 0 },
+  lockUntil: { type: Date },
   
   approved: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },

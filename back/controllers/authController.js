@@ -4,6 +4,18 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import AdminNotification from "../models/AdminNotification.js";
 import { sendNotification } from "../services/notification.service.js"; // ✅ correct import
+import { getAdminSettings } from "../services/adminSettingsService.js";
+
+const createCriticalAlert = async (title, message) => {
+  const settings = await getAdminSettings();
+  if (settings?.enableCriticalAlerts === false) return;
+
+  await AdminNotification.create({
+    type: "Critical",
+    message: `${title}: ${message}`,
+    time: new Date().toLocaleString(),
+  });
+};
 
 // Generate JWT
 const generateToken = (user) => {
@@ -31,7 +43,22 @@ export const loginUser = async (req, res) => {
 
     if (!user) {
       console.warn("Login failed: User not found", email);
+      await createCriticalAlert(
+        "Unauthorized login attempt",
+        `Unknown email ${email} tried to login`
+      );
       return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    const settings = await getAdminSettings();
+    const maxAttempts = settings?.maxLoginAttempts ?? 5;
+
+    // Account lock check
+    if (user.lockUntil && user.lockUntil > Date.now()) {
+      const minutes = Math.ceil((user.lockUntil - Date.now()) / (60 * 1000));
+      return res
+        .status(423)
+        .json({ message: `Account locked. Try again in ~${minutes} minute(s).` });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
@@ -40,15 +67,37 @@ export const loginUser = async (req, res) => {
     console.log("Match result:", isMatch);
 
     if (!isMatch) {
-      console.warn(
-        `Login failed: Incorrect password for email ${email}`,
-        "Attempted:",
-        password,
-        "Stored hash:",
-        user.password,
-      );
-      return res.status(401).json({ message: "Invalid credentials" });
+      console.warn(`Login failed: Incorrect password for email ${email}`);
+
+      user.failedLoginAttempts = (user.failedLoginAttempts || 0) + 1;
+
+      if (user.failedLoginAttempts >= maxAttempts) {
+        // lock for 15 minutes
+        user.lockUntil = new Date(Date.now() + 15 * 60 * 1000);
+        await createCriticalAlert(
+          "Multiple failed login attempts",
+          `Account ${email} locked after ${maxAttempts} failed attempts`
+        );
+      }
+      await user.save();
+
+      const remaining =
+        user.lockUntil && user.lockUntil > Date.now()
+          ? 0
+          : Math.max(maxAttempts - user.failedLoginAttempts, 0);
+
+      return res.status(401).json({
+        message:
+          remaining > 0
+            ? `Invalid credentials. Attempts left: ${remaining}`
+            : "Account locked due to repeated failures. Try again later.",
+      });
     }
+
+    // Successful login -> reset counters
+    user.failedLoginAttempts = 0;
+    user.lockUntil = undefined;
+    await user.save();
 
     const token = generateToken(user);
 
@@ -97,13 +146,34 @@ export const registerUser = async (req, res) => {
         message: "User already registered",
       });
 
+    const settings = await getAdminSettings();
+    const minLength = settings?.minPasswordLength ?? 8;
+    const requireStrong = settings?.requireStrongPassword ?? true;
+
+    if ((password || "").length < minLength) {
+      return res
+        .status(400)
+        .json({ message: `Password must be at least ${minLength} characters.` });
+    }
+
+    if (requireStrong) {
+      const strongRegex =
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).+$/;
+      if (!strongRegex.test(password)) {
+        return res.status(400).json({
+          message:
+            "Password must include upper, lower, number, and special character.",
+        });
+      }
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await User.create({
       name,
       email: invitation.email,
       role: invitation.role,
-      password: password,
+      password: hashedPassword,
       status: "active",
     });
 

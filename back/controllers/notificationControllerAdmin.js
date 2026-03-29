@@ -1,4 +1,5 @@
 import Notification from "../models/AdminNotification.js";
+import { getAdminSettings } from "../services/adminSettingsService.js";
 
 // Get all notifications
 export const getNotifications = async (req, res) => {
@@ -15,6 +16,14 @@ export const getNotifications = async (req, res) => {
 export const createNotification = async (req, res) => {
   try {
     const { type, message, time } = req.body;
+    const settings = await getAdminSettings();
+
+    if (type === "Critical" && settings?.enableCriticalAlerts === false) {
+      return res
+        .status(400)
+        .json({ message: "Critical alerts are disabled by admin settings" });
+    }
+
     const notification = await Notification.create({ type, message, time });
     res.status(201).json({ notification });
   } catch (err) {

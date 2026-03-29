@@ -46,8 +46,9 @@
   padding: 6px 12px;
 }
 
-.table-wrapper {
+.managers-table-wrapper {
   overflow-x: auto; /* horizontal scroll */
+  -webkit-overflow-scrolling: touch;
 }
 
 .managers-table {
@@ -105,4 +106,66 @@
   color: white;
   border: none;
   padding: 5px 8px;
+}
+
+/* ---------- Small screens: stack rows as cards ---------- */
+@media (max-width: 768px) {
+  .managers-table {
+    min-width: 0;
+    border: 0;
+  }
+
+  .managers-table thead {
+    display: none;
+  }
+
+  .managers-table,
+  .managers-table tbody,
+  .managers-table tr,
+  .managers-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .managers-table tr {
+    margin-bottom: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+  }
+
+  .managers-table td {
+    text-align: left;
+    padding: 10px 12px;
+    border: none;
+    border-bottom: 1px solid #eee;
+    font-size: 14px;
+  }
+
+  .managers-table td:last-child {
+    border-bottom: none;
+  }
+
+  .managers-table td::before {
+    content: attr(data-label);
+    display: block;
+    font-weight: 600;
+    color: #555;
+    margin-bottom: 4px;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+
+  .status {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .activate-btn,
+  .deactivate-btn,
+  .delete-btn {
+    margin-right: 8px;
+    margin-top: 6px;
+  }
 }

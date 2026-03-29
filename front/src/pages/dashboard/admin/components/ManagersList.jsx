@@ -1,5 +1,4 @@
 
-
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "../styles/ManagersList.css";
@@ -9,13 +8,11 @@ const ManagersList = () => {
   const [managers, setManagers] = useState([]);
   const [email, setEmail] = useState("");
 
-  // Fetch all invitations / managers
+  // 🔄 Fetch all managers (pending + registered)
   const fetchManagers = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/admin/managers")
-      
+      const res = await axios.get("http://localhost:5000/api/admin/managers");
       setManagers(res.data.managers);
-
     } catch (err) {
       console.error(err);
     }
@@ -25,12 +22,13 @@ const ManagersList = () => {
     fetchManagers();
   }, []);
 
-  // Invite manager
+  // ================= INVITE MANAGER =================
   const handleInvite = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("http://localhost:5000/api/admin/invite-manager", { email })
-      setManagers((prev) => [...prev, res.data.manager]);
+      const res = await axios.post("http://localhost:5000/api/admin/invite-manager", { email });
+      // Add new invitation to table
+      setManagers(prev => [...prev, res.data.manager]);
       setEmail("");
       setShowForm(false);
     } catch (err) {
@@ -40,61 +38,35 @@ const ManagersList = () => {
     }
   };
 
+  // ================= TOGGLE STATUS =================
   const toggleStatus = async (managerId, currentStatus) => {
-  try {
-    await axios.patch(
-      `http://localhost:5000/api/admin/manager/${managerId}/status`,
-      { status: currentStatus === "active" ? "inactive" : "active" }
-    );
-    setManagers(prev =>
-      prev.map(m => (m._id === managerId ? { ...m, status: currentStatus === "active" ? "inactive" : "active" } : m))
-    );
-  } catch (err) {
-    console.error(err);
-    alert("Error updating status");
-  }
-};
+    try {
+      const newStatus = currentStatus === "active" ? "inactive" : "active";
 
-const deleteManager = async (managerId) => {
-  try {
-    await axios.delete(`http://localhost:5000/api/admin/manager/${managerId}`);
-    setManagers(prev => prev.filter(m => m._id !== managerId));
-  } catch (err) {
-    console.error(err);
-    alert("Error deleting manager");
-  }
-};
+      await axios.patch(
+        `http://localhost:5000/api/admin/manager/${managerId}/status`,
+        { status: newStatus }
+      );
 
-//   const toggleStatus = async (invitationId, currentStatus) => {
-//   try {
-//     const newStatus = currentStatus === "active" ? "inactive" : "active";
+      setManagers(prev =>
+        prev.map(m => (m._id === managerId ? { ...m, status: newStatus } : m))
+      );
+    } catch (err) {
+      console.error(err);
+      alert("Error updating status");
+    }
+  };
 
-//     await axios.patch(
-//       `http://localhost:5000/api/admin/manager/${invitationId}/status`,
-//       { status: newStatus }
-//     );
-
-//     setManagers((prev) =>
-//       prev.map((m) =>
-//         m._id === invitationId ? { ...m, status: newStatus } : m
-//       )
-//     );
-//   } catch (err) {
-//     console.error(err);
-//     alert("Error updating status");
-//   }
-// };
-
-//   // Delete invitation
-//   const deleteManager = async (invitationId) => {
-//     try {
-//       await axios.delete(`http://localhost:5000/api/admin/manager/${invitationId}`)
-//       setManagers((prev) => prev.filter((m) => m._id !== invitationId));
-//     } catch (err) {
-//       console.error(err);
-//       alert("Error deleting manager");
-//     }
-//   };
+  // ================= DELETE MANAGER =================
+  const deleteManager = async (managerId) => {
+    try {
+      await axios.delete(`http://localhost:5000/api/admin/manager/${managerId}`);
+      setManagers(prev => prev.filter(m => m._id !== managerId));
+    } catch (err) {
+      console.error(err);
+      alert("Error deleting manager");
+    }
+  };
 
   return (
     <div className="managers-container">
@@ -120,7 +92,7 @@ const deleteManager = async (managerId) => {
         </div>
       )}
 
-      <div className="table-wrapper">
+      <div className="managers-table-wrapper">
         <table className="managers-table">
           <thead>
             <tr>
@@ -132,63 +104,46 @@ const deleteManager = async (managerId) => {
             </tr>
           </thead>
           <tbody>
-  {managers.map((manager) => manager && (
-    <tr key={manager._id}>
-      <td>{manager.name || "-"}</td>
-      <td>{manager.email || "-"}</td>
-      <td>{manager.role || "Maintenance Manager"}</td>
-      <td>
-        <span className={`status ${manager.status?.toLowerCase() || "pending"}`}>
-          {manager.status
-            ? manager.status.charAt(0).toUpperCase() + manager.status.slice(1)
-            : "Pending"}
-        </span>
-      </td>
-      <td>
-        {manager.status === "pending" && (
-          <button
-            className="delete-btn"
-            onClick={() => deleteManager(manager._id)}
-          >
-            Delete
-          </button>
-        )}
-        {manager.status === "active" && (
-          <>
-            <button
-              className="deactivate-btn"
-              onClick={() => toggleStatus(manager._id, manager.status)}
-            >
-              Deactivate
-            </button>
-            <button
-              className="delete-btn"
-              onClick={() => deleteManager(manager._id)}
-            >
-              Delete
-            </button>
-          </>
-        )}
-        {manager.status === "inactive" && (
-          <>
-            <button
-              className="activate-btn"
-              onClick={() => toggleStatus(manager._id, manager.status)}
-            >
-              Activate
-            </button>
-            <button
-              className="delete-btn"
-              onClick={() => deleteManager(manager._id)}
-            >
-              Delete
-            </button>
-          </>
-        )}
-      </td>
-    </tr>
-  ))}
-</tbody>
+            {managers.map(manager => manager && (
+              <tr key={manager._id}>
+                <td data-label="Name">{manager.name || "-"}</td>
+                <td data-label="Email">{manager.email || "-"}</td>
+                <td data-label="Role">{manager.role || "Maintenance Manager"}</td>
+                <td data-label="Status">
+                  <span className={`status ${manager.status?.toLowerCase() || "pending"}`}>
+                    {manager.status ? manager.status.charAt(0).toUpperCase() + manager.status.slice(1) : "Pending"}
+                  </span>
+                </td>
+                <td data-label="Actions">
+                  {manager.status === "pending" && (
+                    <button className="delete-btn" onClick={() => deleteManager(manager._id)}>
+                      Delete
+                    </button>
+                  )}
+                  {manager.status === "active" && (
+                    <>
+                      <button className="deactivate-btn" onClick={() => toggleStatus(manager._id, manager.status)}>
+                        Deactivate
+                      </button>
+                      <button className="delete-btn" onClick={() => deleteManager(manager._id)}>
+                        Delete
+                      </button>
+                    </>
+                  )}
+                  {manager.status === "inactive" && (
+                    <>
+                      <button className="activate-btn" onClick={() => toggleStatus(manager._id, manager.status)}>
+                        Activate
+                      </button>
+                      <button className="delete-btn" onClick={() => deleteManager(manager._id)}>
+                        Delete
+                      </button>
+                    </>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
         </table>
       </div>
     </div>
