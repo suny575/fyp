@@ -110,11 +110,14 @@ import "../styles/Notifications.css";
 const Notifications = () => {
   const [activeTab, setActiveTab] = useState("Critical");
   const [alerts, setAlerts] = useState([]);
+  const token = localStorage.getItem("token");
 
   // Fetch notifications from backend
   const fetchNotifications = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/admin/notifications");
+      const res = await axios.get("http://localhost:5000/api/admin/notifications", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       console.log(res.data.notifications);
       setAlerts(res.data.notifications);
     } catch (err) {
@@ -132,7 +135,9 @@ const Notifications = () => {
   // Delete alert
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/admin/notifications/${id}`);
+      await axios.delete(`http://localhost:5000/api/admin/notifications/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setAlerts((prev) => prev.filter((alert) => alert._id !== id));
     } catch (err) {
       console.error("Error deleting notification:", err);

@@ -9,6 +9,7 @@ const SystemLogs = () => {
   const [typeFilter, setTypeFilter] = useState("All");
   const [severityFilter, setSeverityFilter] = useState("All");
   const [selectedLog, setSelectedLog] = useState(null);
+  const token = localStorage.getItem("token");
 
   const [typeOptions, setTypeOptions] = useState([]);
   const [severityOptions, setSeverityOptions] = useState([]);
@@ -17,7 +18,9 @@ const SystemLogs = () => {
   useEffect(() => {
     const fetchLogs = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/admin/system-logs");
+        const res = await axios.get("http://localhost:5000/api/admin/system-logs", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         setLogs(res.data.logs || []);
 
         // Populate dropdowns dynamically

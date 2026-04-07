@@ -5,6 +5,7 @@ import axios from "axios";
 import "../styles/DashboardHome.css";
 const DashboardHome = () => {
   const navigate = useNavigate();
+  const token = localStorage.getItem("token");
 
   const [stats, setStats] = useState({
     totalManagers: 0,
@@ -19,7 +20,9 @@ const DashboardHome = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/admin/dashboard-stats");
+        const res = await axios.get("http://localhost:5000/api/admin/dashboard-stats", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
         setStats({
           totalManagers: res.data.managers?.total || 0,

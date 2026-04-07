@@ -26,6 +26,7 @@ import maintenanceLog from "./routes/maintenanceLogRoutes.js";
 import workOrder from "./routes/workOrderRoutes.js";
 import profileRoutes from "./routes/profileRoutes.js";
 import contactRoutes from "./routes/contactRoutes.js";
+import protect from "./middleware/authMiddleware.js";
 const app = express();
 
 app.use(express.json());
@@ -49,12 +50,12 @@ app.use("/notifications", Notification);
 app.use("/contact", contactRoutes);
 app.use("/reports", reportsRoutes);
 app.use("/pharmacy", pharmacyRoutes);
-app.use("/admin", adminRoutes);
+app.use("/admin", protect, adminRoutes);
 app.use("/equipmentReportRoutes.js", EquipmentReportRouts);
-app.use("/admin/notifications", notificationRoutesAdmin);
-app.use("/admin", adminReports);
-app.use("/admin/system-logs", logsRoutesAdmin);
-app.use("/admin/settings", adminSettingsRoutes);
+app.use("/admin/notifications", protect, notificationRoutesAdmin);
+app.use("/admin", protect, adminReports);
+app.use("/admin/system-logs", protect, logsRoutesAdmin);
+app.use("/admin/settings", protect, adminSettingsRoutes);
 app.use("/maintenanceLog", maintenanceLog);
 app.use("/workOrder", workOrder);
 app.get("/", (req, res) => {

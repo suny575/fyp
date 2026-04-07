@@ -18,6 +18,7 @@ import { useEffect } from "react";
 
 const ReportsPage = () => {
   const reportRef = useRef();
+  const token = localStorage.getItem("token");
 
   // Date filter state
   const [startDate, setStartDate] = useState("");
@@ -34,7 +35,9 @@ useEffect(() => {
 
 const fetchReports = async () => {
   try {
-    const res = await axios.get("http://localhost:5000/api/admin/reports");
+    const res = await axios.get("http://localhost:5000/api/admin/reports", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
 
     setManagerTableData(res.data.managers);
     setAlertsSummary(res.data.alerts);
@@ -112,7 +115,7 @@ const fetchReports = async () => {
     // SAVE REPORT HISTORY
     await axios.post("http://localhost:5000/api/admin/save-report", {
       name: "Reports Dashboard"
-    });
+    }, { headers: { Authorization: `Bearer ${token}` } });
 
   });
 

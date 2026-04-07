@@ -46,6 +46,7 @@ export const inviteManager = async (req, res) => {
       type: "System",
       message: `Manager ${newInvitation.email} has been invited for ${managerHospital}.`,
       time: new Date().toLocaleString(),
+      hospital: managerHospital,
     });
 
     // 🔥 Log
@@ -55,6 +56,7 @@ export const inviteManager = async (req, res) => {
       severity: "Low",
       description: `Invitation sent to ${newInvitation.email} for ${managerHospital}`,
       user: adminName || req.user.name || "Admin",
+      hospital: managerHospital,
     });
 
     // 🔥 Email
@@ -160,6 +162,7 @@ export const deleteManager = async (req, res) => {
       type: "System",
       message: `Admin deleted manager invitation for ${email}`,
       time: new Date().toLocaleString(),
+      hospital: invitation.hospital,
    });
 
     res.status(200).json({ message: "Manager deleted from invitations" });

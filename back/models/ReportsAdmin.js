@@ -1,6 +1,11 @@
 import mongoose from "mongoose";
 
 const reportSchema = new mongoose.Schema({
+  hospital: {
+    type: String,
+    trim: true,
+    index: true,
+  },
   name: {
     type: String,
     required: true

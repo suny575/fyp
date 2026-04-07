@@ -17,12 +17,15 @@ const Settings = () => {
   const [settings, setSettings] = useState(defaultSettings);
   const [savedMessage, setSavedMessage] = useState("");
   const [loading, setLoading] = useState(true);
+  const token = localStorage.getItem("token");
 
   // Fetch settings from backend on load
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/admin/settings");
+        const res = await axios.get("http://localhost:5000/api/admin/settings", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         if (res.data) setSettings(res.data);
       } catch (err) {
         console.error("Error fetching settings:", err);
@@ -44,7 +47,11 @@ const Settings = () => {
 
   const handleSave = async () => {
     try {
-      await axios.put("http://localhost:5000/api/admin/settings", settings);
+      await axios.put(
+        "http://localhost:5000/api/admin/settings",
+        settings,
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
       setSavedMessage("Settings saved successfully ✅");
       setTimeout(() => setSavedMessage(""), 3000);
     } catch (err) {

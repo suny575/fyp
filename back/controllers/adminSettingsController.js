@@ -45,7 +45,8 @@ export const updateAdminSettings = async (req, res) => {
       type: "System",
       severity: "Medium",
       description: "Administrator updated system settings",
-      user: "Admin"
+      user: req.user?.name || "Admin",
+      hospital: req.user?.hospital,
     });
 
     res.json({
