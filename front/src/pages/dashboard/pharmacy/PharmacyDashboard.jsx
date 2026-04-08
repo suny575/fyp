@@ -1,12 +1,6 @@
-
-// PharmacyDashboard.jsx
 import React from "react";
-import { Routes, Route } from "react-router-dom";      //, Navigate
-
-// import PharmacySidebar from "./components/PharmacySidebar";
-// import PharmacyTopbar from "./components/PharmacyTopbar";
+import { Routes, Route } from "react-router-dom";     
 import PharmacyHome from "./components/PharmacyHome";
-// import PharmacyEditProfile from "./components/PharmacyEditProfile";
 import EquipmentManagement from "./components/EquipmentManagement";
 import StockManagement from "./components/StockManagement";
 import Allocation from "./components/Allocation";
@@ -14,21 +8,12 @@ import Reports from "./components/Reports";
 import Alerts from "./components/Alerts";
 import Layout from "../../../layout/layout.jsx";
 
-// import "./styles/PharmacyDashboard.css";
-
 const PharmacyDashboard = () => {
   return (
-    // <div className="pharmacy-layout">
-    //   <PharmacySidebar />
-
-    //   <div className="pharmacy-main">
-    //     <PharmacyTopbar />
-
-        // <div className="pharmacy-content">
           <Layout>
           <Routes>
-            {/* Default page */}
-            <Route index element={< PharmacyHome/>} />
+          
+            <Route path ="" element={< PharmacyHome/>} />
 
             {/* Pages */}
             <Route path="home" element={<PharmacyHome />} />
@@ -37,12 +22,8 @@ const PharmacyDashboard = () => {
             <Route path="allocation" element={<Allocation />} />
             <Route path="reports" element={<Reports />} />
             <Route path="alerts" element={<Alerts />} />
-            {/* <Route path="edit-profile" element={<PharmacyEditProfile />} /> */}
           </Routes>
           </Layout>
-        // </div>
-    //   </div>
-    // </div>
   );
 };
 

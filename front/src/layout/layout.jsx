@@ -30,36 +30,49 @@ const Layout = ({ children }) => {
     }
   };
 
+  const closeSidebar = () => {
+    if (!isDesktop) {
+      setIsSidebarOpen(false);
+    }
+  };
+
   return (
-    <div style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
+    <div
+      style={{
+        display: "flex",
+        height: "100vh",
+        overflow: "hidden",
+        background: "#f4f6f9",
+      }}
+    >
       {/* Sidebar */}
       <div
         style={{
           position: isDesktop ? "relative" : "fixed",
-          left: isSidebarOpen ? 0 : "-250px",
-          top: 80,
+          left: isSidebarOpen ? "0" : "-260px",
+          top: 0,
           height: "100%",
-          width: "250px",
-          background: "#1E1E2F",
-          transition: "left 0.3s ease",
+          width: "260px",
+          background: "linear-gradient(180deg, #1E1E2F, #25253a)",
+          transition: "left 0.35s ease",
           zIndex: 2000,
+          boxShadow: isSidebarOpen ? "4px 0 20px rgba(0,0,0,0.25)" : "none",
         }}
       >
-        <Sidebar />
+        <Sidebar closeSidebar={closeSidebar} isDesktop={isDesktop} />
       </div>
 
       {/* Overlay for mobile */}
       {!isDesktop && isSidebarOpen && (
         <div
-          onClick={() => setIsSidebarOpen(false)}
+          onClick={closeSidebar}
           style={{
             position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
+            inset: 0,
             background: "rgba(0,0,0,0.4)",
+            backdropFilter: "blur(3px)",
             zIndex: 1500,
+            transition: "opacity 0.3s ease",
           }}
         />
       )}
@@ -68,21 +81,26 @@ const Layout = ({ children }) => {
       <div
         style={{
           flex: 1,
-          marginLeft: isDesktop ? "2px" : "0",
-          transition: "margin-left 0.3s ease",
           display: "flex",
           flexDirection: "column",
           overflow: "hidden",
-          position: "relative", // important: makes children stack inside
+          position: "relative",
+          transition: "all 0.3s ease",
         }}
       >
-        <Topbar toggleSidebar={toggleSidebar} isDesktop={isDesktop} />
+        <Topbar
+          toggleSidebar={toggleSidebar}
+          isDesktop={isDesktop}
+          isSidebarOpen={isSidebarOpen}
+        />
+
         <div
           style={{
             flex: 1,
             overflowY: "auto",
-            padding: "1rem",
-            minWidth: 0, // important: prevents flex content from overflowing
+            padding: "1.5rem",
+            minWidth: 0,
+            background: "#f4f6f9",
           }}
         >
           {children}
