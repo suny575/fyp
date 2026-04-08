@@ -1,9 +1,13 @@
 import Notification from "../models/AdminNotification.js";
+import { getAdminSettings } from "../services/adminSettingsService.js";
+import { withHospitalScope, resolveHospitalName } from "../utils/hospitalScope.js";
 
 // Get all notifications
 export const getNotifications = async (req, res) => {
   try {
-    const notifications = await Notification.find().sort({ createdAt: -1 });
+    const notifications = await Notification.find(
+      withHospitalScope({}, req.user?.hospital),
+    ).sort({ createdAt: -1 });
     res.status(200).json({ notifications });
   } catch (err) {
     console.error(err);
@@ -15,7 +19,20 @@ export const getNotifications = async (req, res) => {
 export const createNotification = async (req, res) => {
   try {
     const { type, message, time } = req.body;
-    const notification = await Notification.create({ type, message, time });
+    const settings = await getAdminSettings();
+
+    if (type === "Critical" && settings?.enableCriticalAlerts === false) {
+      return res
+        .status(400)
+        .json({ message: "Critical alerts are disabled by admin settings" });
+    }
+
+    const notification = await Notification.create({
+      type,
+      message,
+      time,
+      hospital: resolveHospitalName(req.user?.hospital),
+    });
     res.status(201).json({ notification });
   } catch (err) {
     console.error(err);

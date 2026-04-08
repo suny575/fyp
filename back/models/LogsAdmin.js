@@ -15,6 +15,7 @@
 import mongoose from "mongoose";
 
 const logsAdminSchema = new mongoose.Schema({
+  hospital: { type: String, trim: true, index: true },
   event: { type: String, required: true },
   type: { type: String, required: true },      // Manager / Security / System
   severity: { type: String, required: true },  // Low / Medium / High

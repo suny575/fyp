@@ -1,5 +1,6 @@
 import AdminSettings from "../models/adminSettingsModel.js";
 import { createLog } from "./logControllerAdmin.js";
+import { clearSettingsCache } from "../services/adminSettingsService.js";
 
 // GET SETTINGS
 export const getAdminSettings = async (req, res) => {
@@ -28,10 +29,15 @@ export const updateAdminSettings = async (req, res) => {
     if (!settings) {
       settings = new AdminSettings(req.body);
     } else {
-      Object.assign(settings, req.body);
+      const {
+        emailNotifications, // drop if present
+        ...rest
+      } = req.body;
+      Object.assign(settings, rest);
     }
 
     await settings.save();
+    clearSettingsCache();
 
       // 🔹 CREATE SYSTEM LOG
     await createLog({
@@ -39,7 +45,8 @@ export const updateAdminSettings = async (req, res) => {
       type: "System",
       severity: "Medium",
       description: "Administrator updated system settings",
-      user: "Admin"
+      user: req.user?.name || "Admin",
+      hospital: req.user?.hospital,
     });
 
     res.json({

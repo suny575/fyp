@@ -1,9 +1,11 @@
+
 import Invitation from "../models/invitation.js";
+import User from "../models/user.js";
 import crypto from "crypto";
 import nodemailer from "nodemailer";
 import Notification from "../models/AdminNotification.js";
 import { createLog } from "../controllers/logControllerAdmin.js";
-import User from "../models/user.js";
+// import User from "../models/user.js";
 import { resolveHospitalName } from "../utils/hospitalScope.js";
 
 const requireAdmin = (req, res) => {
@@ -39,20 +41,25 @@ export const inviteManager = async (req, res) => {
       expiresAt: Date.now() + 24 * 60 * 60 * 1000,
     });
 
+    // 🔔 System Notification
     await Notification.create({
       type: "System",
       message: `Manager ${newInvitation.email} has been invited for ${managerHospital}.`,
       time: new Date().toLocaleString(),
+      hospital: managerHospital,
     });
 
+    // 🔥 Log
     await createLog({
       event: "Admin invites manager",
       type: "Manager",
       severity: "Low",
       description: `Invitation sent to ${newInvitation.email} for ${managerHospital}`,
       user: adminName || req.user.name || "Admin",
+      hospital: managerHospital,
     });
 
+    // 🔥 Email
     const transporter = nodemailer.createTransport({
       host: process.env.EMAIL_HOST,
       port: process.env.EMAIL_PORT,
@@ -81,11 +88,44 @@ export const inviteManager = async (req, res) => {
       message: "Invitation created and email sent",
       manager: newInvitation,
     });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });
   }
 };
+
+// ================= REGISTER MANAGER (after invitation) =================
+export const registerManager = async (req, res) => {
+  try {
+    const { token, name, password } = req.body;
+
+    const invitation = await Invitation.findOne({ token });
+    if (!invitation) return res.status(400).json({ message: "Invalid token" });
+    if (invitation.used) return res.status(400).json({ message: "Already registered" });
+
+    // Create User with status active
+    const newUser = await User.create({
+      name,
+      email: invitation.email,
+      password,
+      role: invitation.role,
+      status: "active",
+    });
+
+    // Mark invitation as used and active
+    invitation.used = true;
+    invitation.status = "active";
+    await invitation.save();
+
+    res.status(201).json({ message: "Manager registered successfully", user: newUser });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// ================= DELETE MANAGER =================
 
 export const deleteManager = async (req, res) => {
   try {
@@ -93,10 +133,21 @@ export const deleteManager = async (req, res) => {
 
     const { id } = req.params;
 
+    // Find manager in User collection
     const user = await User.findById(id);
+
     if (user) {
-      await user.deleteOne();
-      return res.status(200).json({ message: "Manager deleted from users" });
+      const email = user.email;
+
+      // delete user
+      await User.findByIdAndDelete(id);
+
+      // delete related invitation
+      await Invitation.findOneAndDelete({ email });
+
+      return res.status(200).json({
+        message: "Manager and invitation deleted successfully",
+      });
     }
 
     const invitation = await Invitation.findById(id);
@@ -111,7 +162,8 @@ export const deleteManager = async (req, res) => {
       type: "System",
       message: `Admin deleted manager invitation for ${email}`,
       time: new Date().toLocaleString(),
-    });
+      hospital: invitation.hospital,
+   });
 
     res.status(200).json({ message: "Manager deleted from invitations" });
   } catch (err) {
@@ -120,6 +172,8 @@ export const deleteManager = async (req, res) => {
   }
 };
 
+
+// ================= UPDATE MANAGER STATUS =================
 export const updateManagerStatus = async (req, res) => {
   try {
     if (!requireAdmin(req, res)) return;

@@ -50,24 +50,46 @@ const ManagersList = () => {
     }
   };
 
+  // ================= TOGGLE STATUS =================
   const toggleStatus = async (managerId, currentStatus) => {
     try {
+      const newStatus = currentStatus === "active" ? "inactive" : "active";
+
       await axios.patch(
         `http://localhost:5000/api/admin/manager/${managerId}/status`,
-        { status: currentStatus === "active" ? "inactive" : "active" },
+        { status: newStatus } ,
+  //     );
+
+  //     setManagers(prev =>
+  //       prev.map(m => (m._id === managerId ? { ...m, status: newStatus } : m))
+  //     );
+  //   } catch (err) {
+  //     console.error(err);
+  //     alert("Error updating status");
+  //   }
+  // };
+
+  // // ================= DELETE MANAGER =================
+  // const deleteManager = async (managerId) => {
+  //   try {
+  //     await axios.delete(`http://localhost:5000/api/admin/manager/${managerId}`);
+  //     setManagers(prev => prev.filter(m => m._id !== managerId));
+  //     await axios.patch(
+  //       `http://localhost:5000/api/admin/manager/${managerId}/status`,
+  //       { status: currentStatus === "active" ? "inactive" : "active" },
         {
           headers: { Authorization: `Bearer ${token}` },
-        },
+        }
       );
       setManagers((prev) =>
         prev.map((manager) =>
           manager._id === managerId
             ? {
                 ...manager,
-                status: currentStatus === "active" ? "inactive" : "active",
+                status: newStatus
               }
             : manager,
-        ),
+        )
       );
     } catch (err) {
       console.error(err);
@@ -81,7 +103,7 @@ const ManagersList = () => {
         `http://localhost:5000/api/admin/manager/${managerId}`,
         {
           headers: { Authorization: `Bearer ${token}` },
-        },
+        }
       );
       setManagers((prev) => prev.filter((manager) => manager._id !== managerId));
     } catch (err) {
@@ -137,7 +159,7 @@ const ManagersList = () => {
         </div>
       )}
 
-      <div className="table-wrapper">
+      <div className="managers-table-wrapper">
         <table className="managers-table">
           <thead>
             <tr>

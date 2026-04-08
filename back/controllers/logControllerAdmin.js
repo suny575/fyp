@@ -1,12 +1,18 @@
 
-
-
 import LogsAdmin from "../models/LogsAdmin.js";
+import { withHospitalScope } from "../utils/hospitalScope.js";
 
 // Create a log
-export const createLog = async ({ event, type, severity, description, user }) => {
+export const createLog = async ({ event, type, severity, description, user, hospital }) => {
   try {
-    const log = new LogsAdmin({ event, type, severity, description, user });
+    const log = new LogsAdmin({
+      event,
+      type,
+      severity,
+      description,
+      user,
+      hospital,
+    });
     await log.save();
     return log;
   } catch (err) {
@@ -18,7 +24,9 @@ export const createLog = async ({ event, type, severity, description, user }) =>
 // Get all logs with optional filters for frontend
 export const getLogs = async (req, res) => {
   try {
-    const logs = await LogsAdmin.find().sort({ createdAt: -1 });
+    const logs = await LogsAdmin.find(
+      withHospitalScope({}, req.user?.hospital),
+    ).sort({ createdAt: -1 });
 
     // Extract unique types & severities for dropdowns
     const types = [...new Set(logs.map((l) => l.type))];

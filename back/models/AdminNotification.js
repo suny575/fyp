@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 
 const notificationSchema = new mongoose.Schema(
   {
+    hospital: { type: String, trim: true, index: true },
     type: { type: String, enum: ["Critical", "System"], required: true },
     message: { type: String, required: true },
     time: { type: String, required: true }, // or Date if you want actual timestamps

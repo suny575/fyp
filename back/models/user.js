@@ -28,6 +28,9 @@ const userSchema = new mongoose.Schema({
     default: "pending",
   },
 
+  // Login security controls
+  failedLoginAttempts: { type: Number, default: 0 },
+  lockUntil: { type: Date },
   approved: { type: Boolean, default: false },
   profileImage: { type: String, default: "" },
   createdAt: { type: Date, default: Date.now },

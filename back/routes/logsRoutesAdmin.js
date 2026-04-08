@@ -23,7 +23,14 @@ router.get("/", getLogs);
 router.post("/create", async (req, res) => {
   try {
     const { event, type, severity, description, user } = req.body;
-    const log = await createLog({ event, type, severity, description, user });
+    const log = await createLog({
+      event,
+      type,
+      severity,
+      description,
+      user,
+      hospital: req.user?.hospital,
+    });
     res.status(201).json(log);
   } catch (err) {
     res.status(500).json({ message: "Error creating log" });
