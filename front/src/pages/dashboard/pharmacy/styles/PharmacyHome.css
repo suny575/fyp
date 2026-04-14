@@ -8,6 +8,16 @@
   color: #111827;
 }
 
+.dashboard-status {
+  margin: -20px 0 24px;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.dashboard-status.error {
+  color: #b42318;
+}
+
 .dashboard-cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -21,6 +31,10 @@
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   text-align: center;
   transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.dashboard-card.is-loading {
+  opacity: 0.88;
 }
 
 .dashboard-card:hover {
@@ -38,6 +52,11 @@
   font-weight: bold;
   margin-bottom: 10px;
   color: #3b82f6;
+}
+
+.card-count.loading {
+  font-size: 22px;
+  color: #6b7280;
 }
 
 .card-desc {

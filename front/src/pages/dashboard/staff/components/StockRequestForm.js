@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import {
+  getStoredToken,
+  getStoredUsername,
+} from "../../../../utils/authStorage.js";
 
 const StockRequestForm = () => {
   const [formData, setFormData] = useState({
@@ -16,7 +20,7 @@ const StockRequestForm = () => {
   // ===== Fetch requests from backend =====
   const fetchRequests = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = getStoredToken();
       const res = await axios.get("http://localhost:5000/api/stock-requests", {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -41,7 +45,7 @@ const StockRequestForm = () => {
   // ===== Fetch stock items for suggestions =====
   const fetchStockItems = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = getStoredToken();
       const res = await axios.get("http://localhost:5000/api/stock", {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -72,8 +76,8 @@ const StockRequestForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const token = localStorage.getItem("token");
-    const requestedBy = localStorage.getItem("username") || "DeptStaff";
+    const token = getStoredToken();
+    const requestedBy = getStoredUsername() || "DeptStaff";
 
     // 🔒 Validate item exists in stock
     const itemExists = stockItems.some(

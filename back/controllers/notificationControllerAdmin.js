@@ -1,13 +1,11 @@
 import Notification from "../models/AdminNotification.js";
 import { getAdminSettings } from "../services/adminSettingsService.js";
-import { withHospitalScope, resolveHospitalName } from "../utils/hospitalScope.js";
+import { resolveHospitalName } from "../utils/hospitalScope.js";
 
 // Get all notifications
 export const getNotifications = async (req, res) => {
   try {
-    const notifications = await Notification.find(
-      withHospitalScope({}, req.user?.hospital),
-    ).sort({ createdAt: -1 });
+    const notifications = await Notification.find({}).sort({ createdAt: -1 });
     res.status(200).json({ notifications });
   } catch (err) {
     console.error(err);

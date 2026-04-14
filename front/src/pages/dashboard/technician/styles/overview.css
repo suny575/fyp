@@ -4,6 +4,21 @@
   transition: all 0.3s;
 }
 
+.overview-banner {
+  margin-bottom: 16px;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.overview-banner.error {
+  color: #b42318;
+}
+
+.overview-number-loading {
+  color: #6b7280;
+  font-size: 22px;
+}
+
 .td-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
@@ -70,4 +85,9 @@
   justify-content: center;
   font-weight: 600;
   font-size: 14px;
+}
+
+.td-card.is-loading,
+.productivity-card.is-loading {
+  opacity: 0.88;
 }

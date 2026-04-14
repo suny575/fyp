@@ -1,13 +1,19 @@
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import "../styles/ManagersList.css";
+import ActionStatus from "../../../../components/feedback/ActionStatus.jsx";
+import { getRequestFeedbackMessage } from "../../../../utils/requestFeedback.js";
+import { getStoredToken } from "../../../../utils/authStorage.js";
 
 const ManagersList = () => {
   const [showForm, setShowForm] = useState(false);
   const [managers, setManagers] = useState([]);
   const [email, setEmail] = useState("");
   const [hospital, setHospital] = useState("");
-  const token = localStorage.getItem("token");
+  const [inviteLoading, setInviteLoading] = useState(false);
+  const [inviteStatus, setInviteStatus] = useState("info");
+  const [inviteMessage, setInviteMessage] = useState("");
+  const token = getStoredToken();
 
   const fetchManagers = useCallback(async () => {
     try {
@@ -29,6 +35,10 @@ const ManagersList = () => {
 
   const handleInvite = async (e) => {
     e.preventDefault();
+    setInviteLoading(true);
+    setInviteStatus("info");
+    setInviteMessage("Submitting invitation...");
+
     try {
       const res = await axios.post(
         "http://localhost:5000/api/admin/invite-manager",
@@ -41,16 +51,21 @@ const ManagersList = () => {
       setEmail("");
       setHospital("");
       setShowForm(false);
+      setInviteStatus("success");
+      setInviteMessage("Invitation submitted successfully.");
       fetchManagers();
     } catch (err) {
       console.error(err);
-      if (err.response?.status === 400) alert(err.response.data.message);
-      else if (err.response?.status === 403) alert("Admin access required");
-      else alert("Error sending invitation");
+      setInviteStatus("error");
+      setInviteMessage(
+        getRequestFeedbackMessage(err, "Invitation submission failed."),
+      );
+    } finally {
+      setInviteLoading(false);
     }
   };
 
-  // ================= TOGGLE STATUS =================
+  // ================= TOGGLE STATUS 
   const toggleStatus = async (managerId, currentStatus) => {
     try {
       const newStatus = currentStatus === "active" ? "inactive" : "active";
@@ -58,25 +73,7 @@ const ManagersList = () => {
       await axios.patch(
         `http://localhost:5000/api/admin/manager/${managerId}/status`,
         { status: newStatus } ,
-  //     );
 
-  //     setManagers(prev =>
-  //       prev.map(m => (m._id === managerId ? { ...m, status: newStatus } : m))
-  //     );
-  //   } catch (err) {
-  //     console.error(err);
-  //     alert("Error updating status");
-  //   }
-  // };
-
-  // // ================= DELETE MANAGER =================
-  // const deleteManager = async (managerId) => {
-  //   try {
-  //     await axios.delete(`http://localhost:5000/api/admin/manager/${managerId}`);
-  //     setManagers(prev => prev.filter(m => m._id !== managerId));
-  //     await axios.patch(
-  //       `http://localhost:5000/api/admin/manager/${managerId}/status`,
-  //       { status: currentStatus === "active" ? "inactive" : "active" },
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -126,6 +123,7 @@ const ManagersList = () => {
         <div className="invite-form">
           <form onSubmit={handleInvite}>
             <h4>Invite Maintenance Manager</h4>
+            <ActionStatus status={inviteStatus} message={inviteMessage} />
             <label>Email</label>
             <input
               type="email"
@@ -144,12 +142,13 @@ const ManagersList = () => {
             <label>Role</label>
             <input type="text" value="Maintenance Manager" readOnly />
             <div className="form-buttons">
-              <button type="submit" className="send-btn">
-                Send Invitation
+              <button type="submit" className="send-btn" disabled={inviteLoading}>
+                {inviteLoading ? "Sending Invitation..." : "Send Invitation"}
               </button>
               <button
                 type="button"
                 className="cancel-btn"
+                disabled={inviteLoading}
                 onClick={() => setShowForm(false)}
               >
                 Cancel

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { Routes, Route } from "react-router-dom";
+import React from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { io } from "socket.io-client";
 import Overview from "./components/Overview";
 import UserManagment from "./components/UserManagment.jsx";
@@ -13,11 +13,12 @@ const ManagerDashboard = () => {
   return (
     <Layout>
       <Routes>
-        <Route path="" element={<Overview />} />
-        <Route path="overview" element={<Overview />} />
+        <Route index element={<Overview />} />
+        <Route path="overview" element={<Navigate to="/manager" replace />} />
         <Route path="users" element={<UserManagment />} />
         <Route path="reports" element={<ReportsPage />} />
         <Route path="schedules" element={<Schedules />} />
+        <Route path="*" element={<Navigate to="/manager" replace />} />
       </Routes>
     </Layout>
   );

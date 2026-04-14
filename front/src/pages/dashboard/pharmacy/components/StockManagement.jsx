@@ -5,6 +5,7 @@ import React, { useState, useEffect, useRef } from "react";
 import "../styles/StockManagement.css";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
+import { getStoredToken } from "../../../../utils/authStorage.js";
 
 const MOCK_DATA = [
   { _id: "1", name: "Paracetamol", batch: "B123", category: "Consumable", quantity: 50, expiry: "2026-04-12" },
@@ -13,7 +14,7 @@ const MOCK_DATA = [
 ];
 
 const StockManagement = () => {
-  const token = localStorage.getItem("token");
+  const token = getStoredToken();
 
   // ================= MOCK DATA =================
   const [stockList, setStockList] = useState([]);
@@ -63,6 +64,15 @@ setCategories(uniqueCategories);
   const queryParams = new URLSearchParams(location.search);
   const highlightName = queryParams.get("highlight");
   const rowRefs = useRef({});
+
+  const setHighlightTargetRef = (name, view) => (el) => {
+    if (!el) return;
+
+    const prefersMobile = window.innerWidth <= 768;
+    if ((prefersMobile && view === "card") || (!prefersMobile && view === "table")) {
+      rowRefs.current[name] = el;
+    }
+  };
 
   useEffect(() => {
     if (highlightName && rowRefs.current[highlightName]) {
@@ -288,7 +298,8 @@ setCategories(uniqueCategories);
             {filteredList.map((item) => (
               <tr
                 key={item._id}
-                ref={(el) => (rowRefs.current[item.name] = el)}
+                ref={setHighlightTargetRef(item.name, "table")}
+                data-view="table"
                 className={highlightName === item.name ? "highlight-row" : ""}
               >
                 <td>{item.name}</td>
@@ -306,6 +317,48 @@ setCategories(uniqueCategories);
             ))}
           </tbody>
         </table>
+      </div>
+
+      <div className="stock-mobile-cards">
+        {filteredList.map((item) => (
+          <div
+            key={`mobile-${item._id}`}
+            ref={setHighlightTargetRef(item.name, "card")}
+            data-view="card"
+            className={`stock-mobile-card ${highlightName === item.name ? "highlight-card" : ""}`}
+          >
+            <div className="stock-mobile-card-header">
+              <h3>{item.name}</h3>
+              <span>{item.category}</span>
+            </div>
+
+            <div className="stock-mobile-card-body">
+              <div className="stock-mobile-field">
+                <span>Batch</span>
+                <strong>{item.batch}</strong>
+              </div>
+              <div className="stock-mobile-field">
+                <span>Category</span>
+                <strong>{item.category}</strong>
+              </div>
+              <div className="stock-mobile-field">
+                <span>Quantity</span>
+                <strong>{item.quantity}</strong>
+              </div>
+              <div className="stock-mobile-field">
+                <span>Expiry</span>
+                <strong>{item.expiry
+                  ? new Date(item.expiry).toLocaleDateString("en-GB")
+                  : "N/A"}</strong>
+              </div>
+            </div>
+
+            <div className="stock-mobile-actions">
+              <button className="edit-btn" onClick={() => handleEditClick(item)}>Edit</button>
+              <button className="delete-btn" onClick={() => handleDeleteClick(item._id)}>Delete</button>
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* DELETE MODAL */}

@@ -9,16 +9,31 @@ import { withHospitalScope, resolveHospitalName } from "../utils/hospitalScope.j
 
 const router = express.Router();
 
+// Mounted at /api/admin/reporting
+
+const getManagerData = async () => {
+  const invitations = await Invitation.find({
+    role: "maintenanceManager",
+  }).lean();
+
+  const users = await User.find({ role: "maintenanceManager" })
+    .select("name email role createdAt status hospital")
+    .lean();
+
+  const pendingInvitations = invitations.filter(
+    (invitation) => invitation.used === false && invitation.status === "pending",
+  );
+
+  return { users, pendingInvitations };
+};
+
 // GET ADMIN REPORTS
-router.get("/reports", async (req, res) => {
+router.get("/", async (req, res) => {
   try {
     const hospital = req.user?.hospital;
-    // ================= Managers =================
-    // Registered managers (use actual status from the User record)
-    const users = await User.find(
-      withHospitalScope({ role: "maintenanceManager" }, hospital),
-    ).select("name email role createdAt status");
+    const { users, pendingInvitations } = await getManagerData();
 
+    // ================= Managers =================
     const userData = users.map((u) => ({
       name: u.name || "",
       email: u.email,
@@ -27,15 +42,7 @@ router.get("/reports", async (req, res) => {
       date: u.createdAt?.toISOString().split("T")[0],
     }));
 
-    // Pending invitations (only managers that have NOT registered yet)
-    const invitations = await Invitation.find(
-      withHospitalScope(
-        { role: "maintenanceManager", used: false, status: "pending" },
-        hospital,
-      ),
-    );
-
-    const invitationData = invitations.map((i) => ({
+    const invitationData = pendingInvitations.map((i) => ({
       name: i.name || "", // optional name field on invitation
       email: i.email,
       status: "pending",
@@ -93,12 +100,10 @@ router.get("/reports", async (req, res) => {
 router.get("/dashboard-stats", async (req, res) => {
   try {
     const hospital = req.user?.hospital;
-    const managers = await User.find(
-      withHospitalScope({ role: "maintenanceManager" }, hospital),
-    );
-    const totalManagers = managers.length;
-    const activeManagers = managers.filter((m) => m.status === "active").length;
-    const inactiveManagers = managers.filter((m) => m.status === "inactive").length;
+    const { users, pendingInvitations } = await getManagerData();
+    const totalManagers = users.length + pendingInvitations.length;
+    const activeManagers = users.filter((m) => m.status === "active").length;
+    const inactiveManagers = users.filter((m) => m.status === "inactive").length;
 
     const criticalAlerts = await Notification.countDocuments(
       withHospitalScope({ type: "Critical" }, hospital),

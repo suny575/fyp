@@ -3,13 +3,14 @@ import { useLocation } from "react-router-dom";
 import axios from "axios";
 import { io } from "socket.io-client";
 import { Card, Button, Form, Badge, Spinner } from "react-bootstrap";
+import { getStoredToken } from "../../../../utils/authStorage.js";
 
 const socket = io("http://localhost:5000", {
   transports: ["websocket", "polling"],
 });
 
 const Faults = () => {
-  const token = localStorage.getItem("token");
+  const token = getStoredToken();
 
   const [formData, setFormData] = useState({
     equipment: "",

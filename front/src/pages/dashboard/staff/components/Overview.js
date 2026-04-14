@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { getStoredToken } from "../../../../utils/authStorage.js";
 
 const Overview = () => {
   const navigate = useNavigate();
@@ -10,11 +11,18 @@ const Overview = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const token = localStorage.getItem("token");
+  const token = getStoredToken();
 
   useEffect(() => {
     const fetchOverviewData = async () => {
+      if (!token) {
+        setError("Authentication token not found.");
+        setLoading(false);
+        return;
+      }
+
       try {
+        setError("");
         const [faultRes, taskRes, stockRes] = await Promise.all([
           axios.get("http://localhost:5000/api/faults", {
             headers: { Authorization: `Bearer ${token}` },
@@ -40,16 +48,8 @@ const Overview = () => {
     };
 
     if (token) fetchOverviewData();
+    else setLoading(false);
   }, [token]);
-
-  if (loading)
-    return (
-      <div className="text-center py-5">
-        <div className="spinner-border text-primary" />
-      </div>
-    );
-
-  if (error) return <div className="alert alert-danger m-3">{error}</div>;
 
   const recentFaults = faults.slice(0, 10);
   const waitingCount = tasks.filter((f) => f.status === "waiting").length;
@@ -57,6 +57,32 @@ const Overview = () => {
   const completedCount = tasks.filter((t) => t.status === "completed").length;
 
   const stockRequestCount = stockRequests.length;
+  const statCards = [
+    {
+      title: "Waiting Faults",
+      value: waitingCount,
+      valueClass: "text-warning",
+      helper: "Awaiting technician assignment",
+    },
+    {
+      title: "In-progress Tasks",
+      value: inProgressCount,
+      valueClass: "text-warning",
+      helper: "Tasks in progress",
+    },
+    {
+      title: "completed Tasks",
+      value: completedCount,
+      valueClass: "text-warning",
+      helper: "Completed Tasks",
+    },
+    {
+      title: "Stock Requests",
+      value: stockRequestCount,
+      valueClass: "text-primary",
+      helper: "Total stock requests submitted",
+    },
+  ];
 
   return (
     <div>
@@ -66,53 +92,25 @@ const Overview = () => {
         <p className="text-muted">
           Monitor faults, stock requests, and equipment health.
         </p>
+        {loading ? <p className="text-muted mb-0">Loading overview cards...</p> : null}
+        {error ? <div className="alert alert-danger mt-3 mb-0">{error}</div> : null}
       </div>
 
       {/* Stats */}
       <div className="row g-4 mb-4">
-        <div className="col-12 col-md-6">
-          <div className="card shadow-sm border-0">
-            <div className="card-body">
-              <h6 className="text-muted">Waiting Faults</h6>
-              <h2 className="fw-bold text-warning">{waitingCount}</h2>
-              <small className="text-muted">
-                Awaiting technician assignment
-              </small>
+        {statCards.map((card) => (
+          <div key={card.title} className="col-12 col-md-6">
+            <div className="card shadow-sm border-0">
+              <div className="card-body">
+                <h6 className="text-muted">{card.title}</h6>
+                <h2 className={`fw-bold ${card.valueClass}`}>
+                  {loading ? "Loading..." : card.value}
+                </h2>
+                <small className="text-muted">{card.helper}</small>
+              </div>
             </div>
           </div>
-        </div>
-
-        <div className="col-12 col-md-6">
-          <div className="card shadow-sm border-0">
-            <div className="card-body">
-              <h6 className="text-muted">In-progress Tasks</h6>
-              <h2 className="fw-bold text-warning">{inProgressCount}</h2>
-              <small className="text-muted">Tasks in progress</small>
-            </div>
-          </div>
-        </div>
-
-        <div className="col-12 col-md-6">
-          <div className="card shadow-sm border-0">
-            <div className="card-body">
-              <h6 className="text-muted">completed Tasks</h6>
-              <h2 className="fw-bold text-warning">{completedCount}</h2>
-              <small className="text-muted">Completed Tasks</small>
-            </div>
-          </div>
-        </div>
-
-        <div className="col-12 col-md-6">
-          <div className="card shadow-sm border-0">
-            <div className="card-body">
-              <h6 className="text-muted">Stock Requests</h6>
-              <h2 className="fw-bold text-primary">{stockRequestCount}</h2>
-              <small className="text-muted">
-                Total stock requests submitted
-              </small>
-            </div>
-          </div>
-        </div>
+        ))}
 
         {/* <div className="col-12 col-md-4">
           <div className="card shadow-sm border-0">
@@ -129,7 +127,9 @@ const Overview = () => {
       <div className="card shadow-sm">
         <div className="card-header bg-white fw-bold">Recent Fault Reports</div>
         <div className="card-body p-0">
-          {recentFaults.length === 0 ? (
+          {loading ? (
+            <div className="p-3 text-muted">Loading fault reports...</div>
+          ) : recentFaults.length === 0 ? (
             <div className="p-3 text-muted">No fault reports found.</div>
           ) : (
             <div className="table-responsive">
@@ -144,10 +144,10 @@ const Overview = () => {
                 <tbody>
                   {recentFaults.map((fault) => (
                     <tr
-                      key={faults._id}
+                      key={fault._id}
                       style={{ cursor: "pointer" }}
                       onClick={() =>
-                        navigate(`/staff/faults?highlight=${faults._id}`)
+                        navigate(`/staff/faults?highlight=${fault._id}`)
                       }
                     >
                       <td>{fault.equipment?.name}</td>

@@ -44,6 +44,20 @@
   color: white;
 }
 
+.auth-notice {
+  border-radius: 12px;
+  padding: 0.8rem 1rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.auth-notice-success {
+  background: #e8fff1;
+  color: #0f7a43;
+  border: 1px solid #b6efcb;
+}
+
 .toggle-indicator {
   position: absolute;
   width: 50%;

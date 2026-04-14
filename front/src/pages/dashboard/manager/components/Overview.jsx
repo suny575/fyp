@@ -22,21 +22,48 @@ ChartJS.register(
   Legend,
 );
 
+const defaultUserOverview = [
+  {
+    title: "Technicians",
+    count: null,
+    route: "/manager/users",
+  },
+  { title: "Dep Staff", count: null, route: "/manager/users" },
+  {
+    title: "Pharmacy Store",
+    count: null,
+    route: "/manager/users",
+  },
+];
+
+const defaultSystemStats = [
+  { title: "Waiting Tasks", value: null },
+  { title: "In Progress Tasks", value: null },
+  { title: "Completed Tasks", value: null },
+  {
+    title: "Scheduled Maintenance",
+    value: null,
+    route: "/manager/schedules",
+    buttonLabel: "Open Schedule",
+  },
+];
+
 const Overview = () => {
   const navigate = useNavigate();
   const { token } = useContext(AuthContext);
-  const [userOverview, setUserOverview] = useState([]);
-  const [systemStats, setSystemStats] = useState([]);
+  const [userOverview, setUserOverview] = useState(defaultUserOverview);
+  const [systemStats, setSystemStats] = useState(defaultSystemStats);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   const handleViewIssues = async (statTitle) => {
     try {
-      const res = await fetch(
+      await fetch(
         `http://localhost:5000/api/manager/issues?category=${encodeURIComponent(
           statTitle,
         )}`,
         { headers: { Authorization: `Bearer ${token}` } },
       );
-      const data = await res.json();
     } catch (error) {
       console.error("Error fetching issues:", error);
     }
@@ -45,7 +72,14 @@ const Overview = () => {
   // FETCH DATA FROM BACKEND
   useEffect(() => {
     const fetchData = async () => {
+      if (!token) {
+        setError("Authentication token not found.");
+        setLoading(false);
+        return;
+      }
+
       try {
+        setError("");
         // Fetch users
         const usersRes = await fetch(
           "http://localhost:5000/api/manager/users",
@@ -124,6 +158,9 @@ const Overview = () => {
         );
       } catch (error) {
         console.error("Error fetching overview data:", error);
+        setError("Failed to load overview data.");
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -136,7 +173,9 @@ const Overview = () => {
     datasets: [
       {
         label: "Tasks",
-        data: systemStats.map((s) => s.value),
+        data: systemStats
+          .slice(0, 3)
+          .map((s) => (typeof s.value === "number" ? s.value : 0)),
         backgroundColor: "#0d6efd",
         borderRadius: 6,
       },
@@ -147,7 +186,7 @@ const Overview = () => {
     labels: userOverview.map((u) => u.title),
     datasets: [
       {
-        data: userOverview.map((u) => u.count),
+        data: userOverview.map((u) => (typeof u.count === "number" ? u.count : 0)),
         backgroundColor: ["#0d6efd", "#20c997", "#ffc107"],
       },
     ],
@@ -155,15 +194,24 @@ const Overview = () => {
 
   return (
     <div className="overview-container container-fluid py-4">
+      {loading ? (
+        <p className="overview-status">Loading overview cards...</p>
+      ) : null}
+      {error ? (
+        <p className="overview-status error">{error}</p>
+      ) : null}
+
       {/* USER OVERVIEW */}
       <h5 className="section-title mb-3">User Overview</h5>
       <div className="row g-4 mb-5">
         {userOverview.map((user, index) => (
           <div key={index} className="col-12 col-md-6 col-lg-4">
-            <div className="card user-card shadow-sm">
+            <div className={`card user-card shadow-sm ${loading ? "is-loading" : ""}`}>
               <div className="card-body text-center">
                 <h6>{user.title}</h6>
-                <h2 className="fw-bold">{user.count}</h2>
+                <h2 className="fw-bold overview-value">
+                  {loading ? "Loading..." : user.count ?? 0}
+                </h2>
                 <button
                   className="btn btn-outline-primary btn-sm mt-2"
                   onClick={() => navigate(user.route)}
@@ -181,9 +229,13 @@ const Overview = () => {
       <div className="row g-4 mb-5">
         {systemStats.map((stat, index) => (
           <div key={index} className="col-12 col-sm-6 col-lg-3">
-            <div className="card stat-card text-black shadow-sm p-3">
+            <div
+              className={`card stat-card text-black shadow-sm p-3 ${loading ? "is-loading" : ""}`}
+            >
               <h6>{stat.title}</h6>
-              <h3>{stat.value}</h3>
+              <h3 className="overview-value">
+                {loading ? "Loading..." : stat.value ?? 0}
+              </h3>
               <button
                 className="btn btn-info btn-sm mt-3"
                 onClick={() =>
@@ -200,14 +252,20 @@ const Overview = () => {
       {/* CHARTS */}
       <div className="row g-4 mb-5">
         <div className="col-12 col-lg-8">
-          <div className="card chart-card shadow-sm p-3">
+          <div className={`card chart-card shadow-sm p-3 ${loading ? "is-loading" : ""}`}>
             <h6>Task Status Overview</h6>
+            {loading ? (
+              <p className="overview-loading-text">Loading chart data...</p>
+            ) : null}
             <Bar data={barData} />
           </div>
         </div>
         <div className="col-12 col-lg-4">
-          <div className="card chart-card shadow-sm p-3">
+          <div className={`card chart-card shadow-sm p-3 ${loading ? "is-loading" : ""}`}>
             <h6>User Distribution</h6>
+            {loading ? (
+              <p className="overview-loading-text">Loading chart data...</p>
+            ) : null}
             <Doughnut data={doughnutData} />
           </div>
         </div>

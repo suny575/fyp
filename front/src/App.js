@@ -19,6 +19,7 @@ import TDashboard from "./pages/dashboard/technician/tdashBoard.jsx";
 import Footer from "./pages/Footer.jsx";
 import NotificationsPage from "./pages/NotificationsPage.jsx";
 import { NotificationsProvider } from "./pages/NotificationsPage";
+import RoleRoute from "./components/routing/RoleRoute.jsx";
 
 function App() {
   return (
@@ -32,14 +33,49 @@ function App() {
 
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/howitworks" element={<HowItWorks />} />
-            <Route path="/staff/*" element={<DepStaffDashboard />} />
+            <Route
+              path="/staff/*"
+              element={
+                <RoleRoute allowedRoles={["depstaff"]}>
+                  <DepStaffDashboard />
+                </RoleRoute>
+              }
+            />
             <Route path="/contactus" element={<ContactUs />} />
-            <Route path="/manager/*" element={<ManagerDashboard />} />
+            <Route
+              path="/manager/*"
+              element={
+                <RoleRoute allowedRoles={["maintenancemanager"]}>
+                  <ManagerDashboard />
+                </RoleRoute>
+              }
+            />
 
-            <Route path="/admin/*" element={<AdminDashboard />} />
-            <Route path="/pharmacy/*" element={<PharmacyDashboard />} />
+            <Route
+              path="/admin/*"
+              element={
+                <RoleRoute allowedRoles={["admin"]}>
+                  <AdminDashboard />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="/pharmacy/*"
+              element={
+                <RoleRoute allowedRoles={["pharmacystore"]}>
+                  <PharmacyDashboard />
+                </RoleRoute>
+              }
+            />
 
-            <Route path="/technician/*" element={<TDashboard />} />
+            <Route
+              path="/technician/*"
+              element={
+                <RoleRoute allowedRoles={["technician"]}>
+                  <TDashboard />
+                </RoleRoute>
+              }
+            />
 
             <Route path="/notifications" element={<NotificationsPage />} />
           </Routes>

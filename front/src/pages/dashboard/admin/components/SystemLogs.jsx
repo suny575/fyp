@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "../styles/SystemLogs.css";
+import { getStoredToken } from "../../../../utils/authStorage.js";
 
 const SystemLogs = () => {
   const [logs, setLogs] = useState([]);
@@ -9,7 +10,7 @@ const SystemLogs = () => {
   const [typeFilter, setTypeFilter] = useState("All");
   const [severityFilter, setSeverityFilter] = useState("All");
   const [selectedLog, setSelectedLog] = useState(null);
-  const token = localStorage.getItem("token");
+  const token = getStoredToken();
 
   const [typeOptions, setTypeOptions] = useState([]);
   const [severityOptions, setSeverityOptions] = useState([]);

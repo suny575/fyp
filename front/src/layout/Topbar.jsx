@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
 import NotificationBell from "../components/notifications/NotificationBell";
 import { useAuth } from "../context/AuthContext";
+import ActionStatus from "../components/feedback/ActionStatus.jsx";
+import { getRequestFeedbackMessage } from "../utils/requestFeedback.js";
 
 const API_BASE_URL = "http://localhost:5000";
 
@@ -24,9 +25,12 @@ const Topbar = ({ toggleSidebar, isDesktop }) => {
   });
   const [selectedImage, setSelectedImage] = useState(null);
   const [previewUrl, setPreviewUrl] = useState("");
+  const [profileStatus, setProfileStatus] = useState({
+    type: "",
+    message: "",
+  });
   const wrapperRef = useRef(null);
   const fileInputRef = useRef(null);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -51,8 +55,12 @@ const Topbar = ({ toggleSidebar, isDesktop }) => {
   }, [previewUrl]);
 
   const handleLogout = () => {
-    logout();
-    navigate("/auth");
+    const logoutNotice = "Successfully logged out. You can log in again.";
+    logout({
+      loggedOut: true,
+      notice: logoutNotice,
+    });
+    window.location.replace("/auth?logout=1");
   };
 
   const handleEditChange = (e) => {
@@ -63,6 +71,7 @@ const Topbar = ({ toggleSidebar, isDesktop }) => {
     setEditOpen(false);
     setSelectedImage(null);
     setPreviewUrl("");
+    setProfileStatus({ type: "", message: "" });
   };
 
   const handleOpenEdit = () => {
@@ -89,6 +98,10 @@ const Topbar = ({ toggleSidebar, isDesktop }) => {
   const handleSaveEdit = async () => {
     try {
       setSaving(true);
+      setProfileStatus({
+        type: "info",
+        message: "Saving your profile changes. Please wait...",
+      });
 
       const formData = new FormData();
       formData.append("name", editData.name.trim());
@@ -107,12 +120,21 @@ const Topbar = ({ toggleSidebar, isDesktop }) => {
       });
 
       updateUser(res.data.user);
-      alert("Profile updated!");
+      setProfileStatus({
+        type: "success",
+        message: "Profile updated successfully.",
+      });
       closeEditPanel();
       setDropdownOpen(false);
     } catch (err) {
-      console.error("Failed to update profile:", err.response?.data || err.message);
-      alert(err.response?.data?.message || "Update failed!");
+      console.error(
+        "Failed to update profile:",
+        err.response?.data || err.message,
+      );
+      setProfileStatus({
+        type: "error",
+        message: getRequestFeedbackMessage(err, "Profile update failed."),
+      });
     } finally {
       setSaving(false);
     }
@@ -120,7 +142,7 @@ const Topbar = ({ toggleSidebar, isDesktop }) => {
 
   const initial = user?.name?.charAt(0).toUpperCase() || "U";
   const avatarSrc = previewUrl || getProfileImageUrl(user?.profileImage);
-  const profileButtonLabel = avatarSrc ? "Change Profile" : "Set Profile";
+  const profileButtonLabel = avatarSrc ? "Change Photo" : "Set Photo";
 
   return (
     <div
@@ -232,7 +254,11 @@ const Topbar = ({ toggleSidebar, isDesktop }) => {
                     <img
                       src={avatarSrc}
                       alt={`${user.name} profile`}
-                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                      }}
                     />
                   ) : (
                     initial
@@ -264,6 +290,11 @@ const Topbar = ({ toggleSidebar, isDesktop }) => {
 
               {editOpen && (
                 <div style={{ padding: "0.5rem" }}>
+                  <ActionStatus
+                    status={profileStatus.type}
+                    message={profileStatus.message}
+                    style={{ marginBottom: "0.5rem" }}
+                  />
                   <input
                     ref={fileInputRef}
                     type="file"

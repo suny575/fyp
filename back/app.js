@@ -50,10 +50,14 @@ app.use("/notifications", Notification);
 app.use("/contact", contactRoutes);
 app.use("/reports", reportsRoutes);
 app.use("/pharmacy", pharmacyRoutes);
+
+// Admin manager actions
 app.use("/admin", protect, adminRoutes);
+
+// Admin reporting and overview data
+app.use("/admin/reporting", protect, adminReports);
 app.use("/equipmentReportRoutes.js", EquipmentReportRouts);
 app.use("/admin/notifications", protect, notificationRoutesAdmin);
-app.use("/admin", protect, adminReports);
 app.use("/admin/system-logs", protect, logsRoutesAdmin);
 app.use("/admin/settings", protect, adminSettingsRoutes);
 app.use("/maintenanceLog", maintenanceLog);

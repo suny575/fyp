@@ -9,6 +9,9 @@ import {
   Spinner,
   Alert,
 } from "react-bootstrap";
+import ActionStatus from "../../../../components/feedback/ActionStatus.jsx";
+import { getRequestFeedbackMessage } from "../../../../utils/requestFeedback.js";
+import { getStoredToken } from "../../../../utils/authStorage.js";
 
 import { io } from "socket.io-client";
 
@@ -36,7 +39,7 @@ const UsersManagement = () => {
   const [showAll, setShowAll] = useState(false);
   const [roleFilter, setRoleFilter] = useState("");
 
-  const token = localStorage.getItem("token");
+  const token = getStoredToken();
 
   // ==============================
   // Debounce Search
@@ -88,22 +91,21 @@ const UsersManagement = () => {
   const handleInviteSubmit = async (e) => {
     e.preventDefault();
     setInviteLoading(true);
-    setInviteMessage("");
+    setInviteMessage("Submitting invitation...");
     setInviteError("");
 
     try {
-      const res = await axios.post(
+      await axios.post(
         "http://localhost:5000/api/invitations",
         { email: inviteEmail, role: inviteRole },
         { headers: { Authorization: `Bearer ${token}` } },
       );
-      setInviteMessage("Invitation sent Succesfully!");
+      setInviteMessage("Invitation submitted successfully.");
       setInviteEmail("");
       fetchUsers();
     } catch (err) {
-      setInviteError(
-        err.response?.data?.message || "Failed to send invitation",
-      );
+      setInviteMessage("");
+      setInviteError(getRequestFeedbackMessage(err, "Invitation submission failed."));
     } finally {
       setInviteLoading(false);
     }
@@ -179,6 +181,18 @@ const UsersManagement = () => {
               className="d-flex gap-2 align-items-end flex-wrap"
               style={{ maxWidth: "600px" }}
             >
+              <div style={{ width: "100%" }}>
+                <ActionStatus
+                  status={inviteLoading ? "info" : "success"}
+                  message={inviteMessage}
+                  style={{ marginBottom: "0.75rem" }}
+                />
+                <ActionStatus
+                  status="error"
+                  message={inviteError}
+                  style={{ marginBottom: "0.75rem" }}
+                />
+              </div>
               <Form.Group style={{ flex: "2" }}>
                 <Form.Label className="small mb-1">Email</Form.Label>
                 <Form.Control
@@ -213,11 +227,9 @@ const UsersManagement = () => {
                 disabled={inviteLoading}
                 style={{ height: "32px", minWidth: "110px" }}
               >
-                {inviteLoading ? "Sending..." : "Invite"}
+                {inviteLoading ? "Sending Invitation..." : "Send Invitation"}
               </Button>
             </Form>
-            {inviteMessage && <Alert variant="success">{inviteMessage}</Alert>}
-            {inviteError && <Alert variant="danger">{inviteError}</Alert>}
           </Card.Body>
         </Card>
       )}

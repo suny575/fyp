@@ -14,11 +14,12 @@ import html2canvas from "html2canvas";
 import "../styles/ReportsPage.css";
 import axios from "axios";
 import { useEffect } from "react";
+import { getStoredToken } from "../../../../utils/authStorage.js";
 
 
 const ReportsPage = () => {
   const reportRef = useRef();
-  const token = localStorage.getItem("token");
+  const token = getStoredToken();
 
   // Date filter state
   const [startDate, setStartDate] = useState("");
@@ -35,7 +36,7 @@ useEffect(() => {
 
 const fetchReports = async () => {
   try {
-    const res = await axios.get("http://localhost:5000/api/admin/reports", {
+    const res = await axios.get("http://localhost:5000/api/admin/reporting", {
       headers: { Authorization: `Bearer ${token}` },
     });
 
@@ -113,7 +114,7 @@ const fetchReports = async () => {
     pdf.save("ReportsDashboard.pdf");
 
     // SAVE REPORT HISTORY
-    await axios.post("http://localhost:5000/api/admin/save-report", {
+    await axios.post("http://localhost:5000/api/admin/reporting/save-report", {
       name: "Reports Dashboard"
     }, { headers: { Authorization: `Bearer ${token}` } });
 

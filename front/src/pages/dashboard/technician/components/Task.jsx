@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { getStoredToken } from "../../../../utils/authStorage.js";
 
 const normalizeTaskStatus = (status) => {
   const normalized = status?.trim();
@@ -13,7 +14,7 @@ const Task = () => {
   const [taskList, setTaskList] = useState([]);
   const [selectedTask, setSelectedTask] = useState(null);
 
-  const token = localStorage.getItem("token");
+  const token = getStoredToken();
 
   const formatStatusLabel = (status) => {
     switch (normalizeTaskStatus(status)) {

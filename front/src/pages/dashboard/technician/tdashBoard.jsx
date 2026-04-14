@@ -10,7 +10,8 @@ const TDashboard = () => {
   return (
     <Layout>
       <Routes>
-        <Route path="/" element={<Overview />} />
+        <Route index element={<Overview />} />
+        <Route path="overview" element={<Navigate to="/technician" replace />} />
         <Route path="tasks" element={<Task />} />
         <Route path="report" element={<Report />} />
         {/* <Route path="notifications" element={<Notification />} /> */}

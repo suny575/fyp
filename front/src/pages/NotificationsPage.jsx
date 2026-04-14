@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import socket from "../socket.js";
 import { connectSocket } from "../socket.js";
 import { useAuth } from "../context/AuthContext.jsx";
+import { getStoredToken } from "../utils/authStorage.js";
 
 const API_URL = "http://localhost:5000/api/notifications";
 
@@ -20,7 +21,7 @@ export const NotificationsProvider = ({ children }) => {
     try {
       await axios.delete(`${API_URL}/${id}`, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${getStoredToken()}`,
         },
       });
 
@@ -35,7 +36,7 @@ export const NotificationsProvider = ({ children }) => {
     try {
       await axios.delete(API_URL, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${getStoredToken()}`,
         },
       });
 
@@ -48,7 +49,7 @@ export const NotificationsProvider = ({ children }) => {
   const fetchNotifications = async () => {
     const res = await axios.get(API_URL, {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
+        Authorization: `Bearer ${getStoredToken()}`,
       },
     });
     return res.data;

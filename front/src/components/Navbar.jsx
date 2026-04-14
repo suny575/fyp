@@ -47,9 +47,9 @@ const Navbar = () => {
               </Link>
             </li>
             <li className="nav-item">
-              <Link className="nav-link" to="/auth">
+              {/* <Link className="nav-link" to="/auth">
                 Login
-              </Link>
+              </Link> */}
             </li>
             <li className="nav-item">
               <Link className="nav-link" to="/contactus">

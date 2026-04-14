@@ -110,6 +110,7 @@ export const registerManager = async (req, res) => {
       email: invitation.email,
       password,
       role: invitation.role,
+      hospital: resolveHospitalName(invitation.hospital),
       status: "active",
     });
 

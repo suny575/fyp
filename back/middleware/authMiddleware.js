@@ -4,22 +4,37 @@ import User from "../models/user.js";
 import { ensureUserHospital } from "../utils/hospitalScope.js";
 
 const protect = async (req, res, next) => {
-  let token;
   try {
-    if (req.headers.authorization?.startsWith("Bearer")) {
-      token = req.headers.authorization.split(" ")[1];
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      req.user = await User.findById(decoded.id).select("-password");
-      if (!req.user) return res.status(401).json({ message: "User not found" });
-      await ensureUserHospital(req.user);
-      next();
-    } else {
+    const authHeader = req.headers.authorization;
+
+    // Ensure header exists and follows correct format
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return res.status(401).json({ message: "No token, not authorized" });
     }
+
+    const token = authHeader.split(" ")[1];
+
+    // Ensure token actually exists
+    if (!token) {
+      return res.status(401).json({ message: "No token, not authorized" });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    req.user = await User.findById(decoded.id).select("-password");
+
+    if (!req.user) {
+      return res.status(401).json({ message: "User not found" });
+    }
+
+    await ensureUserHospital(req.user);
+
+    next();
+
   } catch (err) {
     console.error("AuthMiddleware error:", err.message);
-    res.status(401).json({ message: "Not authorized, token failed" });
+    return res.status(401).json({ message: "Not authorized, token failed" });
   }
 };
 
-export default  protect;
+export default protect;

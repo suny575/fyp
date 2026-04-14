@@ -3,9 +3,12 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../styles/DashboardHome.css";
+import { getStoredToken } from "../../../../utils/authStorage.js";
 const DashboardHome = () => {
   const navigate = useNavigate();
-  const token = localStorage.getItem("token");
+  const token = getStoredToken();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   const [stats, setStats] = useState({
     totalManagers: 0,
@@ -19,28 +22,38 @@ const DashboardHome = () => {
 
   useEffect(() => {
     const fetchStats = async () => {
+      if (!token) {
+        setError("Authentication token not found.");
+        setLoading(false);
+        return;
+      }
+
       try {
-        const res = await axios.get("http://localhost:5000/api/admin/dashboard-stats", {
+        setError("");
+        const res = await axios.get("http://localhost:5000/api/admin/reporting/dashboard-stats", {
           headers: { Authorization: `Bearer ${token}` },
         });
 
         setStats({
-          totalManagers: res.data.managers?.total || 0,
-          activeManagers: res.data.managers?.active || 0,
-          inactiveManagers: res.data.managers?.inactive || 0,
-          criticalAlerts: res.data.alerts?.critical || 0,
-          systemAlerts: res.data.alerts?.system || 0,
-          reportsGenerated: res.data.reportsGenerated || 0,
+          totalManagers: res.data.managers?.total ?? 0,
+          activeManagers: res.data.managers?.active ?? 0,
+          inactiveManagers: res.data.managers?.inactive ?? 0,
+          criticalAlerts: res.data.alerts?.critical ?? 0,
+          systemAlerts: res.data.alerts?.system ?? 0,
+          reportsGenerated: res.data.reportsGenerated ?? 0,
           // show total log count, not just last 5
           recentActivity: res.data.totalLogs ?? res.data.recentActivity?.length ?? 0,
         });
       } catch (err) {
         console.error("Failed to load dashboard stats:", err);
+        setError("Failed to load dashboard stats.");
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchStats();
-  }, []);
+  }, [token]);
 
   const cards = [
     {
@@ -83,12 +96,23 @@ const DashboardHome = () => {
   return (
     <div className="dashboard-container">
       <h2 className="dashboard-title">System Overview</h2>
+      {loading ? (
+        <p className="dashboard-status">Loading dashboard overview...</p>
+      ) : null}
+      {error ? (
+        <p className="dashboard-status error">{error}</p>
+      ) : null}
 
       <div className="cards-grid">
         {cards.map((card, index) => (
-          <div key={index} className="dashboard-card">
+          <div
+            key={index}
+            className={`dashboard-card ${loading ? "is-loading" : ""}`}
+          >
             <h3>{card.title}</h3>
-            <h1>{card.value}</h1>
+            <h1 className={loading ? "dashboard-value-loading" : ""}>
+              {loading ? "Loading..." : card.value}
+            </h1>
             <button onClick={() => navigate(card.path)}>
               View Details
             </button>
@@ -100,7 +124,5 @@ const DashboardHome = () => {
 };
 
 export default DashboardHome;
-
-
 
 

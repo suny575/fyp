@@ -93,6 +93,72 @@ select {
   overflow-x: auto;
 }
 
+.stock-mobile-cards {
+  display: none;
+}
+
+.stock-mobile-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+}
+
+.stock-mobile-card + .stock-mobile-card {
+  margin-top: 14px;
+}
+
+.stock-mobile-card-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 14px;
+}
+
+.stock-mobile-card-header h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.stock-mobile-card-header span {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.stock-mobile-card-body {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.stock-mobile-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stock-mobile-field span {
+  font-size: 0.78rem;
+  color: #6b7280;
+}
+
+.stock-mobile-field strong {
+  color: #111827;
+  word-break: break-word;
+}
+
+.stock-mobile-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+
 table {
   width: 100%;
   border-collapse: collapse;
@@ -161,4 +227,33 @@ th {
   background-color: #fff3cd;
   border-left: 5px solid #f59e0b;
   transition: background-color 0.4s ease;
+}
+
+.highlight-card {
+  background-color: #fffaf0;
+  border-left: 5px solid #f59e0b;
+}
+
+@media (max-width: 768px) {
+  .table-wrapper {
+    display: none;
+  }
+
+  .stock-mobile-cards {
+    display: block;
+  }
+
+  .stock-mobile-card-body {
+    grid-template-columns: 1fr;
+  }
+
+  .stock-mobile-actions {
+    flex-direction: column;
+  }
+
+  .action-bar input,
+  .action-bar select,
+  .add-btn {
+    width: 100%;
+  }
 }

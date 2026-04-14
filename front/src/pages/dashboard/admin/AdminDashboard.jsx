@@ -1,5 +1,5 @@
 import React from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 
 // import Sidebar from "./components/Sidebar";
 // import Topbar from "./components/Topbar";
@@ -28,13 +28,14 @@ const AdminDashboard = () => {
           <Layout>
           <Routes>
             <Route index element={<DashboardHome />} />
-            <Route path="dashboardhome" element={<DashboardHome/>} />
+            <Route path="dashboardhome" element={<Navigate to="/admin" replace />} />
             <Route path="managers" element={<ManagersList />} />
             {/* <Route path="manager/new" element={<ManagerForm />} /> */}
             <Route path="reports" element={<Reports />} />
             <Route path="notifications" element={<Notifications />} />
             <Route path="settings" element={<Settings />} />
             <Route path="system-logs" element={<SystemLogs />} />
+            <Route path="*" element={<Navigate to="/admin" replace />} />
             {/* <Route path="edit-profile" element={<EditProfile />} /> */}
           </Routes>
           </Layout>

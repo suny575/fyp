@@ -2,10 +2,21 @@
 import React, { useState, useEffect } from "react";
 import Topbar from "../layout/Topbar.jsx";
 import Sidebar from "../layout/Sidebar.jsx";
+import { useAuth } from "../context/AuthContext.jsx";
+import useDashboardBackNavigation from "../hooks/useDashboardBackNavigation.js";
+import { normalizeRoleKey, roleMainPaths } from "../utils/roleRoutes.js";
 
 const Layout = ({ children }) => {
+  const { user } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1024);
+  const roleKey = normalizeRoleKey(user?.role);
+
+  useDashboardBackNavigation({
+    mainPaths: roleMainPaths[roleKey] || [],
+    exitMessage: "Do you want to exit the app?",
+    exitTo: "/",
+  });
 
   useEffect(() => {
     const handleResize = () => {
@@ -50,7 +61,7 @@ const Layout = ({ children }) => {
         style={{
           position: isDesktop ? "relative" : "fixed",
           left: isSidebarOpen ? "0" : "-260px",
-          top: 0,
+          top: 70,
           height: "100%",
           width: "260px",
           background: "linear-gradient(180deg, #1E1E2F, #25253a)",

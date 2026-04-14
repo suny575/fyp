@@ -173,6 +173,7 @@
 import axios from "axios";
 import React, { useState, useEffect } from "react";
 import "../styles/Allocation.css";
+import { getStoredToken } from "../../../../utils/authStorage.js";
 
 const AllocationPage = ({ pharmacyUserId = "Pharmacy01" }) => {
   const [pendingRequests, setPendingRequests] = useState([]);
@@ -182,7 +183,7 @@ const AllocationPage = ({ pharmacyUserId = "Pharmacy01" }) => {
 
   // ===== Helper: get auth token from localStorage =====
   const getAuthHeaders = () => {
-    const token = localStorage.getItem("token"); // Make sure token is stored after login
+    const token = getStoredToken(); // Make sure token is stored after login
     return { Authorization: `Bearer ${token}` };
   };
 

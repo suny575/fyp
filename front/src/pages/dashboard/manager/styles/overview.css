@@ -3,11 +3,37 @@
   margin-bottom: 15px;
 }
 
+.overview-status {
+  margin-bottom: 16px;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.overview-status.error {
+  color: #b42318;
+}
+
+.overview-value {
+  min-height: 42px;
+}
+
+.overview-loading-text {
+  margin-bottom: 12px;
+  color: #6b7280;
+  font-size: 14px;
+}
+
 /* USER CARDS */
 .user-card {
   border: none;
   border-radius: 14px;
   transition: 0.3s;
+}
+
+.user-card.is-loading,
+.stat-card.is-loading,
+.chart-card.is-loading {
+  opacity: 0.88;
 }
 
 .user-card:hover {

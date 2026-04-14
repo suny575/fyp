@@ -1,18 +1,22 @@
 import React, { useState, useEffect } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
+import ActionStatus from "../components/feedback/ActionStatus.jsx";
+import { getRequestFeedbackMessage } from "../utils/requestFeedback.js";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/AuthPage.css";
 import axios from "axios";
 
 const AuthPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState("login");
   const [invitationExists, setInvitationExists] = useState(false);
   const [registerRole, setRegisterRole] = useState("");
   const [registerEmail, setRegisterEmail] = useState("");
   const [registerHospital, setRegisterHospital] = useState("");
+  const [authNotice, setAuthNotice] = useState("");
 
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
@@ -23,8 +27,14 @@ const AuthPage = () => {
   const [loginPassword, setLoginPassword] = useState("");
   const [registerName, setRegisterName] = useState("");
   const [registerPassword, setRegisterPassword] = useState("");
+  const [loginLoading, setLoginLoading] = useState(false);
+  const [registerLoading, setRegisterLoading] = useState(false);
+  const [loggedOutState, setLoggedOutState] = useState(false);
 
   const [error, setError] = useState("");
+  const logoutParam = searchParams.get("logout") === "1";
+  const isLoggedOutView = loggedOutState && activeTab === "login";
+  const logoutMessage = "Successfully logged out. You can log in again.";
 
   // ---- HANDLE INVITATION ----
   useEffect(() => {
@@ -51,6 +61,28 @@ const AuthPage = () => {
       fetchInvitation();
     }
   }, [token]);
+
+  useEffect(() => {
+    const storedLoggedOut = sessionStorage.getItem("auth_logged_out") === "true";
+    const storedNotice = sessionStorage.getItem("auth_notice");
+
+    if (location.state?.loggedOut || storedLoggedOut || logoutParam) {
+      setActiveTab("login");
+      setLoggedOutState(true);
+      setError("");
+      setAuthNotice(
+        location.state?.authNotice ||
+          storedNotice ||
+          logoutMessage,
+      );
+      sessionStorage.removeItem("auth_logged_out");
+      sessionStorage.removeItem("auth_notice");
+      return;
+    }
+
+    setLoggedOutState(false);
+    setAuthNotice("");
+  }, [location.state, logoutMessage, logoutParam]);
   // ---- LOGIN ----
   const handleLogin = async () => {
     if (!loginEmail || !loginPassword) {
@@ -60,6 +92,8 @@ const AuthPage = () => {
 
     try {
       setError("");
+      setAuthNotice("Signing you in. This can take a few seconds depending on your connection.");
+      setLoginLoading(true);
       const res = await login(loginEmail.trim(), loginPassword.trim());
 
       if (res.success) {
@@ -70,28 +104,32 @@ const AuthPage = () => {
         // Redirect based on role
         switch (res.user.role) {
           case "maintenanceManager":
-            navigate("/manager");
+            navigate("/manager", { replace: true });
             break;
           case "admin":
-            navigate("/admin");
+            navigate("/admin", { replace: true });
             break;
           case "pharmacyStore":
-            navigate("/pharmacy");
+            navigate("/pharmacy", { replace: true });
             break;
           case "depStaff":
-            navigate("/staff");
+            navigate("/staff", { replace: true });
             break;
           case "technician":
-            navigate("/technician");
+            navigate("/technician", { replace: true });
             break;
           default:
-            navigate("/");
+            navigate("/", { replace: true });
         }
       } else {
         setError(res.message);
+        setAuthNotice("");
       }
     } catch (err) {
-      setError("Login failed");
+      setError(getRequestFeedbackMessage(err, "Login failed"));
+      setAuthNotice("");
+    } finally {
+      setLoginLoading(false);
     }
   };
 
@@ -104,6 +142,10 @@ const AuthPage = () => {
 
     try {
       setError("");
+      setAuthNotice(
+        "Creating your account. This can take a few seconds depending on your connection.",
+      );
+      setRegisterLoading(true);
       const res = await register(
         registerName.trim(),
         registerPassword.trim(),
@@ -116,12 +158,17 @@ const AuthPage = () => {
         setRegisterPassword("");
 
         setActiveTab("login");
-        setError("Registration successful! Please login.");
+        setError("");
+        setAuthNotice("Registration successful. You can now log in.");
       } else {
         setError(res.message);
+        setAuthNotice("");
       }
     } catch (err) {
-      setError("Registration failed");
+      setError(getRequestFeedbackMessage(err, "Registration failed"));
+      setAuthNotice("");
+    } finally {
+      setRegisterLoading(false);
     }
   };
 
@@ -138,18 +185,30 @@ const AuthPage = () => {
 
           <button
             className={activeTab === "login" ? "active" : ""}
-            onClick={() => setActiveTab("login")}
+            onClick={() => {
+              setActiveTab("login");
+            }}
           >
-            Login
+            {isLoggedOutView ? "Logged Out" : "Login"}
           </button>
 
           <button
             className={activeTab === "register" ? "active" : ""}
-            onClick={() => setActiveTab("register")}
+            onClick={() => {
+              setActiveTab("register");
+              setLoggedOutState(false);
+              setAuthNotice("");
+            }}
           >
             Register
           </button>
         </div>
+
+        <ActionStatus
+          status={loginLoading || registerLoading ? "info" : "success"}
+          message={authNotice || (isLoggedOutView ? logoutMessage : "")}
+          style={{ marginBottom: authNotice || isLoggedOutView ? "1rem" : 0 }}
+        />
 
         {/* Display error */}
         {error && (
@@ -172,7 +231,9 @@ const AuthPage = () => {
                 handleLogin();
               }}
             >
-              <h3 className="text-center mb-4">Welcome Back</h3>
+              <h3 className="text-center mb-4">
+                {isLoggedOutView ? "You Are Logged Out" : "Welcome Back"}
+              </h3>
               <input
                 type="email"
                 className="form-control mb-3"
@@ -190,8 +251,16 @@ const AuthPage = () => {
                 autoComplete="current-password"
                 required
               />
-              <button type="submit" className="btn btn-primary w-100 btnl">
-                Login
+              <button
+                type="submit"
+                className="btn btn-primary w-100 btnl"
+                disabled={loginLoading}
+              >
+                {loginLoading
+                  ? "Signing In..."
+                  : isLoggedOutView
+                    ? "Sign In Again"
+                    : "Login"}
               </button>
             </form>
           )}
@@ -241,8 +310,12 @@ const AuthPage = () => {
                     placeholder="Password"
                     required
                   />
-                  <button type="submit" className="btn btn-primary w-100 btnl">
-                    Register
+                  <button
+                    type="submit"
+                    className="btn btn-primary w-100 btnl"
+                    disabled={registerLoading}
+                  >
+                    {registerLoading ? "Registering..." : "Register"}
                   </button>
                 </>
               ) : (

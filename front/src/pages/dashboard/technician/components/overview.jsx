@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   BarChart,
   Bar,
@@ -10,6 +10,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../styles/overview.css";
+import { getStoredToken } from "../../../../utils/authStorage.js";
 
 const normalizeTaskStatus = (status) => {
   const normalized = status?.trim();
@@ -21,30 +22,48 @@ const normalizeTaskStatus = (status) => {
 
 const Overview = () => {
   const [tasks, setTasks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const token = localStorage.getItem("token");
+  const token = getStoredToken();
 
   // Fetch tasks assigned to this technician
-  const fetchTasks = async () => {
+  const fetchTasks = useCallback(async ({ showLoading = false } = {}) => {
+    if (showLoading) {
+      setLoading(true);
+    }
+
     try {
       const res = await axios.get("http://localhost:5000/api/tasks", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setTasks(Array.isArray(res.data) ? res.data : []);
+      setError("");
     } catch (error) {
       console.error("Backend fetch failed:", error.message);
       setTasks([]);
+      setError("Failed to load technician overview.");
+    } finally {
+      if (showLoading) {
+        setLoading(false);
+      }
     }
-  };
+  }, [token]);
 
   useEffect(() => {
-    fetchTasks();
+    if (!token) {
+      setError("Authentication token not found.");
+      setLoading(false);
+      return;
+    }
+
+    fetchTasks({ showLoading: true });
     const interval = setInterval(() => {
       fetchTasks();
     }, 40000); // refresh every 40s
     return () => clearInterval(interval);
-  }, [token]);
+  }, [token, fetchTasks]);
 
   // Status counts
   const waiting = tasks.filter(
@@ -90,18 +109,23 @@ const Overview = () => {
 
   return (
     <div className="overview-container">
+      {loading ? <p className="overview-banner">Loading overview cards...</p> : null}
+      {error ? <p className="overview-banner error">{error}</p> : null}
+
       {/* Status KPI Cards */}
       <div className="row g-3 mb-4">
         {chartData.map((item) => (
           <div key={item.name} className="col-12 col-sm-6 col-lg-4">
             <div
-              className="card td-card p-2 shadow-sm"
+              className={`card td-card p-2 shadow-sm ${loading ? "is-loading" : ""}`}
               style={{ cursor: "pointer" }}
               onClick={() => navigate("/technician/tasks")}
             >
               <div className="card-body text-center">
                 <h6 className="mb-2">{item.name}</h6>
-                <h3 className="mb-2">{item.value}</h3>
+                <h3 className={`mb-2 ${loading ? "overview-number-loading" : ""}`}>
+                  {loading ? "Loading..." : item.value}
+                </h3>
                 <div className="mini-bar-chart">
                   <ResponsiveContainer width="100%" height={30}>
                     <BarChart
@@ -134,22 +158,28 @@ const Overview = () => {
       </div>
 
       {/* Productivity */}
-      <div className="card productivity-card p-3 shadow-sm mb-4">
+      <div
+        className={`card productivity-card p-3 shadow-sm mb-4 ${loading ? "is-loading" : ""}`}
+      >
         <div className="d-flex justify-content-between align-items-center">
           <div>
             <h6 className="mb-1">Productivity</h6>
-            <small className="text-muted">Completed vs assigned tasks</small>
+            <small className="text-muted">
+              {loading ? "Loading productivity..." : "Completed vs assigned tasks"}
+            </small>
           </div>
           <div
             className="progress-circle"
-            style={{ "--percent": `${productivity}%` }}
-          ></div>
+            style={{ "--percent": `${loading ? 0 : productivity}%` }}
+          >
+            {loading ? "..." : `${productivity}%`}
+          </div>
         </div>
         <div className="progress mt-3" style={{ height: "6px" }}>
           <div
             className="progress-bar bg-success"
             role="progressbar"
-            style={{ width: `${productivity}%` }}
+            style={{ width: `${loading ? 0 : productivity}%` }}
           ></div>
         </div>
       </div>

@@ -106,11 +106,12 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "../styles/Notifications.css";
+import { getStoredToken } from "../../../../utils/authStorage.js";
 
 const Notifications = () => {
   const [activeTab, setActiveTab] = useState("Critical");
   const [alerts, setAlerts] = useState([]);
-  const token = localStorage.getItem("token");
+  const token = getStoredToken();
 
   // Fetch notifications from backend
   const fetchNotifications = async () => {

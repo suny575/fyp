@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { QrScanner } from "react-qr-scanner"; // compatible with React 18
 import "../styles/report.css";
+import { getStoredToken } from "../../../../utils/authStorage.js";
 
 const EquipmentReport = () => {
   const [equipmentName, setEquipmentName] = useState("");
@@ -11,7 +12,7 @@ const EquipmentReport = () => {
   const [selectedEquipment, setSelectedEquipment] = useState(null);
   const [description, setDescription] = useState("");
   const [showQRScanner, setShowQRScanner] = useState(false);
-  const token = localStorage.getItem("token");
+  const token = getStoredToken();
 
   // Search equipment by name
   useEffect(() => {

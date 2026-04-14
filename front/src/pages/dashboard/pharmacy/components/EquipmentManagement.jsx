@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import "../styles/EquipmentManagement.css";
 import axios from "axios";
+import { getStoredToken } from "../../../../utils/authStorage.js";
 
 const EquipmentManagement = () => {
   // 🔹 Mock data fallback
@@ -25,7 +26,7 @@ const EquipmentManagement = () => {
   const API = "http://localhost:5000/api/equipment";
 
   // 🔹 Get token from localStorage
-  const token = localStorage.getItem("token"); // ⬅️ ADD THIS
+  const token = getStoredToken(); // ⬅️ ADD THIS
   if (!token) console.warn("No token found. Please login!"); // just a reminder
 
   // ===== FETCH EQUIPMENT =====
@@ -228,6 +229,41 @@ const EquipmentManagement = () => {
             ))}
           </tbody>
         </table>
+      </div>
+
+      <div className="equipment-mobile-cards">
+        {filteredList.map((item) => (
+          <div className="equipment-mobile-card" key={`mobile-${item._id || item.id}`}>
+            <div className="equipment-mobile-card-header">
+              <h3>{item.name}</h3>
+              <span>{item.department}</span>
+            </div>
+
+            <div className="equipment-mobile-card-body">
+              <div className="equipment-mobile-field">
+                <span>Model</span>
+                <strong>{item.model}</strong>
+              </div>
+              <div className="equipment-mobile-field">
+                <span>Serial</span>
+                <strong>{item.serial}</strong>
+              </div>
+              <div className="equipment-mobile-field">
+                <span>Purchase Date</span>
+                <strong>{item.purchaseDate?.slice(0,10)}</strong>
+              </div>
+              <div className="equipment-mobile-field">
+                <span>Department</span>
+                <strong>{item.department}</strong>
+              </div>
+            </div>
+
+            <div className="equipment-mobile-actions">
+              <button className="edit-btn" onClick={() => handleEditClick(item)}>Edit</button>
+              <button className="delete-btn" onClick={() => openDeleteModal(item._id || item.id)}>Delete</button>
+            </div>
+          </div>
+        ))}
       </div>
 
       {showDeleteModal && (

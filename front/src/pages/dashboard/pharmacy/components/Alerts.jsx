@@ -98,6 +98,7 @@ import React, { useState, useEffect } from "react";
 import "../styles/Alerts.css";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { getStoredToken } from "../../../../utils/authStorage.js";
 
 const AlertsPage = () => {
   const [alerts, setAlerts] = useState([]);
@@ -108,7 +109,7 @@ const AlertsPage = () => {
   useEffect(() => {
     const fetchAlerts = async () => {
       try {
-        const token = localStorage.getItem("token");
+        const token = getStoredToken();
         const res = await axios.get("http://localhost:5000/api/alerts", {
           headers: { Authorization: `Bearer ${token}` },
         });

@@ -16,43 +16,64 @@ const Sidebar = ({ closeSidebar, isDesktop }) => {
       style={{
         width: "100%",
         height: "100%",
-        paddingTop: "90px",
+        paddingTop: "14px",
+        paddingBottom: "20px",
         overflowY: "auto",
         color: "#fff",
       }}
     >
-      <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+      <ul
+        style={{
+          listStyle: "none",
+          padding: "0 10px",
+          margin: 0,
+          display: "flex",
+          flexDirection: "column",
+          gap: "8px",
+        }}
+      >
         {menus.map((item) => (
           <li key={item.path}>
             <NavLink
               to={item.path}
               onClick={!isDesktop ? closeSidebar : undefined}
               style={({ isActive }) => ({
-                display: "block",
-                padding: "14px 24px",
+                display: "flex",
+                alignItems: "center",
+                gap: "12px",
+                padding: "13px 16px",
                 textDecoration: "none",
                 color: isActive ? "#fff" : "#cbd5e1",
                 background: isActive
-                  ? "linear-gradient(90deg, #6366f1, #8b5cf6)"
-                  : "transparent",
-                borderRadius: "8px",
-                margin: "6px 14px",
+                  ? "linear-gradient(135deg, #4f46e5, #7c3aed)"
+                  : "rgba(255,255,255,0.02)",
+                border: isActive
+                  ? "1px solid rgba(255,255,255,0.22)"
+                  : "1px solid transparent",
+                borderRadius: "14px",
                 fontSize: "15px",
-                fontWeight: isActive ? "600" : "400",
+                fontWeight: isActive ? "700" : "500",
+                letterSpacing: "0.2px",
+                boxShadow: isActive
+                  ? "0 12px 24px rgba(79, 70, 229, 0.35)"
+                  : "none",
+                transform: isActive ? "translateX(4px)" : "translateX(0)",
                 transition: "all 0.25s ease",
               })}
               onMouseEnter={(e) => {
-                if (!e.target.classList.contains("active")) {
-                  e.target.style.background = "rgba(255,255,255,0.08)";
+                if (!e.currentTarget.classList.contains("active")) {
+                  e.currentTarget.style.background = "rgba(255,255,255,0.08)";
+                  e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)";
                 }
               }}
               onMouseLeave={(e) => {
-                if (!e.target.classList.contains("active")) {
-                  e.target.style.background = "transparent";
+                if (!e.currentTarget.classList.contains("active")) {
+                  e.currentTarget.style.background = "rgba(255,255,255,0.02)";
+                  e.currentTarget.style.borderColor = "transparent";
                 }
               }}
             >
-              {item.label}
+              <span>{item.label}</span>
             </NavLink>
           </li>
         ))}

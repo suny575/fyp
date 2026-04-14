@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { getStoredToken } from "../../../../utils/authStorage.js";
 import "../styles/sm.css";
 
-const token = localStorage.getItem("token");
+const token = getStoredToken();
 
 const SetSchedule = ({ onScheduleCreated, equipments }) => {
   const [showForm, setShowForm] = useState(false);

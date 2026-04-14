@@ -10,11 +10,12 @@ const DepStaffDashboard = () => {
   return (
     <Layout>
       <Routes>
-        <Route path="overview" element={<Overview />} />
+        <Route index element={<Overview />} />
+        <Route path="overview" element={<Navigate to="/staff" replace />} />
         <Route path="faults" element={<Fault />} />
         <Route path="stocks" element={<StockRequestForm />} />
         {/* <Route path="notifications" element={<Notifications />} /> */}
-        <Route path="*" element={<Navigate to="overview" />} />
+        <Route path="*" element={<Navigate to="/staff" replace />} />
       </Routes>
     </Layout>
   );

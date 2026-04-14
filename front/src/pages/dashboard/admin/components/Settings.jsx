@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "../styles/Settings.css";
+import { getStoredToken } from "../../../../utils/authStorage.js";
 
 const Settings = () => {
   const defaultSettings = {
@@ -17,7 +18,7 @@ const Settings = () => {
   const [settings, setSettings] = useState(defaultSettings);
   const [savedMessage, setSavedMessage] = useState("");
   const [loading, setLoading] = useState(true);
-  const token = localStorage.getItem("token");
+  const token = getStoredToken();
 
   // Fetch settings from backend on load
   useEffect(() => {

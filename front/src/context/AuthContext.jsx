@@ -1,6 +1,14 @@
 // src/context/AuthContext.jsx
 import { createContext, useState, useEffect, useContext } from "react";
 import axios from "axios";
+import {
+  clearStoredAuth,
+  getStoredToken,
+  getStoredUser,
+  migrateLegacyAuthToSession,
+  setStoredAuth,
+  setStoredUser,
+} from "../utils/authStorage.js";
 
 export const AuthContext = createContext();
 
@@ -19,28 +27,39 @@ const normalizeUser = (user) => {
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
-    const storedUser = localStorage.getItem("user");
-    return storedUser ? normalizeUser(JSON.parse(storedUser)) : null;
+    return normalizeUser(getStoredUser());
   });
 
   const [token, setToken] = useState(() => {
-    return localStorage.getItem("token") || null;
+    return getStoredToken();
   });
 
   const [loading, setLoading] = useState(true);
 
   // Initialize user & token on app load
   useEffect(() => {
-    const storedToken = localStorage.getItem("token");
-    const storedUser = localStorage.getItem("user");
+    migrateLegacyAuthToSession();
+
+    const storedToken = getStoredToken();
+    const storedUser = getStoredUser();
+
     if (storedToken && storedUser) {
       setToken(storedToken);
-      const normalizedUser = normalizeUser(JSON.parse(storedUser));
+      const normalizedUser = normalizeUser(storedUser);
       setUser(normalizedUser);
-      localStorage.setItem("user", JSON.stringify(normalizedUser));
+      setStoredUser(normalizedUser);
     }
     setLoading(false);
   }, []);
+
+  useEffect(() => {
+    if (token) {
+      axios.defaults.headers.common.Authorization = `Bearer ${token}`;
+      return;
+    }
+
+    delete axios.defaults.headers.common.Authorization;
+  }, [token]);
 
   // ---- LOGIN ----
   const login = async (email, password) => {
@@ -56,9 +75,8 @@ export const AuthProvider = ({ children }) => {
       setToken(res.data.token);
       setUser(normalizedUser);
 
-      // Save to localStorage
-      localStorage.setItem("token", res.data.token);
-      localStorage.setItem("user", JSON.stringify(normalizedUser));
+      // Save auth per tab so different roles can stay open in different tabs.
+      setStoredAuth({ token: res.data.token, user: normalizedUser });
 
       return { success: true, user: normalizedUser };
     } catch (err) {
@@ -98,20 +116,23 @@ export const AuthProvider = ({ children }) => {
   const updateUser = (nextUser) => {
     const normalizedUser = normalizeUser(nextUser);
     setUser(normalizedUser);
-
-    if (normalizedUser) {
-      localStorage.setItem("user", JSON.stringify(normalizedUser));
-    } else {
-      localStorage.removeItem("user");
-    }
+    setStoredUser(normalizedUser);
   };
 
   // ---- LOGOUT ----
-  const logout = () => {
+  const logout = ({ loggedOut = false, notice = "" } = {}) => {
     setUser(null);
     setToken(null);
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    clearStoredAuth();
+    sessionStorage.removeItem("auth_logged_out");
+    sessionStorage.removeItem("auth_notice");
+    if (loggedOut) {
+      sessionStorage.setItem("auth_logged_out", "true");
+    }
+    if (notice) {
+      sessionStorage.setItem("auth_notice", notice);
+    }
+    delete axios.defaults.headers.common.Authorization;
   };
 
   return (
