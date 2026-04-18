@@ -40,6 +40,19 @@ const maintenanceScheduleSchema = new mongoose.Schema(
       required: true,
     },
 
+    status: {
+      type: String,
+      enum: [
+        "SCHEDULED",
+        "IN_PROGRESS",
+        "COMPLETED_OK",
+        "COMPLETED_WITH_ISSUES",
+        "NEEDS_REPAIR",
+      ],
+      default: "SCHEDULED",
+      index: true,
+    },
+
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

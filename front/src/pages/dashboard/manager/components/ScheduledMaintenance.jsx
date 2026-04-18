@@ -10,11 +10,19 @@ const ScheduledMaintenance = () => {
   const [technicians, setTechnicians] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedEquipment, setSelectedEquipment] = useState("");
+  const [editingScheduleId, setEditingScheduleId] = useState(null);
+  const [assigningScheduleId, setAssigningScheduleId] = useState(null);
 
   useEffect(() => {
     fetchSchedules();
     fetchEquipments();
     fetchTechnicians();
+
+    const interval = setInterval(() => {
+      fetchSchedules();
+    }, 30000);
+
+    return () => clearInterval(interval);
   }, [token]);
 
   const fetchSchedules = async () => {
@@ -22,6 +30,9 @@ const ScheduledMaintenance = () => {
       const res = await fetch("http://localhost:5000/api/schedules/upcoming", {
         headers: { Authorization: `Bearer ${token}` },
       });
+      if (!res.ok) {
+        throw new Error("Failed to fetch schedules");
+      }
       const data = await res.json();
       setSchedules(data);
       setLoading(false);
@@ -36,6 +47,9 @@ const ScheduledMaintenance = () => {
       const res = await fetch("http://localhost:5000/api/equipment", {
         headers: { Authorization: `Bearer ${token}` },
       });
+      if (!res.ok) {
+        throw new Error("Failed to fetch equipments");
+      }
       const data = await res.json();
       setEquipments(data);
     } catch (err) {
@@ -49,8 +63,22 @@ const ScheduledMaintenance = () => {
         "http://localhost:5000/api/manager/users?role=technician",
         { headers: { Authorization: `Bearer ${token}` } },
       );
+      if (!res.ok) {
+        throw new Error("Failed to fetch technicians");
+      }
       const data = await res.json();
-      setTechnicians(data);
+      const normalizedTechnicians = (Array.isArray(data) ? data : [])
+        .map((technician) => ({
+          ...technician,
+          _id: technician._id || technician.id || "",
+        }))
+        .filter(
+          (technician) =>
+            technician._id &&
+            technician.status === "active" &&
+            technician.role === "technician",
+        );
+      setTechnicians(normalizedTechnicians);
     } catch (err) {
       console.error("Failed to fetch technicians", err);
     }
@@ -58,8 +86,9 @@ const ScheduledMaintenance = () => {
 
   const assignTechnician = async (scheduleId, techId) => {
     if (!techId) return;
+    setAssigningScheduleId(scheduleId);
     try {
-      await fetch(
+      const res = await fetch(
         `http://localhost:5000/api/schedules/${scheduleId}/assign-technician`,
         {
           method: "POST",
@@ -70,11 +99,20 @@ const ScheduledMaintenance = () => {
           body: JSON.stringify({ technicianId: techId }),
         },
       );
+
+      const payload = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(payload.message || "Failed to assign technician");
+      }
+
       alert("Technician assigned!");
-      fetchSchedules();
+      setEditingScheduleId(null);
+      await fetchSchedules();
     } catch (err) {
       console.error(err);
-      alert("Failed to assign technician");
+      alert(err.message || "Failed to assign technician");
+    } finally {
+      setAssigningScheduleId(null);
     }
   };
 
@@ -110,6 +148,28 @@ const ScheduledMaintenance = () => {
   const filteredSchedules = schedules.filter(
     (sch) => !selectedEquipment || sch.equipment?._id === selectedEquipment,
   );
+
+  const getScheduleTechnicianId = (schedule) => {
+    if (!schedule?.technician) return "";
+    if (typeof schedule.technician === "string") return schedule.technician;
+    return schedule.technician?._id || schedule.technician?.id || "";
+  };
+
+  const getScheduleTechnicianName = (schedule) => {
+    if (
+      schedule?.technician &&
+      typeof schedule.technician === "object" &&
+      schedule.technician.name
+    ) {
+      return schedule.technician.name;
+    }
+
+    const technicianId = getScheduleTechnicianId(schedule);
+    if (!technicianId) return "";
+
+    const technician = technicians.find((t) => t._id === technicianId);
+    return technician?.name || "Assigned Technician";
+  };
 
   if (loading) return <p className="text-center mt-10">Loading schedules...</p>;
 
@@ -167,22 +227,48 @@ const ScheduledMaintenance = () => {
                     </span>
                   </td>
                   <td>
-                    <select
-                      className="form-select form-select-sm"
-                      onChange={(e) =>
-                        assignTechnician(schedule._id, e.target.value)
-                      }
-                      defaultValue=""
-                    >
-                      <option value="" disabled>
-                        Assign Technician
-                      </option>
-                      {technicians.map((t) => (
-                        <option key={t._id} value={t._id}>
-                          {t.name}
-                        </option>
-                      ))}
-                    </select>
+                    {getScheduleTechnicianId(schedule) &&
+                    editingScheduleId !== schedule._id ? (
+                      <button
+                        type="button"
+                        className="btn btn-link p-0 assigned-technician-link"
+                        onClick={() => setEditingScheduleId(schedule._id)}
+                        disabled={assigningScheduleId === schedule._id}
+                      >
+                        {getScheduleTechnicianName(schedule)}
+                      </button>
+                    ) : (
+                      <div className="d-flex align-items-center gap-2">
+                        <select
+                          className="form-select form-select-sm"
+                          value={getScheduleTechnicianId(schedule)}
+                          onChange={(e) =>
+                            assignTechnician(schedule._id, e.target.value)
+                          }
+                          disabled={assigningScheduleId === schedule._id}
+                        >
+                          <option value="" disabled>
+                            {assigningScheduleId === schedule._id
+                              ? "Saving..."
+                              : "Assign Technician"}
+                          </option>
+                          {technicians.map((t) => (
+                            <option key={t._id} value={t._id}>
+                              {t.name}
+                            </option>
+                          ))}
+                        </select>
+                        {editingScheduleId === schedule._id && (
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-outline-secondary"
+                            onClick={() => setEditingScheduleId(null)}
+                          >
+                            Cancel
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </td>
                 </tr>
             ))}
@@ -213,22 +299,48 @@ const ScheduledMaintenance = () => {
                       {formatStatusLabel(schedule.status)}
                     </span>
                   </p>
-                  <select
-                    className="form-select form-select-sm mt-2"
-                    onChange={(e) =>
-                      assignTechnician(schedule._id, e.target.value)
-                    }
-                    defaultValue=""
-                  >
-                    <option value="" disabled>
-                      Assign Technician
-                    </option>
-                    {technicians.map((t) => (
-                      <option key={t._id} value={t._id}>
-                        {t.name}
-                      </option>
-                    ))}
-                  </select>
+                  {getScheduleTechnicianId(schedule) &&
+                  editingScheduleId !== schedule._id ? (
+                    <button
+                      type="button"
+                      className="btn btn-link p-0 assigned-technician-link"
+                      onClick={() => setEditingScheduleId(schedule._id)}
+                      disabled={assigningScheduleId === schedule._id}
+                    >
+                      {getScheduleTechnicianName(schedule)}
+                    </button>
+                  ) : (
+                    <div className="d-flex align-items-center gap-2 mt-2">
+                      <select
+                        className="form-select form-select-sm"
+                        value={getScheduleTechnicianId(schedule)}
+                        onChange={(e) =>
+                          assignTechnician(schedule._id, e.target.value)
+                        }
+                        disabled={assigningScheduleId === schedule._id}
+                      >
+                        <option value="" disabled>
+                          {assigningScheduleId === schedule._id
+                            ? "Saving..."
+                            : "Assign Technician"}
+                        </option>
+                        {technicians.map((t) => (
+                          <option key={t._id} value={t._id}>
+                            {t.name}
+                          </option>
+                        ))}
+                      </select>
+                      {editingScheduleId === schedule._id && (
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-outline-secondary"
+                          onClick={() => setEditingScheduleId(null)}
+                        >
+                          Cancel
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

@@ -71,3 +71,47 @@
 label {
   color: #0b1c49; /* blue-black */
 }
+
+.manager-page-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 200px;
+  padding: 20px;
+}
+
+.manager-page-loading-compact {
+  min-height: 120px;
+  padding: 10px 0;
+}
+
+.manager-dotted-loader {
+  width: 40px;
+  height: 40px;
+  border: 4px dotted #0b1c49;
+  border-radius: 50%;
+  animation: manager-spin 1s linear infinite;
+}
+
+.manager-loading-text {
+  margin: 0;
+  font-weight: 600;
+  color: #334155;
+}
+
+.assigned-technician-link {
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.assigned-technician-link:hover {
+  text-decoration: underline;
+}
+
+@keyframes manager-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

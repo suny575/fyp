@@ -8,6 +8,7 @@ import { getStoredToken } from "../../../../utils/authStorage.js";
 const ManagersList = () => {
   const [showForm, setShowForm] = useState(false);
   const [managers, setManagers] = useState([]);
+  const [loadingManagers, setLoadingManagers] = useState(true);
   const [email, setEmail] = useState("");
   const [hospital, setHospital] = useState("");
   const [inviteLoading, setInviteLoading] = useState(false);
@@ -16,6 +17,7 @@ const ManagersList = () => {
   const token = getStoredToken();
 
   const fetchManagers = useCallback(async () => {
+    setLoadingManagers(true);
     try {
       const res = await axios.get(
         "http://localhost:5000/api/admin/managers",
@@ -26,6 +28,8 @@ const ManagersList = () => {
       setManagers(res.data.managers);
     } catch (err) {
       console.error(err);
+    } finally {
+      setLoadingManagers(false);
     }
   }, [token]);
 
@@ -159,89 +163,96 @@ const ManagersList = () => {
       )}
 
       <div className="managers-table-wrapper">
-        <table className="managers-table">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Hospital</th>
-              <th>Role</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {managers.map(
-              (manager) =>
-                manager && (
-                  <tr key={manager._id}>
-                    <td>{manager.name || "-"}</td>
-                    <td>{manager.email || "-"}</td>
-                    <td>{manager.hospital || "-"}</td>
-                    <td>{manager.role || "Maintenance Manager"}</td>
-                    <td>
-                      <span
-                        className={`status ${
-                          manager.status?.toLowerCase() || "pending"
-                        }`}
-                      >
-                        {manager.status
-                          ? manager.status.charAt(0).toUpperCase() +
-                            manager.status.slice(1)
-                          : "Pending"}
-                      </span>
-                    </td>
-                    <td>
-                      {manager.status === "pending" && (
-                        <button
-                          className="delete-btn"
-                          onClick={() => deleteManager(manager._id)}
+        {loadingManagers ? (
+          <div className="page-loading">
+            <div className="dotted-loader" />
+            <p className="loading-text">Loading managers...</p>
+          </div>
+        ) : (
+          <table className="managers-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Hospital</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {managers.map(
+                (manager) =>
+                  manager && (
+                    <tr key={manager._id}>
+                      <td>{manager.name || "-"}</td>
+                      <td>{manager.email || "-"}</td>
+                      <td>{manager.hospital || "-"}</td>
+                      <td>{manager.role || "Maintenance Manager"}</td>
+                      <td>
+                        <span
+                          className={`status ${
+                            manager.status?.toLowerCase() || "pending"
+                          }`}
                         >
-                          Delete
-                        </button>
-                      )}
-                      {manager.status === "active" && (
-                        <>
-                          <button
-                            className="deactivate-btn"
-                            onClick={() =>
-                              toggleStatus(manager._id, manager.status)
-                            }
-                          >
-                            Deactivate
-                          </button>
+                          {manager.status
+                            ? manager.status.charAt(0).toUpperCase() +
+                              manager.status.slice(1)
+                            : "Pending"}
+                        </span>
+                      </td>
+                      <td>
+                        {manager.status === "pending" && (
                           <button
                             className="delete-btn"
                             onClick={() => deleteManager(manager._id)}
                           >
                             Delete
                           </button>
-                        </>
-                      )}
-                      {manager.status === "inactive" && (
-                        <>
-                          <button
-                            className="activate-btn"
-                            onClick={() =>
-                              toggleStatus(manager._id, manager.status)
-                            }
-                          >
-                            Activate
-                          </button>
-                          <button
-                            className="delete-btn"
-                            onClick={() => deleteManager(manager._id)}
-                          >
-                            Delete
-                          </button>
-                        </>
-                      )}
-                    </td>
-                  </tr>
-                ),
-            )}
-          </tbody>
-        </table>
+                        )}
+                        {manager.status === "active" && (
+                          <>
+                            <button
+                              className="deactivate-btn"
+                              onClick={() =>
+                                toggleStatus(manager._id, manager.status)
+                              }
+                            >
+                              Deactivate
+                            </button>
+                            <button
+                              className="delete-btn"
+                              onClick={() => deleteManager(manager._id)}
+                            >
+                              Delete
+                            </button>
+                          </>
+                        )}
+                        {manager.status === "inactive" && (
+                          <>
+                            <button
+                              className="activate-btn"
+                              onClick={() =>
+                                toggleStatus(manager._id, manager.status)
+                              }
+                            >
+                              Activate
+                            </button>
+                            <button
+                              className="delete-btn"
+                              onClick={() => deleteManager(manager._id)}
+                            >
+                              Delete
+                            </button>
+                          </>
+                        )}
+                      </td>
+                    </tr>
+                  ),
+              )}
+            </tbody>
+          </table>
+        )}
       </div>
     </div>
   );

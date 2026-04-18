@@ -18,7 +18,7 @@ router.get("/", protect, async (req, res) => {
     if (reportType === "Inventory") {
       const equipment = await Equipment.find(
         withHospitalScope({}, req.user.hospital),
-      );
+      ).populate("allocatedBy", "name");
       const stock = await Stock.find(withHospitalScope({}, req.user.hospital));
 
       const equipmentData = equipment.map((item) => ({
@@ -27,7 +27,7 @@ router.get("/", protect, async (req, res) => {
         category: "Equipment",
         department: item.department,
         quantity: 1,
-        allocatedBy: item.allocatedBy,
+        allocatedBy: item.allocatedBy?.name || "Unknown",
         date: item.purchaseDate,
       }));
 

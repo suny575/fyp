@@ -2,8 +2,9 @@ import React, { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
 import { io } from "socket.io-client";
-import { Card, Button, Form, Badge, Spinner } from "react-bootstrap";
+import { Card, Button, Form, Badge } from "react-bootstrap";
 import { getStoredToken } from "../../../../utils/authStorage.js";
+import "../styles/staff.css";
 
 const socket = io("http://localhost:5000", {
   transports: ["websocket", "polling"],
@@ -218,6 +219,18 @@ const Faults = () => {
     }
   };
 
+  if (equipmentsLoading) {
+    return (
+      <div className="p-4">
+        <h3 className="fw-bold mt-5 mb-4">Submit Equipment Fault</h3>
+        <div className="staff-page-loading">
+          <div className="staff-dotted-loader" />
+          <p className="staff-loading-text">Loading faults form...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-4">
       <h3 className="fw-bold mt-5 mb-4">Submit Equipment Fault</h3>
@@ -402,13 +415,16 @@ const Faults = () => {
 
       {/* ===== Faults Display: Table for large, Cards for small ===== */}
       {showTasks && (
-        <>
-          <div className="d-none d-lg-block">
-            <Card className="shadow-sm border-0">
-              <Card.Body>
-                {loading ? (
-                  <Spinner animation="border" />
-                ) : (
+        loading ? (
+          <div className="staff-page-loading">
+            <div className="staff-dotted-loader" />
+            <p className="staff-loading-text">Loading reported faults...</p>
+          </div>
+        ) : (
+          <>
+            <div className="d-none d-lg-block">
+              <Card className="shadow-sm border-0">
+                <Card.Body>
                   <div className="table-responsive">
                     <table className="table mb-0">
                       <thead className="table-light">
@@ -454,38 +470,38 @@ const Faults = () => {
                       </tbody>
                     </table>
                   </div>
-                )}
-              </Card.Body>
-            </Card>
-          </div>
-
-          <div className="d-block d-lg-none">
-            {filteredTasks.map((t) => (
-              <Card key={t._id} className="mb-3 shadow-sm">
-                <Card.Body>
-                  <Card.Title>{t.equipment?.name || "Unknown"}</Card.Title>
-                  <Card.Subtitle className="mb-2 text-muted">
-                    Reported by: {t.reportedBy?.name}
-                  </Card.Subtitle>
-                  <Card.Text>
-                    Status:{" "}
-                    <Badge className={getBadge(t.status)}>{t.status}</Badge>
-                    <br />
-                    Priority: {t.priority}
-                    <br />
-                    Assigned To: {t.assignedTechnician?.name || "Not Assigned"}
-                    <br />
-                    Updated By:{" "}
-                    {["pending", "waiting"].includes(t.status)
-                      ? "-"
-                      : t.updatedBy || "-"}
-                  </Card.Text>
-                  <Card.Text>{t.description}</Card.Text>
                 </Card.Body>
               </Card>
-            ))}
-          </div>
-        </>
+            </div>
+
+            <div className="d-block d-lg-none">
+              {filteredTasks.map((t) => (
+                <Card key={t._id} className="mb-3 shadow-sm">
+                  <Card.Body>
+                    <Card.Title>{t.equipment?.name || "Unknown"}</Card.Title>
+                    <Card.Subtitle className="mb-2 text-muted">
+                      Reported by: {t.reportedBy?.name}
+                    </Card.Subtitle>
+                    <Card.Text>
+                      Status:{" "}
+                      <Badge className={getBadge(t.status)}>{t.status}</Badge>
+                      <br />
+                      Priority: {t.priority}
+                      <br />
+                      Assigned To: {t.assignedTechnician?.name || "Not Assigned"}
+                      <br />
+                      Updated By:{" "}
+                      {["pending", "waiting"].includes(t.status)
+                        ? "-"
+                        : t.updatedBy || "-"}
+                    </Card.Text>
+                    <Card.Text>{t.description}</Card.Text>
+                  </Card.Body>
+                </Card>
+              ))}
+            </div>
+          </>
+        )
       )}
     </div>
   );

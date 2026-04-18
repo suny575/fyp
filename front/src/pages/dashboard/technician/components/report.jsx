@@ -12,16 +12,21 @@ const EquipmentReport = () => {
   const [selectedEquipment, setSelectedEquipment] = useState(null);
   const [description, setDescription] = useState("");
   const [showQRScanner, setShowQRScanner] = useState(false);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [lookupLoading, setLookupLoading] = useState(false);
+  const [submitLoading, setSubmitLoading] = useState(false);
   const token = getStoredToken();
 
   // Search equipment by name
   useEffect(() => {
     if (!equipmentQuery) {
       setEquipmentList([]);
+      setSearchLoading(false);
       return;
     }
 
     const fetchEquipment = async () => {
+      setSearchLoading(true);
       try {
         const res = await axios.get(
           `http://localhost:5000/api/equipment?search=${equipmentQuery}`,
@@ -30,6 +35,8 @@ const EquipmentReport = () => {
         setEquipmentList(res.data);
       } catch (err) {
         console.error("Failed to fetch equipment:", err.message);
+      } finally {
+        setSearchLoading(false);
       }
     };
 
@@ -41,20 +48,37 @@ const EquipmentReport = () => {
     if (result) {
       const scannedId = result.text || result;
       setEquipmentId(scannedId);
+      setLookupLoading(true);
 
-      // Optional: fetch equipment name automatically
+      // Try to match scanned value against serial or _id from equipment list endpoint.
       axios
-        .get(`http://localhost:5000/api/equipment/${scannedId}`, {
+        .get(`http://localhost:5000/api/equipment?search=${encodeURIComponent(scannedId)}`, {
           headers: { Authorization: `Bearer ${token}` },
         })
         .then((res) => {
-          setSelectedEquipment(res.data);
-          setEquipmentName(res.data.name);
+          const equipmentItems = Array.isArray(res.data) ? res.data : [];
+          const match = equipmentItems.find(
+            (item) =>
+              item?._id === scannedId ||
+              item?.serial?.toLowerCase() === String(scannedId).toLowerCase(),
+          );
+
+          if (!match) {
+            alert("Equipment not found in database!");
+            return;
+          }
+
+          setSelectedEquipment(match);
+          setEquipmentName(match.name || "");
+          setEquipmentId(match.serial || match._id || "");
           setShowQRScanner(false);
         })
         .catch((err) => {
           console.error("Equipment not found:", err.message);
           alert("Equipment not found in database!");
+        })
+        .finally(() => {
+          setLookupLoading(false);
         });
     }
   };
@@ -66,15 +90,17 @@ const EquipmentReport = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!equipmentId || !description) {
-      alert("Enter equipment ID and describe the issue");
+      alert("Enter equipment serial number and describe the issue");
       return;
     }
 
+    setSubmitLoading(true);
     try {
+      const equipmentReference = selectedEquipment?._id || equipmentId;
       await axios.post(
         "http://localhost:5000/api/equipmentReports",
         {
-          equipment: equipmentId,
+          equipment: equipmentReference,
           description,
         },
         { headers: { Authorization: `Bearer ${token}` } },
@@ -88,8 +114,17 @@ const EquipmentReport = () => {
     } catch (err) {
       console.error("Failed to submit report:", err.message);
       alert("Error submitting report");
+    } finally {
+      setSubmitLoading(false);
     }
   };
+
+  const isBusy = lookupLoading || submitLoading;
+  const loadingText = submitLoading
+    ? "Submitting report..."
+    : lookupLoading
+      ? "Loading equipment details..."
+      : "Loading equipment...";
 
   return (
 
@@ -101,6 +136,13 @@ const EquipmentReport = () => {
         <p className="small text-muted">
           Enter equipment name or scan QR code to fill the ID automatically.
         </p>
+
+        {isBusy && (
+          <div className="td-page-loading td-page-loading-compact">
+            <div className="td-dotted-loader" />
+            <p className="td-loading-text">{loadingText}</p>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit}>
           {/* Equipment Name Search */}
@@ -115,6 +157,14 @@ const EquipmentReport = () => {
                 setEquipmentQuery(e.target.value);
               }}
             />
+            {searchLoading && equipmentQuery.trim() && (
+              <div className="td-page-loading td-page-loading-compact mt-2">
+                <div className="td-dotted-loader" />
+                <p className="td-loading-text">
+                  Searching equipment by name, please wait...
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Name search results */}
@@ -132,23 +182,28 @@ const EquipmentReport = () => {
                   onClick={() => {
                     setSelectedEquipment(e);
                     setEquipmentName(e.name);
-                    setEquipmentId(e._id);
+                    setEquipmentId(e.serial || e._id);
                   }}
                 >
-                  {e.name} ({e._id})
+                  {e.name} ({e.serial || e._id})
                 </div>
               ))}
             </div>
           )}
 
-          {/* Equipment ID input + QR scan */}
+          {/* Equipment serial input + QR scan */}
           <div className="mb-2 d-flex gap-2">
             <input
               type="text"
               className="form-control"
-              placeholder="Equipment ID"
+              placeholder="Equipment Serial Number"
               value={equipmentId}
-              onChange={(e) => setEquipmentId(e.target.value)}
+              onChange={(e) => {
+                setEquipmentId(e.target.value);
+                if (selectedEquipment?.serial !== e.target.value) {
+                  setSelectedEquipment(null);
+                }
+              }}
               required
             />
             <button
@@ -183,8 +238,12 @@ const EquipmentReport = () => {
             />
           </div>
 
-          <button type="submit" className="btn btn-primary px-3 btn-sm">
-            Submit Report
+          <button
+            type="submit"
+            className="btn btn-primary px-3 btn-sm"
+            disabled={submitLoading}
+          >
+            {submitLoading ? "Submitting..." : "Submit Report"}
           </button>
         </form>
       </div>

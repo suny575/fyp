@@ -2,6 +2,7 @@ import express from "express";
 import EquipmentReport from "../models/EquipmentReport.js";
 import Equipment from "../models/equipment.js";
 import protect from "../middleware/authMiddleware.js";
+import mongoose from "mongoose";
 
 const router = express.Router();
 
@@ -15,8 +16,23 @@ router.post("/", protect, async (req, res) => {
       .json({ message: "Equipment and description required" });
 
   try {
+    const equipmentRef = String(equipment).trim();
+    let equipmentDoc = null;
+
+    if (mongoose.Types.ObjectId.isValid(equipmentRef)) {
+      equipmentDoc = await Equipment.findById(equipmentRef).select("_id");
+    }
+
+    if (!equipmentDoc) {
+      equipmentDoc = await Equipment.findOne({ serial: equipmentRef }).select("_id");
+    }
+
+    if (!equipmentDoc) {
+      return res.status(404).json({ message: "Equipment not found" });
+    }
+
     const report = await EquipmentReport.create({
-      equipment,
+      equipment: equipmentDoc._id,
       description,
       reportedBy: req.user._id,
     });

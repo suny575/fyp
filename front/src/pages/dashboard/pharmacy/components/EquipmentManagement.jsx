@@ -15,6 +15,7 @@ const EquipmentManagement = () => {
 
   const [equipmentList, setEquipmentList] = useState([]);
   const [useMock, setUseMock] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   // const [filterDepartment, setFilterDepartment] = useState("");
   const [isEdit, setIsEdit] = useState(false);
@@ -31,6 +32,7 @@ const EquipmentManagement = () => {
 
   // ===== FETCH EQUIPMENT =====
   const fetchEquipment = async () => {
+    setLoading(true);
     try {
       // 🔹 Add Authorization header for protected route
       const res = await axios.get(API, { headers: { Authorization: `Bearer ${token}` } }); // ⬅️ FIXED
@@ -40,6 +42,8 @@ const EquipmentManagement = () => {
       console.error("Backend failed, using mock data:", err.response?.data || err.message);
       setEquipmentList(mockData);
       setUseMock(true);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -145,6 +149,19 @@ const EquipmentManagement = () => {
     item.department.toLowerCase().includes(search)
   );
 });
+
+  if (loading) {
+    return (
+      <div className="equipment-container">
+        <h2>Equipment Management</h2>
+        <p className="sub-text">Register and manage all pharmacy equipment</p>
+        <div className="pharmacy-page-loading">
+          <div className="pharmacy-dotted-loader" />
+          <p className="pharmacy-loading-text">Loading equipment...</p>
+        </div>
+      </div>
+    );
+  }
 
   // ===== RENDER =====
   return (

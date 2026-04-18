@@ -1,4 +1,10 @@
 export const notificationTemplates = {
+  SCHEDULE_STATUS_UPDATED: (user, data) => ({
+    title: "Scheduled Maintenance Updated",
+    message: `Hi ${user.name}, scheduled maintenance for ${data.equipmentName} is now ${data.status}.`,
+    emailSubject: "Scheduled Maintenance Status Updated",
+    emailBody: `Hello ${user.name},<br>The scheduled maintenance for ${data.equipmentName} is now ${data.status}.${data.resultStatus ? `<br>Result: ${data.resultStatus}.` : ""}<br>Updated by: ${data.updatedBy}.<br>Link: <a href="${data.link}">${data.link}</a>`,
+  }),
   WORKORDER_ASSIGNED: (user, data) => ({
     title: "New Work Order Assigned",
     message: `Hi ${user.name}, a new work order (#${data.workOrderId}) has been assigned to you for ${data.equipmentName} scheduled on ${data.scheduledDate}.`,

@@ -249,3 +249,33 @@ td {
     font-size: 13px;
   }
 }
+.pharmacy-page-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 220px;
+  padding: 24px;
+}
+
+.pharmacy-dotted-loader {
+  width: 42px;
+  height: 42px;
+  border: 4px dotted #2563eb;
+  border-radius: 50%;
+  animation: pharmacy-spin 1s linear infinite;
+}
+
+.pharmacy-loading-text {
+  margin: 0;
+  font-weight: 600;
+  color: #475569;
+}
+
+@keyframes pharmacy-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+

@@ -3,10 +3,9 @@ import axios from "axios";
 import { getStoredToken } from "../../../../utils/authStorage.js";
 import "../styles/sm.css";
 
-const token = getStoredToken();
-
 const SetSchedule = ({ onScheduleCreated, equipments }) => {
   const [showForm, setShowForm] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [formData, setFormData] = useState({
     equipment: "",
     frequency: "monthly",
@@ -21,7 +20,14 @@ const SetSchedule = ({ onScheduleCreated, equipments }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const token = getStoredToken();
 
+    if (!token) {
+      alert("Session expired. Please login again.");
+      return;
+    }
+
+    setIsSaving(true);
     try {
       const dataToSend = {
         equipment: formData.equipment,
@@ -44,9 +50,12 @@ const SetSchedule = ({ onScheduleCreated, equipments }) => {
 
       setShowForm(false);
 
-      onScheduleCreated();
+      await onScheduleCreated();
     } catch (error) {
       console.log("Schedule error:", error.response?.data || error.message);
+      alert(error.response?.data?.message || "Failed to save schedule");
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -61,6 +70,12 @@ const SetSchedule = ({ onScheduleCreated, equipments }) => {
 
       {showForm && (
         <div className="card form-card shadow-sm p-4">
+          {isSaving && (
+            <div className="manager-page-loading manager-page-loading-compact">
+              <div className="manager-dotted-loader" />
+              <p className="manager-loading-text">Saving schedule...</p>
+            </div>
+          )}
           <form onSubmit={handleSubmit} className="d-grid gap-3">
             <div className="form-group">
               <label className="fw-bold">Equipment:</label>
@@ -135,8 +150,8 @@ const SetSchedule = ({ onScheduleCreated, equipments }) => {
               </select>
             </div>
 
-            <button type="submit" className="btn btn-blue mt-3">
-              Save Schedule
+            <button type="submit" className="btn btn-blue mt-3" disabled={isSaving}>
+              {isSaving ? "Saving..." : "Save Schedule"}
             </button>
           </form>
         </div>

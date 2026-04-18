@@ -23,10 +23,12 @@ const PharmacyReports = () => {
   const [dateTo, setDateTo] = useState("");
   const [filteredData, setFilteredData] = useState([]);
   const [summary, setSummary] = useState({});
+  const [loading, setLoading] = useState(true);
 
   // ================= FETCH FROM BACKEND =================
   useEffect(() => {
     const fetchReports = async () => {
+      setLoading(true);
       try {
         const token = getStoredToken();
         const query = new URLSearchParams({
@@ -45,6 +47,8 @@ const PharmacyReports = () => {
         setSummary(data.summary || {});
       } catch (error) {
         console.error("Error fetching reports:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -142,6 +146,13 @@ const PharmacyReports = () => {
         <button onClick={exportPDF}>Export PDF</button>
         <button onClick={exportExcel}>Export Excel</button>
       </div>
+      {loading ? (
+        <div className="pharmacy-page-loading">
+          <div className="pharmacy-dotted-loader" />
+          <p className="pharmacy-loading-text">Loading reports...</p>
+        </div>
+      ) : (
+        <>
 
       {/* Summary */}
       <div className="summary-cards">
@@ -228,6 +239,8 @@ const PharmacyReports = () => {
       </table>
       </div>
       </div>
+      </>
+      )}
     </div>
   );
 };

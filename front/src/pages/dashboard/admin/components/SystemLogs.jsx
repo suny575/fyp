@@ -6,6 +6,7 @@ import { getStoredToken } from "../../../../utils/authStorage.js";
 
 const SystemLogs = () => {
   const [logs, setLogs] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("All");
   const [severityFilter, setSeverityFilter] = useState("All");
@@ -18,6 +19,7 @@ const SystemLogs = () => {
   // Fetch logs from backend
   useEffect(() => {
     const fetchLogs = async () => {
+      setLoading(true);
       try {
         const res = await axios.get("http://localhost:5000/api/admin/system-logs", {
           headers: { Authorization: `Bearer ${token}` },
@@ -32,6 +34,8 @@ const SystemLogs = () => {
 
       } catch (err) {
         console.error("Error fetching logs:", err);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -55,6 +59,13 @@ const SystemLogs = () => {
 
   return (
     <div className="logs-container">
+      {loading ? (
+        <div className="page-loading">
+          <div className="dotted-loader" />
+          <p className="loading-text">Loading system logs...</p>
+        </div>
+      ) : (
+        <>
       <div className="logs-header">
         <h2>System Logs</h2>
         <div className="logs-controls">
@@ -146,6 +157,8 @@ const SystemLogs = () => {
             <button className="close-btn" onClick={() => setSelectedLog(null)}>Close</button>
           </div>
         </div>
+      )}
+        </>
       )}
     </div>
   );

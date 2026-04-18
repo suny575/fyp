@@ -4,6 +4,7 @@ import {
   getStoredToken,
   getStoredUsername,
 } from "../../../../utils/authStorage.js";
+import "../styles/staff.css";
 
 const StockRequestForm = () => {
   const [formData, setFormData] = useState({
@@ -13,6 +14,7 @@ const StockRequestForm = () => {
   });
 
   const [requests, setRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
   // 🔥 NEW STATES
   const [stockItems, setStockItems] = useState([]);
   const [departments, setDepartments] = useState([]);
@@ -63,8 +65,13 @@ const StockRequestForm = () => {
   };
 
   useEffect(() => {
-    fetchRequests();
-    fetchStockItems();
+    const loadPageData = async () => {
+      setLoading(true);
+      await Promise.all([fetchRequests(), fetchStockItems()]);
+      setLoading(false);
+    };
+
+    loadPageData();
   }, []);
 
   const handleChange = (e) => {
@@ -121,6 +128,20 @@ const StockRequestForm = () => {
         return { backgroundColor: "#6c757d", color: "#fff" };
     }
   };
+
+  if (loading) {
+    return (
+      <div>
+        <h3 style={{ fontWeight: "bold", marginBottom: "20px" }}>
+          Request Stock Materials
+        </h3>
+        <div className="staff-page-loading">
+          <div className="staff-dotted-loader" />
+          <p className="staff-loading-text">Loading stock requests...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>

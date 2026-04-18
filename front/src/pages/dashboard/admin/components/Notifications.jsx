@@ -111,18 +111,21 @@ import { getStoredToken } from "../../../../utils/authStorage.js";
 const Notifications = () => {
   const [activeTab, setActiveTab] = useState("Critical");
   const [alerts, setAlerts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const token = getStoredToken();
 
   // Fetch notifications from backend
   const fetchNotifications = async () => {
+    setLoading(true);
     try {
       const res = await axios.get("http://localhost:5000/api/admin/notifications", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      console.log(res.data.notifications);
       setAlerts(res.data.notifications);
     } catch (err) {
       console.error("Error fetching notifications:", err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -169,7 +172,12 @@ const Notifications = () => {
 
       {/* Alerts List */}
       <div className="alerts-list">
-        {filteredAlerts.length === 0 ? (
+        {loading ? (
+          <div className="page-loading">
+            <div className="dotted-loader" />
+            <p className="loading-text">Loading notifications...</p>
+          </div>
+        ) : filteredAlerts.length === 0 ? (
           <p className="no-alerts">No {activeTab.toLowerCase()} alerts.</p>
         ) : (
           filteredAlerts.map((alert) => (

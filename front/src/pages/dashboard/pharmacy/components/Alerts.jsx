@@ -102,12 +102,14 @@ import { getStoredToken } from "../../../../utils/authStorage.js";
 
 const AlertsPage = () => {
   const [alerts, setAlerts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
 
   // Fetch alerts from backend (or mock for now)
   useEffect(() => {
     const fetchAlerts = async () => {
+      setLoading(true);
       try {
         const token = getStoredToken();
         const res = await axios.get("http://localhost:5000/api/alerts", {
@@ -122,6 +124,8 @@ const AlertsPage = () => {
           { id: 2, type: "Low Stock", name: "Syringe", message: "Stock below threshold", date: "2026-02-20" },
           { id: 3, type: "Pending Stock Request", name: "Face Masks", message: "Request pending approval", date: "2026-02-22" },
         ]);
+      } finally {
+        setLoading(false);
       }
     };
     fetchAlerts();
@@ -169,7 +173,15 @@ const AlertsPage = () => {
       </div>
 
       <div className="alerts-grid">
-        {filteredAlerts.map((alert) => (
+        {loading ? (
+          <div className="pharmacy-page-loading">
+            <div className="pharmacy-dotted-loader" />
+            <p className="pharmacy-loading-text">Loading alerts...</p>
+          </div>
+        ) : filteredAlerts.length === 0 ? (
+          <p className="no-alerts">No alerts found.</p>
+        ) : (
+          filteredAlerts.map((alert) => (
           <div key={alert.id || alert._id} className="alert-card">
             <span className="alert-type" style={getBadgeColor(alert.type)}>
               {alert.type}
@@ -179,7 +191,8 @@ const AlertsPage = () => {
             <span className="date">{new Date(alert.date).toLocaleDateString()}</span>
             <button onClick={() => handleCheck(alert.type)}>Check</button>
           </div>
-        ))}
+          ))
+        )}
       </div>
     </div>
   );

@@ -20,8 +20,19 @@ const normalizeTaskStatus = (status) => {
   return normalized;
 };
 
+const normalizeScheduledStatus = (status) => {
+  const normalized = (status || "").toString().trim();
+
+  if (normalized === "assigned" || normalized === "pending") return "waiting";
+  if (normalized === "in_progress") return "inProgress";
+  if (normalized === "completed") return "completed";
+
+  return "waiting";
+};
+
 const Overview = () => {
   const [tasks, setTasks] = useState([]);
+  const [scheduledTasks, setScheduledTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -35,14 +46,23 @@ const Overview = () => {
     }
 
     try {
-      const res = await axios.get("http://localhost:5000/api/tasks", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setTasks(Array.isArray(res.data) ? res.data : []);
+      const [faultTasksRes, scheduledTasksRes] = await Promise.all([
+        axios.get("http://localhost:5000/api/tasks", {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+        axios.get("http://localhost:5000/api/workOrder", {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+      ]);
+      setTasks(Array.isArray(faultTasksRes.data) ? faultTasksRes.data : []);
+      setScheduledTasks(
+        Array.isArray(scheduledTasksRes.data) ? scheduledTasksRes.data : [],
+      );
       setError("");
     } catch (error) {
       console.error("Backend fetch failed:", error.message);
       setTasks([]);
+      setScheduledTasks([]);
       setError("Failed to load technician overview.");
     } finally {
       if (showLoading) {
@@ -68,13 +88,22 @@ const Overview = () => {
   // Status counts
   const waiting = tasks.filter(
     (t) => normalizeTaskStatus(t.status) === "waiting",
-  ).length;
+  ).length +
+    scheduledTasks.filter(
+      (task) => normalizeScheduledStatus(task.status) === "waiting",
+    ).length;
   const inProgress = tasks.filter(
     (t) => normalizeTaskStatus(t.status) === "inProgress",
-  ).length;
+  ).length +
+    scheduledTasks.filter(
+      (task) => normalizeScheduledStatus(task.status) === "inProgress",
+    ).length;
   const completed = tasks.filter(
     (t) => normalizeTaskStatus(t.status) === "completed",
-  ).length;
+  ).length +
+    scheduledTasks.filter(
+      (task) => normalizeScheduledStatus(task.status) === "completed",
+    ).length;
 
   const chartData = [
     { name: "Waiting", value: waiting },
@@ -95,6 +124,12 @@ const Overview = () => {
       desc: "Check your current tasks",
       onClick: () => navigate("/technician/tasks"),
       color: "#198754",
+    },
+    {
+      title: "Scheduled Tasks",
+      desc: "View tasks from scheduled maintenance",
+      onClick: () => navigate("/technician/tasks"),
+      color: "#0ea5e9",
     },
     {
       title: "View Notifications",

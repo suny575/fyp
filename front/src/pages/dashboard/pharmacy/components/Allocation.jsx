@@ -178,6 +178,7 @@ import { getStoredToken } from "../../../../utils/authStorage.js";
 const AllocationPage = ({ pharmacyUserId = "Pharmacy01" }) => {
   const [pendingRequests, setPendingRequests] = useState([]);
   const [history, setHistory] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [showPending, setShowPending] = useState(false);
   const [alert, setAlert] = useState({ type: "", message: "" });
 
@@ -219,10 +220,15 @@ const AllocationPage = ({ pharmacyUserId = "Pharmacy01" }) => {
     }
   };
 
+  const refreshAllocationData = async () => {
+    setLoading(true);
+    await Promise.all([fetchPending(), fetchHistory()]);
+    setLoading(false);
+  };
+
   // ===== On mount =====
   useEffect(() => {
-    fetchPending();
-    fetchHistory();
+    refreshAllocationData();
   }, []);
 
   // ===== Approve / Reject handlers =====
@@ -234,8 +240,7 @@ const AllocationPage = ({ pharmacyUserId = "Pharmacy01" }) => {
         { headers: getAuthHeaders() }
       );
       setAlert({ type: "success", message: "Stock approved" });
-      fetchPending();
-      fetchHistory();
+      await refreshAllocationData();
     } catch (err) {
       console.error(err);
       setAlert({
@@ -253,8 +258,7 @@ const AllocationPage = ({ pharmacyUserId = "Pharmacy01" }) => {
         { headers: getAuthHeaders() }
       );
       setAlert({ type: "error", message: "Stock rejected" });
-      fetchPending();
-      fetchHistory();
+      await refreshAllocationData();
     } catch (err) {
       console.error(err);
       setAlert({
@@ -269,6 +273,14 @@ const AllocationPage = ({ pharmacyUserId = "Pharmacy01" }) => {
   return (
     <div className="allocation-page">
       <h2>Allocation Management</h2>
+
+      {loading ? (
+        <div className="pharmacy-page-loading">
+          <div className="pharmacy-dotted-loader" />
+          <p className="pharmacy-loading-text">Loading allocation data...</p>
+        </div>
+      ) : (
+        <>
 
       {alert.message && <div className={`alert ${alert.type}`}>{alert.message}</div>}
 
@@ -347,6 +359,8 @@ const AllocationPage = ({ pharmacyUserId = "Pharmacy01" }) => {
           </tbody>
         </table>
       </div>
+        </>
+      )}
     </div>
   );
 };

@@ -19,6 +19,7 @@ const StockManagement = () => {
   // ================= MOCK DATA =================
   const [stockList, setStockList] = useState([]);
   const [useMock, setUseMock] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const [searchTerm, setSearchTerm] = useState("");
   // const [filterCategory, setFilterCategory] = useState("");
@@ -39,6 +40,7 @@ const StockManagement = () => {
   // ================= FETCH FROM BACKEND =================
   useEffect(() => {
     const fetchStock = async () => {
+      setLoading(true);
       try {
         const res = await axios.get("http://localhost:5000/api/stock", {
           headers: { Authorization: `Bearer ${token}` },
@@ -54,6 +56,8 @@ setCategories(uniqueCategories);
         console.error("Backend failed, using mock data", err.message);
         setStockList(MOCK_DATA);
         setUseMock(true);
+      } finally {
+        setLoading(false);
       }
     };
     fetchStock();
@@ -189,6 +193,21 @@ setCategories(uniqueCategories);
     item.category.toLowerCase().includes(searchTerm.toLowerCase())
   );
 });
+
+  if (loading) {
+    return (
+      <div className="stock-container">
+        <h2>Stock Management</h2>
+        <p className="sub-text">
+          Register and track all consumables, spare parts, and accessories
+        </p>
+        <div className="pharmacy-page-loading">
+          <div className="pharmacy-dotted-loader" />
+          <p className="pharmacy-loading-text">Loading stock...</p>
+        </div>
+      </div>
+    );
+  }
 
 
   // const filteredList = stockList.filter((item) => {

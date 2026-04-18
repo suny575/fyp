@@ -27,8 +27,19 @@ const WorkOrderSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ["pending", "assigned", "in_progress", "completed"],
-      default: "pending",
+      enum: [
+        "SCHEDULED",
+        "IN_PROGRESS",
+        "COMPLETED_OK",
+        "COMPLETED_WITH_ISSUES",
+        "NEEDS_REPAIR",
+        "pending",
+        "assigned",
+        "in_progress",
+        "inProgress",
+        "completed",
+      ],
+      default: "SCHEDULED",
     },
   },
   { timestamps: true },

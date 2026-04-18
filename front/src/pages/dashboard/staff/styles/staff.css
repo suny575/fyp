@@ -13,3 +13,33 @@
   display: flex;
   flex-direction: column;
 }
+
+.staff-page-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 220px;
+  padding: 24px;
+}
+
+.staff-dotted-loader {
+  width: 42px;
+  height: 42px;
+  border: 4px dotted #2563eb;
+  border-radius: 50%;
+  animation: staff-spin 1s linear infinite;
+}
+
+.staff-loading-text {
+  margin: 0;
+  font-weight: 600;
+  color: #475569;
+}
+
+@keyframes staff-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

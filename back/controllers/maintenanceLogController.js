@@ -1,5 +1,9 @@
 import MaintenanceLog from "../models/MaintenanceLog.js";
 import WorkOrder from "../models/workOrders.js";
+import {
+  SCHEDULED_MAINTENANCE_STATUS,
+  syncScheduleStatusFromWorkOrder,
+} from "../services/scheduledMaintenanceWorkflow.service.js";
 
 export const getLogs = async (req, res) => {
   try {
@@ -19,12 +23,19 @@ export const createLog = async (req, res) => {
   try {
     const log = new MaintenanceLog(req.body);
 
-    // Update related work order status if completed
-    if (log.status === "completed" && log.workOrder) {
+    // Keep scheduled-maintenance status in sync when logs finalize work.
+    if (log.workOrder && ["completed", "failed"].includes(log.status)) {
       const workOrder = await WorkOrder.findById(log.workOrder);
       if (workOrder) {
-        workOrder.status = "completed";
-        await workOrder.save();
+        const mappedStatus =
+          log.status === "completed"
+            ? SCHEDULED_MAINTENANCE_STATUS.COMPLETED_OK
+            : SCHEDULED_MAINTENANCE_STATUS.NEEDS_REPAIR;
+
+        await syncScheduleStatusFromWorkOrder({
+          workOrder,
+          nextStatus: mappedStatus,
+        });
       }
     }
 

@@ -6,6 +6,10 @@ import { calculateNextMaintenanceDate } from "../services/calculateNextMaintenan
 import { generateWorkOrderFromSchedule } from "./workOrderController.js";
 import { sendNotification } from "../services/notification.service.js";
 import {
+  normalizeScheduledMaintenanceStatus,
+  SCHEDULED_MAINTENANCE_STATUS,
+} from "../services/scheduledMaintenanceWorkflow.service.js";
+import {
   resolveHospitalName,
   withHospitalScope,
 } from "../utils/hospitalScope.js";
@@ -45,9 +49,19 @@ const attachCurrentWorkOrderStatus = async (schedules, hospital) => {
       relatedOrders[0] ||
       null;
 
+    const normalizedScheduleStatus = normalizeScheduledMaintenanceStatus(
+      schedule.status,
+    );
+    const normalizedWorkOrderStatus = normalizeScheduledMaintenanceStatus(
+      currentWorkOrder?.status,
+    );
+
     return {
       ...schedule,
-      status: currentWorkOrder?.status || "pending",
+      status:
+        normalizedScheduleStatus ||
+        normalizedWorkOrderStatus ||
+        SCHEDULED_MAINTENANCE_STATUS.SCHEDULED,
       workOrderId: currentWorkOrder?._id || null,
       technician: currentWorkOrder?.technician || null,
     };
@@ -80,6 +94,16 @@ export const createSchedule = async (req, res) => {
     const { equipment, frequency, startDate, customIntervalDays, priority } =
       req.body;
 
+    const existingSchedule = await MaintenanceSchedule.findOne(
+      withHospitalScope({ equipment }, req.user.hospital),
+    ).lean();
+
+    if (existingSchedule) {
+      return res.status(409).json({
+        message: "A maintenance schedule already exists for this equipment.",
+      });
+    }
+
     const equipmentDoc = await Equipment.findOne(
       withHospitalScope({ _id: equipment }, req.user.hospital),
     );
@@ -106,6 +130,7 @@ export const createSchedule = async (req, res) => {
       priority,
       hospital,
       nextMaintenanceDate,
+      status: SCHEDULED_MAINTENANCE_STATUS.SCHEDULED,
       createdBy: req.user._id,
     });
 

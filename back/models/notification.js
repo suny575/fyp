@@ -15,6 +15,7 @@ const notificationSchema = new mongoose.Schema(
     type: {
       type: String,
       enum: [
+        "SCHEDULE_STATUS_UPDATED",
         "WORKORDER_ASSIGNED",
         "TASK_CREATED",
         "SCHEDULE_CREATED",

@@ -11,6 +11,9 @@ const router = express.Router();
 
 // Mounted at /api/admin/reporting
 
+const normalizeAlertType = (value) =>
+  (value || "").toString().trim().toLowerCase();
+
 const getManagerData = async () => {
   const invitations = await Invitation.find({
     role: "maintenanceManager",
@@ -52,10 +55,13 @@ router.get("/", async (req, res) => {
     const managersData = [...userData, ...invitationData]; // combine registered + pending invites
 
     // ================= Alerts =================
-    const alerts = await Notification.find(withHospitalScope({}, hospital));
-
-    const criticalAlerts = alerts.filter((a) => a.type === "Critical");
-    const systemAlerts = alerts.filter((a) => a.type === "System");
+    const criticalAlerts = await Notification.find(
+      withHospitalScope({ type: { $regex: /^critical$/i } }, hospital),
+    ).lean();
+    // System alert cards are intended to reflect platform-wide system events.
+    const systemAlerts = await Notification.find({
+      type: { $regex: /^system$/i },
+    }).lean();
 
     const alertsSummary = [
       {
@@ -106,10 +112,10 @@ router.get("/dashboard-stats", async (req, res) => {
     const inactiveManagers = users.filter((m) => m.status === "inactive").length;
 
     const criticalAlerts = await Notification.countDocuments(
-      withHospitalScope({ type: "Critical" }, hospital),
+      withHospitalScope({ type: { $regex: /^critical$/i } }, hospital),
     );
     const systemAlerts = await Notification.countDocuments(
-      withHospitalScope({ type: "System" }, hospital),
+      { type: { $regex: /^system$/i } },
     );
 
     const reportsGenerated = await Report.countDocuments(
