@@ -138,9 +138,9 @@ const Overview = () => {
         ).length;
 
         setSystemStats([
-          { title: "Waiting Tasks", value: waiting },
-          { title: "In Progress Tasks", value: inProgress }, // display-friendly
-          { title: "Completed Tasks", value: completed },
+          { title: "Waiting Tasks", value: waiting,  route: "/manager/tasks"},
+          { title: "In Progress Tasks", value: inProgress, route: "/manager/tasks" }, // display-friendly
+          { title: "Completed Tasks", value: completed, route: "/manager/tasks" },
           {
             title: "Scheduled Maintenance",
             value: Array.isArray(schedulesData) ? schedulesData.length : 0,
@@ -186,7 +186,9 @@ const Overview = () => {
     labels: userOverview.map((u) => u.title),
     datasets: [
       {
-        data: userOverview.map((u) => (typeof u.count === "number" ? u.count : 0)),
+        data: userOverview.map((u) =>
+          typeof u.count === "number" ? u.count : 0,
+        ),
         backgroundColor: ["#0d6efd", "#20c997", "#ffc107"],
       },
     ],
@@ -197,20 +199,20 @@ const Overview = () => {
       {loading ? (
         <p className="overview-status">Loading overview cards...</p>
       ) : null}
-      {error ? (
-        <p className="overview-status error">{error}</p>
-      ) : null}
+      {error ? <p className="overview-status error">{error}</p> : null}
 
       {/* USER OVERVIEW */}
       <h5 className="section-title mb-3">User Overview</h5>
       <div className="row g-4 mb-5">
         {userOverview.map((user, index) => (
           <div key={index} className="col-12 col-md-6 col-lg-4">
-            <div className={`card user-card shadow-sm ${loading ? "is-loading" : ""}`}>
+            <div
+              className={`card user-card shadow-sm ${loading ? "is-loading" : ""}`}
+            >
               <div className="card-body text-center">
                 <h6>{user.title}</h6>
                 <h2 className="fw-bold overview-value">
-                  {loading ? "Loading..." : user.count ?? 0}
+                  {loading ? "Loading..." : (user.count ?? 0)}
                 </h2>
                 <button
                   className="btn btn-outline-primary btn-sm mt-2"
@@ -234,12 +236,14 @@ const Overview = () => {
             >
               <h6>{stat.title}</h6>
               <h3 className="overview-value">
-                {loading ? "Loading..." : stat.value ?? 0}
+                {loading ? "Loading..." : (stat.value ?? 0)}
               </h3>
               <button
                 className="btn btn-info btn-sm mt-3"
                 onClick={() =>
-                  stat.route ? navigate(stat.route) : handleViewIssues(stat.title)
+                  stat.route
+                    ? navigate(stat.route)
+                    : handleViewIssues(stat.title)
                 }
               >
                 {stat.buttonLabel || "View"}
@@ -252,7 +256,9 @@ const Overview = () => {
       {/* CHARTS */}
       <div className="row g-4 mb-5">
         <div className="col-12 col-lg-8">
-          <div className={`card chart-card shadow-sm p-3 ${loading ? "is-loading" : ""}`}>
+          <div
+            className={`card chart-card shadow-sm p-3 ${loading ? "is-loading" : ""}`}
+          >
             <h6>Task Status Overview</h6>
             {loading ? (
               <p className="overview-loading-text">Loading chart data...</p>
@@ -261,7 +267,9 @@ const Overview = () => {
           </div>
         </div>
         <div className="col-12 col-lg-4">
-          <div className={`card chart-card shadow-sm p-3 ${loading ? "is-loading" : ""}`}>
+          <div
+            className={`card chart-card shadow-sm p-3 ${loading ? "is-loading" : ""}`}
+          >
             <h6>User Distribution</h6>
             {loading ? (
               <p className="overview-loading-text">Loading chart data...</p>

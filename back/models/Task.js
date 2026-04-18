@@ -63,6 +63,12 @@ const TaskSchema = new mongoose.Schema(
       required: true,
     },
 
+    updatedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+
     completedAt: {
       type: Date,
     },

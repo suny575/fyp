@@ -1,6 +1,7 @@
 import User from "../models/user.js";
 import Task from "../models/Task.js";
 import Fault from "../models/Fault.js";
+import Equipment from "../models/equipment.js";
 import { sendNotification } from "../services/notification.service.js";
 import {
   resolveHospitalName,
@@ -72,6 +73,11 @@ const convertFaultToTask = async (faultId) => {
   fault.status = "convertedToTask";
   fault.assignedTo = selectedTech._id;
   await fault.save();
+
+  // Update equipment status to under_maintenance
+  await Equipment.findByIdAndUpdate(fault.equipment, {
+    status: "under_maintenance",
+  });
 
   try {
     await sendNotification({

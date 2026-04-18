@@ -17,6 +17,12 @@ export const notificationTemplates = {
     emailSubject: "New Task Assigned",
     emailBody: `Hello ${user.name},<br>You have been assigned a new task from a reported fault on ${data.equipmentName}. Please start your task.<br>Link: <a href="${data.link}">${data.link}</a>`,
   }),
+  TASK_ASSIGNED: (user, data) => ({
+    title: "Task Reassigned",
+    message: `Hi ${user.name}, you have been assigned a task for ${data.equipmentName} by ${data.assignedBy}.`,
+    emailSubject: "Task Reassigned",
+    emailBody: `Hello ${user.name},<br>You have been reassigned a task for ${data.equipmentName} by ${data.assignedBy}. Please check your tasks.<br>Link: <a href="${data.link}">${data.link}</a>`,
+  }),
   SCHEDULE_CREATED: (user, data) => ({
     title: "New Schedule Created",
     message: `Hi ${user.name}, a new maintenance schedule for ${data.equipmentName} has been created.`,

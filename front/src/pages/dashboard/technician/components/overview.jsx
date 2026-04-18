@@ -40,36 +40,39 @@ const Overview = () => {
   const token = getStoredToken();
 
   // Fetch tasks assigned to this technician
-  const fetchTasks = useCallback(async ({ showLoading = false } = {}) => {
-    if (showLoading) {
-      setLoading(true);
-    }
-
-    try {
-      const [faultTasksRes, scheduledTasksRes] = await Promise.all([
-        axios.get("http://localhost:5000/api/tasks", {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        axios.get("http://localhost:5000/api/workOrder", {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-      ]);
-      setTasks(Array.isArray(faultTasksRes.data) ? faultTasksRes.data : []);
-      setScheduledTasks(
-        Array.isArray(scheduledTasksRes.data) ? scheduledTasksRes.data : [],
-      );
-      setError("");
-    } catch (error) {
-      console.error("Backend fetch failed:", error.message);
-      setTasks([]);
-      setScheduledTasks([]);
-      setError("Failed to load technician overview.");
-    } finally {
+  const fetchTasks = useCallback(
+    async ({ showLoading = false } = {}) => {
       if (showLoading) {
-        setLoading(false);
+        setLoading(true);
       }
-    }
-  }, [token]);
+
+      try {
+        const [faultTasksRes, scheduledTasksRes] = await Promise.all([
+          axios.get("http://localhost:5000/api/tasks", {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          axios.get("http://localhost:5000/api/workOrder", {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+        ]);
+        setTasks(Array.isArray(faultTasksRes.data) ? faultTasksRes.data : []);
+        setScheduledTasks(
+          Array.isArray(scheduledTasksRes.data) ? scheduledTasksRes.data : [],
+        );
+        setError("");
+      } catch (error) {
+        console.error("Backend fetch failed:", error.message);
+        setTasks([]);
+        setScheduledTasks([]);
+        setError("Failed to load technician overview.");
+      } finally {
+        if (showLoading) {
+          setLoading(false);
+        }
+      }
+    },
+    [token],
+  );
 
   useEffect(() => {
     if (!token) {
@@ -86,29 +89,26 @@ const Overview = () => {
   }, [token, fetchTasks]);
 
   // Status counts
-  const waiting = tasks.filter(
-    (t) => normalizeTaskStatus(t.status) === "waiting",
-  ).length +
+  const waiting =
+    tasks.filter((t) => normalizeTaskStatus(t.status) === "waiting").length +
     scheduledTasks.filter(
       (task) => normalizeScheduledStatus(task.status) === "waiting",
     ).length;
-  const inProgress = tasks.filter(
-    (t) => normalizeTaskStatus(t.status) === "inProgress",
-  ).length +
+  const inProgress =
+    tasks.filter((t) => normalizeTaskStatus(t.status) === "inProgress").length +
     scheduledTasks.filter(
       (task) => normalizeScheduledStatus(task.status) === "inProgress",
     ).length;
-  const completed = tasks.filter(
-    (t) => normalizeTaskStatus(t.status) === "completed",
-  ).length +
+  const completed =
+    tasks.filter((t) => normalizeTaskStatus(t.status) === "completed").length +
     scheduledTasks.filter(
       (task) => normalizeScheduledStatus(task.status) === "completed",
     ).length;
 
   const chartData = [
-    { name: "Waiting", value: waiting },
-    { name: "In Progress", value: inProgress },
-    { name: "Completed", value: completed },
+    { name: "Waiting", value: waiting, sectionKey: "waiting" },
+    { name: "In Progress", value: inProgress, sectionKey: "inProgress" },
+    { name: "Completed", value: completed, sectionKey: "completed" },
   ];
 
   // Action cards (overview clickable)
@@ -128,7 +128,10 @@ const Overview = () => {
     {
       title: "Scheduled Tasks",
       desc: "View tasks from scheduled maintenance",
-      onClick: () => navigate("/technician/tasks"),
+      onClick: () =>
+        navigate("/technician/tasks", {
+          state: { focusSection: "scheduled" },
+        }),
       color: "#0ea5e9",
     },
     {
@@ -139,12 +142,15 @@ const Overview = () => {
     },
   ];
 
+  const totalAssigned = waiting + inProgress + completed;
   const productivity =
-    tasks.length > 0 ? Math.round((completed / tasks.length) * 100) : 0;
+    totalAssigned > 0 ? Math.round((completed / totalAssigned) * 100) : 0;
 
   return (
     <div className="overview-container">
-      {loading ? <p className="overview-banner">Loading overview cards...</p> : null}
+      {loading ? (
+        <p className="overview-banner">Loading overview cards...</p>
+      ) : null}
       {error ? <p className="overview-banner error">{error}</p> : null}
 
       {/* Status KPI Cards */}
@@ -154,11 +160,17 @@ const Overview = () => {
             <div
               className={`card td-card p-2 shadow-sm ${loading ? "is-loading" : ""}`}
               style={{ cursor: "pointer" }}
-              onClick={() => navigate("/technician/tasks")}
+              onClick={() =>
+                navigate("/technician/tasks", {
+                  state: { focusSection: item.sectionKey },
+                })
+              }
             >
               <div className="card-body text-center">
                 <h6 className="mb-2">{item.name}</h6>
-                <h3 className={`mb-2 ${loading ? "overview-number-loading" : ""}`}>
+                <h3
+                  className={`mb-2 ${loading ? "overview-number-loading" : ""}`}
+                >
                   {loading ? "Loading..." : item.value}
                 </h3>
                 <div className="mini-bar-chart">
@@ -200,7 +212,9 @@ const Overview = () => {
           <div>
             <h6 className="mb-1">Productivity</h6>
             <small className="text-muted">
-              {loading ? "Loading productivity..." : "Completed vs assigned tasks"}
+              {loading
+                ? "Loading productivity..."
+                : "Completed vs assigned tasks"}
             </small>
           </div>
           <div

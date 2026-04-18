@@ -8,6 +8,9 @@ const equipmentSchema = new mongoose.Schema(
     serial: { type: String, required: true, unique: true },
     purchaseDate: { type: Date, required: true },
     department: { type: String, required: true },
+    manufacturer: { type: String, trim: true, default: "" },
+    supportEmail: { type: String, trim: true, lowercase: true, default: "" },
+    supportWebsite: { type: String, trim: true, default: "" },
     hospital: {
       type: String,
       trim: true,
@@ -18,18 +21,14 @@ const equipmentSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-    allocationDate: { type: Date, default: Date.now }, // ⬅️ add this
-  },
-  { timestamps: true },
-
-  {
+    allocationDate: { type: Date, default: Date.now },
     status: {
       type: String,
-      enum: ["active", "inactive", "under_maintenance"],
+      enum: ["active", "under_maintenance"],
       default: "active",
-      required: false,
     },
   },
+  { timestamps: true },
 );
 
 // const Equipment = mongoose.model("Equipment", equipmentSchema);

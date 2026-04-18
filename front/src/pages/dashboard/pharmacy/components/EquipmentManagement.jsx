@@ -8,9 +8,9 @@ import { getStoredToken } from "../../../../utils/authStorage.js";
 const EquipmentManagement = () => {
   // 🔹 Mock data fallback
   const mockData = [
-    { id: 1, name: "ECG Machine", model: "ECG-100", serial: "SN12345", purchaseDate: "2023-06-12", department: "Cardiology" },
-    { id: 2, name: "Infusion Pump", model: "INF-300", serial: "SN67890", purchaseDate: "2023-05-30", department: "ICU" },
-    { id: 3, name: "Syringe Pump", model: "SYR-200", serial: "SN54321", purchaseDate: "2023-04-20", department: "Pharmacy" },
+    { id: 1, name: "ECG Machine", model: "ECG-100", serial: "SN12345", purchaseDate: "2023-06-12", department: "Cardiology", manufacturer: "MedTech", supportEmail: "support@medtech.com", supportWebsite: "https://support.medtech.com" },
+    { id: 2, name: "Infusion Pump", model: "INF-300", serial: "SN67890", purchaseDate: "2023-05-30", department: "ICU", manufacturer: "CareFlow", supportEmail: "service@careflow.com", supportWebsite: "https://careflow.com/support" },
+    { id: 3, name: "Syringe Pump", model: "SYR-200", serial: "SN54321", purchaseDate: "2023-04-20", department: "Pharmacy", manufacturer: "Syrinx", supportEmail: "", supportWebsite: "" },
   ];
 
   const [equipmentList, setEquipmentList] = useState([]);
@@ -22,7 +22,16 @@ const EquipmentManagement = () => {
   const [selectedId, setSelectedId] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showForm, setShowForm] = useState(false);
-  const [formData, setFormData] = useState({ name: "", model: "", serial: "", purchaseDate: "", department: "" });
+  const [formData, setFormData] = useState({
+    name: "",
+    model: "",
+    serial: "",
+    purchaseDate: "",
+    department: "",
+    manufacturer: "",
+    supportEmail: "",
+    supportWebsite: "",
+  });
 
   const API = "http://localhost:5000/api/equipment";
 
@@ -56,7 +65,16 @@ const EquipmentManagement = () => {
 
   const handleAddClick = () => {
     setIsEdit(false);
-    setFormData({ name: "", model: "", serial: "", purchaseDate: "", department: "" });
+    setFormData({
+      name: "",
+      model: "",
+      serial: "",
+      purchaseDate: "",
+      department: "",
+      manufacturer: "",
+      supportEmail: "",
+      supportWebsite: "",
+    });
     setShowForm(true);
   };
 
@@ -107,7 +125,16 @@ const EquipmentManagement = () => {
     setShowForm(false);
     setIsEdit(false);
     setSelectedId(null);
-    setFormData({ name: "", model: "", serial: "", purchaseDate: "", department: "" });
+    setFormData({
+      name: "",
+      model: "",
+      serial: "",
+      purchaseDate: "",
+      department: "",
+      manufacturer: "",
+      supportEmail: "",
+      supportWebsite: "",
+    });
   };
 
   const openDeleteModal = (id) => setSelectedId(id) || setShowDeleteModal(true);
@@ -146,7 +173,8 @@ const EquipmentManagement = () => {
     item.name.toLowerCase().includes(search) ||
     item.model.toLowerCase().includes(search) ||
     item.serial.toLowerCase().includes(search) ||
-    item.department.toLowerCase().includes(search)
+    item.department.toLowerCase().includes(search) ||
+    (item.manufacturer || "").toLowerCase().includes(search)
   );
 });
 
@@ -181,6 +209,7 @@ const EquipmentManagement = () => {
             <input name="model" placeholder="Model" value={formData.model} onChange={handleChange} required />
             <input name="serial" placeholder="Serial Number" value={formData.serial} onChange={handleChange} required />
             <input type="date" name="purchaseDate" value={formData.purchaseDate} onChange={handleChange} required />
+            <input name="manufacturer" placeholder="Manufacturer or vendor (optional)" value={formData.manufacturer || ""} onChange={handleChange} />
             {/* <select name="department" value={formData.department} onChange={handleChange} required>
               <option value="">Select Department</option>
               <option value="Cardiology">Cardiology</option>
@@ -202,6 +231,8 @@ const EquipmentManagement = () => {
     <option key={index} value={dept} />
   ))}
 </datalist>
+            <input name="supportEmail" type="email" placeholder="Support email (optional)" value={formData.supportEmail || ""} onChange={handleChange} />
+            <input name="supportWebsite" type="url" placeholder="Support website (optional)" value={formData.supportWebsite || ""} onChange={handleChange} />
 
             <div className="form-buttons">
               <button type="submit" className="save-btn">{isEdit ? "Update Equipment" : "Add Equipment"}</button>

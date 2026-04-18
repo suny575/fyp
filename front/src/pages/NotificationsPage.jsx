@@ -1,10 +1,10 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
 import socket from "../socket.js";
 import { connectSocket } from "../socket.js";
 import { useAuth } from "../context/AuthContext.jsx";
 import { getStoredToken } from "../utils/authStorage.js";
+import "../styles/NotificationsPage.css";
 
 const API_URL = "http://localhost:5000/api/notifications";
 
@@ -16,7 +16,6 @@ export const NotificationsProvider = ({ children }) => {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // delete notification
   const deleteNotification = async (id) => {
     try {
       await axios.delete(`${API_URL}/${id}`, {
@@ -31,7 +30,6 @@ export const NotificationsProvider = ({ children }) => {
     }
   };
 
-  // clear notifications
   const clearAllNotifications = async () => {
     try {
       await axios.delete(API_URL, {
@@ -44,6 +42,16 @@ export const NotificationsProvider = ({ children }) => {
     } catch (err) {
       console.error("Clear failed", err);
     }
+  };
+
+  const markNotificationAsRead = (id) => {
+    setNotifications((prev) =>
+      prev.map((notification) =>
+        notification._id === id
+          ? { ...notification, read: true }
+          : notification,
+      ),
+    );
   };
 
   const fetchNotifications = async () => {
@@ -98,6 +106,7 @@ export const NotificationsProvider = ({ children }) => {
         loading,
         deleteNotification,
         clearAllNotifications,
+        markNotificationAsRead,
       }}
     >
       {children}
@@ -109,156 +118,138 @@ const NotificationsPage = () => {
   const {
     notifications,
     loading,
+    unreadCount,
     deleteNotification,
     clearAllNotifications,
+    markNotificationAsRead,
   } = useNotifications();
 
-  const navigate = useNavigate();
-
-  const handleClick = (notification) => {
-    const { type, metadata } = notification;
-
-    switch (type) {
-      case "WORKORDER_ASSIGNED":
-        navigate(`/workorders/${metadata?.workOrderId}`);
-        break;
-
-      case "TASK_CREATED":
-        navigate(`/tasks/${metadata?.taskId}`);
-        break;
-
-      case "SCHEDULE_CREATED":
-        navigate(`/schedules/${metadata?.scheduleId}`);
-        break;
-
-      case "WORKORDER_CREATED":
-        navigate(`/workorders/${metadata?.workOrderId}`);
-        break;
-
-      case "FAULT_REPORTED":
-        navigate(`/faults/${metadata?.faultId}`);
-        break;
-
-      case "NEW_USER_REGISTERED":
-        navigate(`/users`);
-        break;
-
-      default:
-        navigate("/");
-    }
-  };
-
-  if (loading) return <p>Loading notifications...</p>;
+  if (loading) {
+    return (
+      <div className="notifications-page">
+        <div className="notifications-shell notifications-shell-loading">
+          <div className="notifications-loading-orb" />
+          <p>Loading notifications...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div
-      style={{
-        padding: "30px",
-        margin: "70px 20px",
-        fontWeight: "600",
-        maxWidth: "850px",
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <h2>Notifications</h2>
+    <div className="notifications-page">
+      <div className="notifications-shell">
+        <section className="notifications-hero">
+          <div>
+            <p className="notifications-eyebrow">Notification Center</p>
+            <h1>Track important updates in one place</h1>
+            <p className="notifications-subtitle">
+              Review assignments, alerts, and system activity with a cleaner
+              app-style view.
+            </p>
+          </div>
 
-        {notifications.length > 0 && (
-          <button
-            onClick={clearAllNotifications}
-            style={{
-              border: "none",
-              background: "#f3f3f3",
-              padding: "6px 12px",
-              borderRadius: "6px",
-              cursor: "pointer",
-            }}
-          >
-            Clear All
-          </button>
-        )}
-      </div>
-
-      {notifications.length === 0 ? (
-        <p
-          style={{
-            textAlign: "center",
-            padding: "60px",
-            background: "#fafafa",
-            borderRadius: "10px",
-            border: "1px dashed #ddd",
-          }}
-        >
-          No notifications available
-        </p>
-      ) : (
-        notifications.map((n) => (
-          <div
-            key={n._id}
-            onClick={() => handleClick(n)}
-            style={{
-              borderRadius: "10px",
-              overflow: "hidden",
-              border: "1px solid #eee",
-              boxShadow: "0 5px 20px rgba(0,0,0,0.05)",
-              padding: "15px",
-              borderBottom: "1px solid #ddd",
-              cursor: "pointer",
-              background: n.read ? "#fff" : "#eef6ff",
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = "#f7f9ff")}
-            onMouseLeave={(e) =>
-              (e.currentTarget.style.background = n.read ? "#fff" : "#eef6ff")
-            }
-          >
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <div>
-                <h4>{n.title}</h4>
-
-                <p
-                  style={{
-                    color: "#555",
-                    fontSize: "14px",
-                    marginBottom: "5px",
-                  }}
-                >
-                  {n.message}
-                </p>
-
-                <small
-                  style={{
-                    color: "#888",
-                    fontSize: "12px",
-                  }}
-                >
-                  {new Date(n.createdAt).toLocaleString()}
-                </small>
-              </div>
-
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  deleteNotification(n._id);
-                }}
-                style={{
-                  border: "none",
-                  background: "transparent",
-                  cursor: "pointer",
-                  color: "#888",
-                  fontSize: "16px",
-                }}
-              >
-                ✕
-              </button>
+          <div className="notifications-summary">
+            <div className="notifications-stat-card">
+              <span>Total</span>
+              <strong>{notifications.length}</strong>
+            </div>
+            <div className="notifications-stat-card unread">
+              <span>Unread</span>
+              <strong>{unreadCount}</strong>
             </div>
           </div>
-        ))
-      )}
+        </section>
+
+        <section className="notifications-panel">
+          <div className="notifications-toolbar">
+            <div>
+              <h2>Notifications</h2>
+              <p>
+                {notifications.length > 0
+                  ? `${notifications.length} item${notifications.length > 1 ? "s" : ""} available`
+                  : "No recent activity"}
+              </p>
+            </div>
+
+            {notifications.length > 0 && (
+              <button
+                onClick={clearAllNotifications}
+                className="notifications-clear-button"
+              >
+                Clear All
+              </button>
+            )}
+          </div>
+
+          {notifications.length === 0 ? (
+            <div className="notifications-empty-state">
+              <div className="notifications-empty-icon">N</div>
+              <h3>No notifications yet</h3>
+              <p>New updates and alerts will appear here.</p>
+            </div>
+          ) : (
+            <div className="notifications-list">
+              {notifications.map((n) => (
+                <article
+                  key={n._id}
+                  className={`notifications-card ${n.read ? "" : "is-unread"}`}
+                >
+                  <div className="notifications-card-accent" />
+
+                  <div className="notifications-card-body">
+                    <div className="notifications-card-top">
+                      <div className="notifications-card-copy">
+                        <div className="notifications-card-meta">
+                          <span
+                            className={`notifications-read-dot ${
+                              n.read ? "" : "is-unread"
+                            }`}
+                          />
+                          <span className="notifications-type-pill">
+                            {n.type?.replaceAll("_", " ") || "Notification"}
+                          </span>
+                        </div>
+
+                        <h3>{n.title}</h3>
+                        <p>{n.message}</p>
+                      </div>
+
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteNotification(n._id);
+                        }}
+                        className="notifications-delete-button"
+                        aria-label="Delete notification"
+                      >
+                        ×
+                      </button>
+                    </div>
+
+                    <div className="notifications-card-footer">
+                      <small>{new Date(n.createdAt).toLocaleString()}</small>
+                      {!n.read ? (
+                        <div className="notifications-card-actions">
+                          <span className="notifications-status-badge">
+                            New
+                          </span>
+                          <button
+                            type="button"
+                            className="notifications-mark-read-button"
+                            onClick={() => markNotificationAsRead(n._id)}
+                          >
+                            Mark as read
+                          </button>
+                        </div>
+                      ) : null}
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+        </section>
+      </div>
     </div>
   );
 };

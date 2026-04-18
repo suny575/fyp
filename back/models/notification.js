@@ -18,6 +18,7 @@ const notificationSchema = new mongoose.Schema(
         "SCHEDULE_STATUS_UPDATED",
         "WORKORDER_ASSIGNED",
         "TASK_CREATED",
+        "TASK_ASSIGNED",
         "SCHEDULE_CREATED",
         "WORKORDER_CREATED",
         "FAULT_REPORTED",

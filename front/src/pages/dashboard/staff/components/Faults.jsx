@@ -36,6 +36,7 @@ const Faults = () => {
   const [loading, setLoading] = useState(false);
   const [showTasks, setShowTasks] = useState(false);
   const [filter, setFilter] = useState("all");
+  const [submitting, setSubmitting] = useState(false);
 
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
@@ -139,6 +140,8 @@ const Faults = () => {
       return;
     }
 
+    setSubmitting(true);
+
     const submitData = new FormData();
     submitData.append("equipment", formData.equipment);
     submitData.append("priority", formData.priority);
@@ -168,6 +171,8 @@ const Faults = () => {
     } catch (err) {
       console.error(err);
       alert(err.response?.data?.message || "Failed to submit fault");
+    } finally {
+      setSubmitting(false);
     }
   };
   // ===== Fetch Faults =====
@@ -391,8 +396,19 @@ const Faults = () => {
             </Form.Group>
 
             <div className="d-flex justify-content-end">
-              <Button type="submit" variant="primary">
-                Submit Report
+              <Button type="submit" variant="primary" disabled={submitting}>
+                {submitting ? (
+                  <>
+                    <span
+                      className="spinner-border spinner-border-sm me-2"
+                      role="status"
+                      aria-hidden="true"
+                    ></span>
+                    Submitting...
+                  </>
+                ) : (
+                  "Submit Report"
+                )}
               </Button>
             </div>
           </Form>
@@ -411,11 +427,9 @@ const Faults = () => {
         </Button>
       </div>
 
-      
-
       {/* ===== Faults Display: Table for large, Cards for small ===== */}
-      {showTasks && (
-        loading ? (
+      {showTasks &&
+        (loading ? (
           <div className="staff-page-loading">
             <div className="staff-dotted-loader" />
             <p className="staff-loading-text">Loading reported faults...</p>
@@ -463,7 +477,7 @@ const Faults = () => {
                             <td>
                               {["waiting"].includes(t.status)
                                 ? "-"
-                                : t.updatedBy || "-"}
+                                : t.updatedBy?.name || "-"}
                             </td>
                           </tr>
                         ))}
@@ -488,12 +502,13 @@ const Faults = () => {
                       <br />
                       Priority: {t.priority}
                       <br />
-                      Assigned To: {t.assignedTechnician?.name || "Not Assigned"}
+                      Assigned To:{" "}
+                      {t.assignedTechnician?.name || "Not Assigned"}
                       <br />
                       Updated By:{" "}
                       {["pending", "waiting"].includes(t.status)
                         ? "-"
-                        : t.updatedBy || "-"}
+                        : t.updatedBy?.name || "-"}
                     </Card.Text>
                     <Card.Text>{t.description}</Card.Text>
                   </Card.Body>
@@ -501,8 +516,7 @@ const Faults = () => {
               ))}
             </div>
           </>
-        )
-      )}
+        ))}
     </div>
   );
 };

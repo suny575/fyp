@@ -57,20 +57,10 @@ export const submitFault = async (req, res) => {
       });
     }
 
-    const existingFault = await Fault.findOne(
-      withHospitalScope(
-        {
-          equipment,
-          status: { $in: ["pending", "in-progress", "waiting"] },
-        },
-        hospital,
-      ),
-    );
-
-    if (existingFault) {
+    if (equipmentObj.status === "under_maintenance") {
       return res.status(400).json({
-        message: "Similar fault already reported",
-        faultId: existingFault._id,
+        message:
+          "Equipment is currently under maintenance. Cannot submit fault.",
       });
     }
 
