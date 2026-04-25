@@ -10,6 +10,12 @@ const escapeRegExp = (value = "") =>
 
 export const addEquipment = async (req, res) => {
   try {
+    console.log("[MongoDB][Equipment][Create] Request received", {
+      userId: req.user?._id?.toString(),
+      hospital: resolveHospitalName(req.user?.hospital),
+      name: req.body?.name,
+    });
+
     const newEquipment = new Equipment({
       ...req.body,
       hospital: resolveHospitalName(req.user.hospital),
@@ -17,8 +23,14 @@ export const addEquipment = async (req, res) => {
       allocationDate: new Date(),
     });
     const saved = await newEquipment.save();
+    console.log("[MongoDB][Equipment][Create] Insert successful", {
+      id: saved?._id?.toString(),
+      hospital: saved?.hospital,
+      name: saved?.name,
+    });
     res.status(201).json(saved);
   } catch (err) {
+    console.error("[MongoDB][Equipment][Create] Insert failed", err.message);
     res.status(500).json({ error: err.message });
   }
 };
@@ -89,16 +101,31 @@ export const updateEquipment = async (req, res) => {
 
 export const deleteEquipment = async (req, res) => {
   try {
+    console.log("[MongoDB][Equipment][Delete] Request received", {
+      id: req.params.id,
+      hospital: resolveHospitalName(req.user?.hospital),
+      userId: req.user?._id?.toString(),
+    });
+
     const deleted = await Equipment.findOneAndDelete(
       withHospitalScope({ _id: req.params.id }, req.user.hospital),
     );
 
     if (!deleted) {
+      console.log("[MongoDB][Equipment][Delete] Record not found", {
+        id: req.params.id,
+      });
       return res.status(404).json({ message: "Equipment not found" });
     }
 
+    console.log("[MongoDB][Equipment][Delete] Delete successful", {
+      id: deleted?._id?.toString(),
+      name: deleted?.name,
+      hospital: deleted?.hospital,
+    });
     res.status(200).json({ message: "Deleted successfully" });
   } catch (err) {
+    console.error("[MongoDB][Equipment][Delete] Delete failed", err.message);
     res.status(500).json({ error: err.message });
   }
 };
