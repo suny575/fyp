@@ -48,8 +48,6 @@ setIo(io);
 let onlineUsers = {};
 
 io.on("connection", (socket) => {
-  // console.log("User connected:", socket.id);
-  //  console.log(process.env.MONGO_URI);
 
   socket.on("register", (userId) => {
     onlineUsers[userId] = socket.id;
