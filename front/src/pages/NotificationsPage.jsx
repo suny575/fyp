@@ -63,18 +63,18 @@ export const NotificationsProvider = ({ children }) => {
     return res.data;
   };
 
-  const loadNotifications = async () => {
-    try {
-      const data = await fetchNotifications();
-      setNotifications(data);
-    } catch (err) {
-      console.error("Failed to load notifications", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    const loadNotifications = async () => {
+      try {
+        const data = await fetchNotifications();
+        setNotifications(data);
+      } catch (err) {
+        console.error("Failed to load notifications", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     loadNotifications();
   }, []);
 

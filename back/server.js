@@ -26,6 +26,10 @@ app.use(cors({ origin: "http://localhost:3000", credentials: true }));
 app.use(express.json());
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
+app.get("/", (req, res) => {
+  res.send(`Server is running on port ${PORT}`);
+});
+
 // ===== ROUTES =====
 app.use("/api", appRoutes);
 
