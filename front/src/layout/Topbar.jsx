@@ -5,7 +5,7 @@ import { useAuth } from "../context/AuthContext";
 import ActionStatus from "../components/feedback/ActionStatus.jsx";
 import { getRequestFeedbackMessage } from "../utils/requestFeedback.js";
 
-const API_BASE_URL = "http://localhost:5000";
+const API_BASE_URL = "https://fyp-dle0.onrender.com";
 
 const getProfileImageUrl = (profileImage) => {
   if (!profileImage) return "";
@@ -419,3 +419,4 @@ const Topbar = ({ toggleSidebar, isDesktop }) => {
 };
 
 export default Topbar;
+

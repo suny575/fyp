@@ -33,7 +33,7 @@ const EquipmentManagement = () => {
     supportWebsite: "",
   });
 
-  const API = "http://localhost:5000/api/equipment";
+  const API = "https://fyp-dle0.onrender.com/api/equipment";
 
   // 🔹 Get token from localStorage
   const token = getStoredToken(); // ⬅️ ADD THIS
@@ -331,3 +331,4 @@ const EquipmentManagement = () => {
 };
 
 export default EquipmentManagement;
+

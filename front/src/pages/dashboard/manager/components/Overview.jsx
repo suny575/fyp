@@ -59,7 +59,7 @@ const Overview = () => {
   const handleViewIssues = async (statTitle) => {
     try {
       await fetch(
-        `http://localhost:5000/api/manager/issues?category=${encodeURIComponent(
+        `https://fyp-dle0.onrender.com/api/manager/issues?category=${encodeURIComponent(
           statTitle,
         )}`,
         { headers: { Authorization: `Bearer ${token}` } },
@@ -82,7 +82,7 @@ const Overview = () => {
         setError("");
         // Fetch users
         const usersRes = await fetch(
-          "http://localhost:5000/api/manager/users",
+          "https://fyp-dle0.onrender.com/api/manager/users",
           { headers: { Authorization: `Bearer ${token}` } },
         );
         const usersData = await usersRes.json();
@@ -112,14 +112,14 @@ const Overview = () => {
 
         // Fetch tasks
         const tasksRes = await fetch(
-          "http://localhost:5000/api/tasks/allTasks",
+          "https://fyp-dle0.onrender.com/api/tasks/allTasks",
           {
             headers: { Authorization: `Bearer ${token}` },
           },
         );
         const tasksData = await tasksRes.json();
         const schedulesRes = await fetch(
-          "http://localhost:5000/api/schedules/upcoming",
+          "https://fyp-dle0.onrender.com/api/schedules/upcoming",
           {
             headers: { Authorization: `Bearer ${token}` },
           },
@@ -283,3 +283,4 @@ const Overview = () => {
 };
 
 export default Overview;
+

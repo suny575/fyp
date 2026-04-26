@@ -38,7 +38,7 @@ useEffect(() => {
 const fetchReports = async () => {
   setLoading(true);
   try {
-    const res = await axios.get("http://localhost:5000/api/admin/reporting", {
+    const res = await axios.get("https://fyp-dle0.onrender.com/api/admin/reporting", {
       headers: { Authorization: `Bearer ${token}` },
     });
 
@@ -118,7 +118,7 @@ const fetchReports = async () => {
     pdf.save("ReportsDashboard.pdf");
 
     // SAVE REPORT HISTORY
-    await axios.post("http://localhost:5000/api/admin/reporting/save-report", {
+    await axios.post("https://fyp-dle0.onrender.com/api/admin/reporting/save-report", {
       name: "Reports Dashboard"
     }, { headers: { Authorization: `Bearer ${token}` } });
 
@@ -265,4 +265,5 @@ const fetchReports = async () => {
 };
 
 export default ReportsPage;
+
 

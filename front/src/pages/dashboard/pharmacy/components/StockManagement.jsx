@@ -42,7 +42,7 @@ const StockManagement = () => {
     const fetchStock = async () => {
       setLoading(true);
       try {
-        const res = await axios.get("http://localhost:5000/api/stock", {
+        const res = await axios.get("https://fyp-dle0.onrender.com/api/stock", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setStockList(res.data);
@@ -125,7 +125,7 @@ setCategories(uniqueCategories);
       } else {
         if (isEdit) {
           const res = await axios.put(
-            `http://localhost:5000/api/stock/${selectedId}`,
+            `https://fyp-dle0.onrender.com/api/stock/${selectedId}`,
             formData,
             {
               headers: { Authorization: `Bearer ${token}` },
@@ -138,7 +138,7 @@ setCategories(uniqueCategories);
           );
         } else {
           const res = await axios.post(
-            "http://localhost:5000/api/stock",
+            "https://fyp-dle0.onrender.com/api/stock",
             formData,
             {
               headers: { Authorization: `Bearer ${token}` },
@@ -170,7 +170,7 @@ setCategories(uniqueCategories);
         setStockList(stockList.filter((item) => item._id !== selectedId));
       } else {
         await axios.delete(
-          `http://localhost:5000/api/stock/${selectedId}`,
+          `https://fyp-dle0.onrender.com/api/stock/${selectedId}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           },
@@ -398,3 +398,4 @@ setCategories(uniqueCategories);
 };
 
 export default StockManagement;
+

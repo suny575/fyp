@@ -48,10 +48,10 @@ const Overview = () => {
 
       try {
         const [faultTasksRes, scheduledTasksRes] = await Promise.all([
-          axios.get("http://localhost:5000/api/tasks", {
+          axios.get("https://fyp-dle0.onrender.com/api/tasks", {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          axios.get("http://localhost:5000/api/workOrder", {
+          axios.get("https://fyp-dle0.onrender.com/api/workOrder", {
             headers: { Authorization: `Bearer ${token}` },
           }),
         ]);
@@ -253,3 +253,4 @@ const Overview = () => {
 };
 
 export default Overview;
+

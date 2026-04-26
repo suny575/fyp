@@ -93,10 +93,10 @@ const Task = () => {
       setLoading(true);
       try {
         const [faultTasksRes, scheduledTasksRes] = await Promise.all([
-          axios.get("http://localhost:5000/api/tasks", {
+          axios.get("https://fyp-dle0.onrender.com/api/tasks", {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          axios.get("http://localhost:5000/api/workOrder", {
+          axios.get("https://fyp-dle0.onrender.com/api/workOrder", {
             headers: { Authorization: `Bearer ${token}` },
           }),
         ]);
@@ -183,7 +183,7 @@ const Task = () => {
 
     try {
       await axios.put(
-        `http://localhost:5000/api/tasks/${selectedTask._id}/status`,
+        `https://fyp-dle0.onrender.com/api/tasks/${selectedTask._id}/status`,
         { status: newStatus },
         { headers: { Authorization: `Bearer ${token}` } },
       );
@@ -277,7 +277,7 @@ const Task = () => {
     setScheduledStatusSaving(true);
     try {
       await axios.put(
-        `http://localhost:5000/api/workOrder/status/${selectedTask._id}`,
+        `https://fyp-dle0.onrender.com/api/workOrder/status/${selectedTask._id}`,
         { status: newStatus },
         { headers: { Authorization: `Bearer ${token}` } },
       );
@@ -319,7 +319,7 @@ const Task = () => {
 
     try {
       await axios.put(
-        `http://localhost:5000/api/workOrder/status/${taskId}`,
+        `https://fyp-dle0.onrender.com/api/workOrder/status/${taskId}`,
         { status: newStatus },
         { headers: { Authorization: `Bearer ${token}` } },
       );
@@ -684,3 +684,4 @@ const Task = () => {
 };
 
 export default Task;
+

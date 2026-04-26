@@ -24,14 +24,14 @@ const Overview = () => {
       try {
         setError("");
         const [faultRes, taskRes, stockRes] = await Promise.all([
-          axios.get("http://localhost:5000/api/faults", {
+          axios.get("https://fyp-dle0.onrender.com/api/faults", {
             headers: { Authorization: `Bearer ${token}` },
           }),
 
-          axios.get("http://localhost:5000/api/tasks/all", {
+          axios.get("https://fyp-dle0.onrender.com/api/tasks/all", {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          axios.get("http://localhost:5000/api/stock-requests", {
+          axios.get("https://fyp-dle0.onrender.com/api/stock-requests", {
             headers: { Authorization: `Bearer ${token}` },
           }),
         ]);
@@ -178,3 +178,4 @@ const Overview = () => {
 };
 
 export default Overview;
+

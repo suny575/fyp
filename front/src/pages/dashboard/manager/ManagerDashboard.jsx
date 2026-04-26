@@ -8,7 +8,7 @@ import Schedules from "./components/ScheduledMaintenance.jsx";
 import Tasks from "./components/Tasks.jsx";
 import Layout from "../../../layout/layout.jsx";
 
-const socket = io("http://localhost:5000");
+const socket = io("https://fyp-dle0.onrender.com");
 
 const ManagerDashboard = () => {
   return (
@@ -27,3 +27,4 @@ const ManagerDashboard = () => {
 };
 
 export default ManagerDashboard;
+

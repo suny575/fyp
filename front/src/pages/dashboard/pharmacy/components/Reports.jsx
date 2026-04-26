@@ -38,7 +38,7 @@ const PharmacyReports = () => {
         }).toString();
 
     
-        const res = await fetch(`http://localhost:5000/api/reports?${query}`, {
+        const res = await fetch(`https://fyp-dle0.onrender.com/api/reports?${query}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
@@ -246,3 +246,4 @@ const PharmacyReports = () => {
 };
 
 export default PharmacyReports;
+

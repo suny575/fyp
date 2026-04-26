@@ -112,7 +112,7 @@ const AlertsPage = () => {
       setLoading(true);
       try {
         const token = getStoredToken();
-        const res = await axios.get("http://localhost:5000/api/alerts", {
+        const res = await axios.get("https://fyp-dle0.onrender.com/api/alerts", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setAlerts(res.data);
@@ -199,3 +199,4 @@ const AlertsPage = () => {
 };
 
 export default AlertsPage;
+

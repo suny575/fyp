@@ -6,7 +6,7 @@ import { useAuth } from "../context/AuthContext.jsx";
 import { getStoredToken } from "../utils/authStorage.js";
 import "../styles/NotificationsPage.css";
 
-const API_URL = "http://localhost:5000/api/notifications";
+const API_URL = "https://fyp-dle0.onrender.com/api/notifications";
 
 const NotificationContext = createContext();
 
@@ -255,3 +255,4 @@ const NotificationsPage = () => {
 };
 
 export default NotificationsPage;
+

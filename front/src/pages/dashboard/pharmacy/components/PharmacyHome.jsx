@@ -21,7 +21,7 @@ const PharmacyHome = () => {
 
       try {
         setError("");
-        const res = await fetch("http://localhost:5000/api/pharmacy/dashboard", {
+        const res = await fetch("https://fyp-dle0.onrender.com/api/pharmacy/dashboard", {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
@@ -103,3 +103,4 @@ const PharmacyHome = () => {
 };
 
 export default PharmacyHome;
+

@@ -23,10 +23,10 @@ const Tasks = () => {
       try {
         setLoading(true);
         const [tasksRes, techRes] = await Promise.all([
-          fetch("http://localhost:5000/api/tasks/all", {
+          fetch("https://fyp-dle0.onrender.com/api/tasks/all", {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          fetch("http://localhost:5000/api/manager/users", {
+          fetch("https://fyp-dle0.onrender.com/api/manager/users", {
             headers: { Authorization: `Bearer ${token}` },
           }),
         ]);
@@ -61,7 +61,7 @@ const Tasks = () => {
     setUpdating(true);
     try {
       const res = await fetch(
-        `http://localhost:5000/api/tasks/${selectedTask._id}/assign-technician`,
+        `https://fyp-dle0.onrender.com/api/tasks/${selectedTask._id}/assign-technician`,
         {
           method: "PUT",
           headers: {
@@ -227,3 +227,4 @@ const Tasks = () => {
 };
 
 export default Tasks;
+

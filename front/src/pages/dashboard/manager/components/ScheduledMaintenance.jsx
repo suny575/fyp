@@ -27,7 +27,7 @@ const ScheduledMaintenance = () => {
 
   const fetchSchedules = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/schedules/upcoming", {
+      const res = await fetch("https://fyp-dle0.onrender.com/api/schedules/upcoming", {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) {
@@ -44,7 +44,7 @@ const ScheduledMaintenance = () => {
 
   const fetchEquipments = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/equipment", {
+      const res = await fetch("https://fyp-dle0.onrender.com/api/equipment", {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) {
@@ -60,7 +60,7 @@ const ScheduledMaintenance = () => {
   const fetchTechnicians = async () => {
     try {
       const res = await fetch(
-        "http://localhost:5000/api/manager/users?role=technician",
+        "https://fyp-dle0.onrender.com/api/manager/users?role=technician",
         { headers: { Authorization: `Bearer ${token}` } },
       );
       if (!res.ok) {
@@ -89,7 +89,7 @@ const ScheduledMaintenance = () => {
     setAssigningScheduleId(scheduleId);
     try {
       const res = await fetch(
-        `http://localhost:5000/api/schedules/${scheduleId}/assign-technician`,
+        `https://fyp-dle0.onrender.com/api/schedules/${scheduleId}/assign-technician`,
         {
           method: "POST",
           headers: {
@@ -351,3 +351,4 @@ const ScheduledMaintenance = () => {
 };
 
 export default ScheduledMaintenance;
+

@@ -15,7 +15,7 @@ import { getStoredToken } from "../../../../utils/authStorage.js";
 
 import { io } from "socket.io-client";
 
-const socket = io("http://localhost:5000", {
+const socket = io("https://fyp-dle0.onrender.com", {
   transports: ["websocket", "polling"],
   autoConnect: false,
 });
@@ -59,7 +59,7 @@ const UsersManagement = () => {
     setLoading(true);
     try {
       const res = await axios.get(
-        `http://localhost:5000/api/manager/users?all=${showAll}${
+        `https://fyp-dle0.onrender.com/api/manager/users?all=${showAll}${
           debouncedSearch ? `&search=${debouncedSearch}` : ""
         }${roleFilter ? `&role=${roleFilter}` : ""}`,
 
@@ -96,7 +96,7 @@ const UsersManagement = () => {
 
     try {
       await axios.post(
-        "http://localhost:5000/api/invitations",
+        "https://fyp-dle0.onrender.com/api/invitations",
         { email: inviteEmail, role: inviteRole },
         { headers: { Authorization: `Bearer ${token}` } },
       );
@@ -117,7 +117,7 @@ const UsersManagement = () => {
   const handleDelete = async (id, name) => {
     if (!window.confirm(`Remove ${name}?`)) return;
     try {
-      await axios.delete(`http://localhost:5000/api/manager/users/${id}`, {
+      await axios.delete(`https://fyp-dle0.onrender.com/api/manager/users/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setUserList((prev) => prev.filter((u) => u.id !== id));
@@ -133,7 +133,7 @@ const UsersManagement = () => {
     const newStatus = user.status === "active" ? "inactive" : "active";
     try {
       const res = await axios.patch(
-        `http://localhost:5000/api/manager/users/${user.id}/status`,
+        `https://fyp-dle0.onrender.com/api/manager/users/${user.id}/status`,
         { status: newStatus },
         { headers: { Authorization: `Bearer ${token}` } },
       );
@@ -387,3 +387,4 @@ const UsersManagement = () => {
 };
 
 export default UsersManagement;
+

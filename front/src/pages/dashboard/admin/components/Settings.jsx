@@ -24,7 +24,7 @@ const Settings = () => {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/admin/settings", {
+        const res = await axios.get("https://fyp-dle0.onrender.com/api/admin/settings", {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (res.data) setSettings(res.data);
@@ -49,7 +49,7 @@ const Settings = () => {
   const handleSave = async () => {
     try {
       await axios.put(
-        "http://localhost:5000/api/admin/settings",
+        "https://fyp-dle0.onrender.com/api/admin/settings",
         settings,
         { headers: { Authorization: `Bearer ${token}` } },
       );
@@ -141,3 +141,4 @@ const Settings = () => {
 };
 
 export default Settings;
+

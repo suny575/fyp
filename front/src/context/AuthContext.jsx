@@ -9,6 +9,7 @@ import {
   setStoredAuth,
   setStoredUser,
 } from "../utils/authStorage.js";
+import { API_URL } from "../services/api.js";
 
 export const AuthContext = createContext();
 
@@ -64,7 +65,7 @@ export const AuthProvider = ({ children }) => {
   // ---- LOGIN ----
   const login = async (email, password) => {
     try {
-      const res = await axios.post("http://localhost:5000/api/login", {
+      const res = await axios.post(`${API_URL}/login`, {
         email,
         password,
       });
@@ -91,17 +92,17 @@ export const AuthProvider = ({ children }) => {
   // ---- REGISTER (via invitation) ----
   const register = async (name, password, token) => {
     try {
-      const res = await axios.post("http://localhost:5000/api/register", {
+      const res = await axios.post(`${API_URL}/register`, {
         name,
         password,
         token,
       });
 
-      // Optionally, auto-login user after registration
-      // setToken(res.data.token);
-      // setUser(res.data.user);
-      // localStorage.setItem("token", res.data.token);
-      // localStorage.setItem("user", JSON.stringify(res.data.user));
+      //auto-login user after registration
+       setToken(res.data.token);
+       setUser(res.data.user);
+       localStorage.setItem("token", res.data.token);
+       localStorage.setItem("user", JSON.stringify(res.data.user));
 
       return { success: true, user: normalizeUser(res.data.user) };
     } catch (err) {
@@ -154,3 +155,4 @@ export const AuthProvider = ({ children }) => {
 export const useAuth = () => {
   return useContext(AuthContext);
 };
+

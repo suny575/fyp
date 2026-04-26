@@ -70,7 +70,7 @@ export const inviteManager = async (req, res) => {
       },
     });
 
-    const registerLink = `http://localhost:3000/auth?token=${token}`;
+    const registerLink = `https://fyp-indol-one.vercel.app/auth?token=${token}`;
 
     await transporter.sendMail({
       from: `"Maintenance System" <${process.env.EMAIL_USER}>`,
@@ -236,3 +236,4 @@ export const getManagers = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+

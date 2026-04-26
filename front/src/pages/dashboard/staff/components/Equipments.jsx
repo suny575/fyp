@@ -12,7 +12,7 @@
 
 //   const fetchEquipment = async () => {
 //     try {
-//       const res = await axios.get("http://localhost:5000/api/equipment", {
+//       const res = await axios.get("https://fyp-dle0.onrender.com/api/equipment", {
 //         headers: {
 //           Authorization: `Bearer ${localStorage.getItem("token")}`,
 //         },
@@ -81,3 +81,4 @@
 // };
 
 // export default DepartmentEquipment;
+

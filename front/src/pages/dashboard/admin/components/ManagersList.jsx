@@ -20,7 +20,7 @@ const ManagersList = () => {
     setLoadingManagers(true);
     try {
       const res = await axios.get(
-        "http://localhost:5000/api/admin/managers",
+        "https://fyp-dle0.onrender.com/api/admin/managers",
         {
           headers: { Authorization: `Bearer ${token}` },
         },
@@ -45,7 +45,7 @@ const ManagersList = () => {
 
     try {
       const res = await axios.post(
-        "http://localhost:5000/api/admin/invite-manager",
+        "https://fyp-dle0.onrender.com/api/admin/invite-manager",
         { email, hospital },
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -75,7 +75,7 @@ const ManagersList = () => {
       const newStatus = currentStatus === "active" ? "inactive" : "active";
 
       await axios.patch(
-        `http://localhost:5000/api/admin/manager/${managerId}/status`,
+        `https://fyp-dle0.onrender.com/api/admin/manager/${managerId}/status`,
         { status: newStatus } ,
 
         {
@@ -101,7 +101,7 @@ const ManagersList = () => {
   const deleteManager = async (managerId) => {
     try {
       await axios.delete(
-        `http://localhost:5000/api/admin/manager/${managerId}`,
+        `https://fyp-dle0.onrender.com/api/admin/manager/${managerId}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -259,3 +259,4 @@ const ManagersList = () => {
 };
 
 export default ManagersList;
+

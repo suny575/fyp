@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useSearchParams, useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import ActionStatus from "../components/feedback/ActionStatus.jsx";
@@ -7,6 +7,7 @@ import { getRequestFeedbackMessage } from "../utils/requestFeedback.js";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/AuthPage.css";
 import axios from "axios";
+import { API_URL } from "../services/api.js";
 
 const AuthPage = () => {
   const navigate = useNavigate();
@@ -18,8 +19,6 @@ const AuthPage = () => {
   const [registerHospital, setRegisterHospital] = useState("");
   const [authNotice, setAuthNotice] = useState("");
 
-  const [searchParams] = useSearchParams();
-  const token = searchParams.get("token");
   const { login, register } = useContext(AuthContext);
 
   // Input states
@@ -32,7 +31,8 @@ const AuthPage = () => {
   const [loggedOutState, setLoggedOutState] = useState(false);
 
   const [error, setError] = useState("");
-  const logoutParam = searchParams.get("logout") === "1";
+  const logoutParam =
+    new URLSearchParams(location.search).get("logout") === "1";
   const isLoggedOutView = loggedOutState && activeTab === "login";
   const logoutMessage = "Successfully logged out. You can log in again.";
 
@@ -42,25 +42,30 @@ const AuthPage = () => {
     setLoginEmail("");
     setLoginPassword("");
 
-    if (token) {
-      // check invitation token
-      const fetchInvitation = async () => {
-        try {
-          const res = await axios.get(
-            `http://localhost:5000/api/invitations/verify/${token}`,
-          );
-          setRegisterEmail(res.data.email);
-          setRegisterRole(res.data.role);
-          setRegisterHospital(res.data.hospital || "");
-          setInvitationExists(true);
-          setActiveTab("register");
-        } catch {
-          setInvitationExists(false);
-        }
-      };
-      fetchInvitation();
+    const invitationToken = new URLSearchParams(location.search).get("token");
+
+    if (!invitationToken) {
+      setInvitationExists(false);
+      return;
     }
-  }, [token]);
+
+    const fetchInvitation = async () => {
+      try {
+        const res = await axios.get(
+          `${API_URL}/invitations/verify/${invitationToken}`,
+        );
+        setRegisterEmail(res.data.email);
+        setRegisterRole(res.data.role);
+        setRegisterHospital(res.data.hospital || "");
+        setInvitationExists(true);
+        setActiveTab("register");
+      } catch {
+        setInvitationExists(false);
+      }
+    };
+
+    fetchInvitation();
+  }, [location.search]);
 
   useEffect(() => {
     const storedLoggedOut = sessionStorage.getItem("auth_logged_out") === "true";
@@ -146,10 +151,11 @@ const AuthPage = () => {
         "Creating your account. This can take a few seconds depending on your connection.",
       );
       setRegisterLoading(true);
+      const invitationToken = new URLSearchParams(location.search).get("token");
       const res = await register(
         registerName.trim(),
         registerPassword.trim(),
-        token,
+        invitationToken,
       );
 
       if (res.success) {
@@ -342,3 +348,4 @@ const AuthPage = () => {
 };
 
 export default AuthPage;
+

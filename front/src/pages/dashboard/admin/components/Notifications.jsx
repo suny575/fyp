@@ -118,7 +118,7 @@ const Notifications = () => {
   const fetchNotifications = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("http://localhost:5000/api/admin/notifications", {
+      const res = await axios.get("https://fyp-dle0.onrender.com/api/admin/notifications", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setAlerts(res.data.notifications);
@@ -139,7 +139,7 @@ const Notifications = () => {
   // Delete alert
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/admin/notifications/${id}`, {
+      await axios.delete(`https://fyp-dle0.onrender.com/api/admin/notifications/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setAlerts((prev) => prev.filter((alert) => alert._id !== id));
@@ -215,3 +215,4 @@ const Notifications = () => {
 };
 
 export default Notifications;
+

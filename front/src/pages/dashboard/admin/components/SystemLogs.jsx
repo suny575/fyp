@@ -21,7 +21,7 @@ const SystemLogs = () => {
     const fetchLogs = async () => {
       setLoading(true);
       try {
-        const res = await axios.get("http://localhost:5000/api/admin/system-logs", {
+        const res = await axios.get("https://fyp-dle0.onrender.com/api/admin/system-logs", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setLogs(res.data.logs || []);
@@ -165,3 +165,4 @@ const SystemLogs = () => {
 };
 
 export default SystemLogs;
+

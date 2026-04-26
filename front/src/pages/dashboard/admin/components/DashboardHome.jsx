@@ -30,7 +30,7 @@ const DashboardHome = () => {
 
       try {
         setError("");
-        const res = await axios.get("http://localhost:5000/api/admin/reporting/dashboard-stats", {
+        const res = await axios.get("https://fyp-dle0.onrender.com/api/admin/reporting/dashboard-stats", {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -124,5 +124,6 @@ const DashboardHome = () => {
 };
 
 export default DashboardHome;
+
 
 

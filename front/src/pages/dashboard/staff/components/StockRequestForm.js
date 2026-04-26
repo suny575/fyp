@@ -23,7 +23,7 @@ const StockRequestForm = () => {
   const fetchRequests = async () => {
     try {
       const token = getStoredToken();
-      const res = await axios.get("http://localhost:5000/api/stock-requests", {
+      const res = await axios.get("https://fyp-dle0.onrender.com/api/stock-requests", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setRequests(res.data);
@@ -48,7 +48,7 @@ const StockRequestForm = () => {
   const fetchStockItems = async () => {
     try {
       const token = getStoredToken();
-      const res = await axios.get("http://localhost:5000/api/stock", {
+      const res = await axios.get("https://fyp-dle0.onrender.com/api/stock", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -105,7 +105,7 @@ const StockRequestForm = () => {
 
     try {
       const res = await axios.post(
-        "http://localhost:5000/api/stock-requests",
+        "https://fyp-dle0.onrender.com/api/stock-requests",
         newRequest,
         { headers: { Authorization: `Bearer ${token}` } },
       );
@@ -303,3 +303,4 @@ const StockRequestForm = () => {
 };
 
 export default StockRequestForm;
+

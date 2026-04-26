@@ -133,7 +133,7 @@ router.put("/:id/assign-technician", async (req, res) => {
         taskId: task._id,
         equipmentName: task.equipment?.name || "Equipment",
         assignedBy: req.user.name,
-        link: "http://localhost:3000/technician/tasks",
+        link: "https://fyp-indol-one.vercel.app/technician/tasks",
       },
     });
 
@@ -151,3 +151,4 @@ router.put("/:id/assign-technician", async (req, res) => {
 });
 
 export default router;
+

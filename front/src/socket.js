@@ -1,7 +1,7 @@
 import { io } from "socket.io-client";
 
 // create a single socket instance
-const socket = io("http://localhost:5000", {
+const socket = io("https://fyp-dle0.onrender.com", {
   transports: ["websocket", "polling"],
   autoConnect: false,
 });
@@ -13,3 +13,4 @@ export const connectSocket = (userId) => {
 };
 
 export default socket;
+

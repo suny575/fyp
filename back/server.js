@@ -16,13 +16,46 @@ import { setIo } from "./services/socket.service.js";
 const PORT = process.env.PORT || 5000;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const defaultFrontendOrigin = "https://fyp-indol-one.vercel.app";
+const frontendOrigin = process.env.FRONTEND_URL
+  ? new URL(process.env.FRONTEND_URL).origin
+  : defaultFrontendOrigin;
+const allowedOrigins = [frontendOrigin];
+
+const isAllowedOrigin = (origin) => {
+  if (!origin) {
+    return true;
+  }
+
+  if (allowedOrigins.includes(origin)) {
+    return true;
+  }
+
+  try {
+    return new URL(origin).hostname.endsWith(".vercel.app");
+  } catch {
+    return false;
+  }
+};
+
+const corsOptions = {
+  origin(origin, callback) {
+    if (isAllowedOrigin(origin)) {
+      callback(null, true);
+      return;
+    }
+
+    callback(new Error(`CORS blocked for origin: ${origin}`));
+  },
+  credentials: true,
+};
 
 connectDB();
 
 const app = express();
 
 // ===== MIDDLEWARE =====
-app.use(cors({ origin: "http://localhost:3000", credentials: true }));
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
@@ -38,7 +71,7 @@ let io;
 
 io = new Server(server, {
   cors: {
-    origin: "http://localhost:3000",
+    origin: corsOptions.origin,
     methods: ["GET", "POST"],
     credentials: true,
   },
@@ -97,3 +130,4 @@ const handleFatal = async (err) => {
 
 process.on("uncaughtException", handleFatal);
 process.on("unhandledRejection", handleFatal);
+

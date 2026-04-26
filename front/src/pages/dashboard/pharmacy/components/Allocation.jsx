@@ -18,7 +18,7 @@
 //   // ===== Fetch pending requests =====
 //   const fetchPending = async () => {
 //     try {
-//       const res = await axios.get("http://localhost:5000/api/allocations/pending", {
+//       const res = await axios.get("https://fyp-dle0.onrender.com/api/allocations/pending", {
 //         headers: getAuthHeaders(),
 //       });
 //       setPendingRequests(res.data);
@@ -31,7 +31,7 @@
 //   // ===== Fetch allocation history =====
 //   const fetchHistory = async () => {
 //     try {
-//       const res = await axios.get("http://localhost:5000/api/allocations/history", {
+//       const res = await axios.get("https://fyp-dle0.onrender.com/api/allocations/history", {
 //         headers: getAuthHeaders(),
 //       });
 //       setHistory(res.data);
@@ -51,7 +51,7 @@
 //   const handleApprove = async (reqId) => {
 //     try {
 //       await axios.post(
-//         `http://localhost:5000/api/allocations/approve/${reqId}`,
+//         `https://fyp-dle0.onrender.com/api/allocations/approve/${reqId}`,
 //         {},
 //         { headers: getAuthHeaders() }
 //       );
@@ -67,7 +67,7 @@
 //   const handleReject = async (reqId) => {
 //     try {
 //       await axios.post(
-//         `http://localhost:5000/api/allocations/reject/${reqId}`,
+//         `https://fyp-dle0.onrender.com/api/allocations/reject/${reqId}`,
 //         {},
 //         { headers: getAuthHeaders() }
 //       );
@@ -191,7 +191,7 @@ const AllocationPage = ({ pharmacyUserId = "Pharmacy01" }) => {
   // ===== Fetch pending requests =====
   const fetchPending = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/allocations/pending", {
+      const res = await axios.get("https://fyp-dle0.onrender.com/api/allocations/pending", {
         headers: getAuthHeaders(),
       });
       setPendingRequests(res.data);
@@ -207,7 +207,7 @@ const AllocationPage = ({ pharmacyUserId = "Pharmacy01" }) => {
   // ===== Fetch allocation history =====
   const fetchHistory = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/allocations/history", {
+      const res = await axios.get("https://fyp-dle0.onrender.com/api/allocations/history", {
         headers: getAuthHeaders(),
       });
       setHistory(res.data);
@@ -235,7 +235,7 @@ const AllocationPage = ({ pharmacyUserId = "Pharmacy01" }) => {
   const handleApprove = async (reqId) => {
     try {
       await axios.put(
-        `http://localhost:5000/api/allocations/approve/${reqId}`,
+        `https://fyp-dle0.onrender.com/api/allocations/approve/${reqId}`,
         {}, // empty body
         { headers: getAuthHeaders() }
       );
@@ -253,7 +253,7 @@ const AllocationPage = ({ pharmacyUserId = "Pharmacy01" }) => {
   const handleReject = async (reqId) => {
     try {
       await axios.put(
-        `http://localhost:5000/api/allocations/reject/${reqId}`,
+        `https://fyp-dle0.onrender.com/api/allocations/reject/${reqId}`,
         {}, // empty body
         { headers: getAuthHeaders() }
       );
@@ -366,3 +366,4 @@ const AllocationPage = ({ pharmacyUserId = "Pharmacy01" }) => {
 };
 
 export default AllocationPage;
+

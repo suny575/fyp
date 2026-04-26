@@ -37,7 +37,7 @@ const Reports = () => {
   // ===== FETCH USERS =====
   const fetchUsers = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/manager/users", {
+      const res = await axios.get("https://fyp-dle0.onrender.com/api/manager/users", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setUsers(res.data);
@@ -53,20 +53,20 @@ const Reports = () => {
 
     try {
       const equipmentRes = await axios.get(
-        "http://localhost:5000/api/equipment",
+        "https://fyp-dle0.onrender.com/api/equipment",
         { headers: { Authorization: `Bearer ${token}` } },
       );
 
-      const tasksRes = await axios.get("http://localhost:5000/api/tasks", {
+      const tasksRes = await axios.get("https://fyp-dle0.onrender.com/api/tasks", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      const faultsRes = await axios.get("http://localhost:5000/api/faults", {
+      const faultsRes = await axios.get("https://fyp-dle0.onrender.com/api/faults", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
       const stockRes = await axios.get(
-        "http://localhost:5000/api/stock-requests",
+        "https://fyp-dle0.onrender.com/api/stock-requests",
         { headers: { Authorization: `Bearer ${token}` } },
       );
 
@@ -326,3 +326,4 @@ const Reports = () => {
 };
 
 export default Reports;
+

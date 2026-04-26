@@ -265,7 +265,7 @@ const EquipmentReport = () => {
       setSearchLoading(true);
 
       try {
-        const response = await axios.get("http://localhost:5000/api/equipment", {
+        const response = await axios.get("https://fyp-dle0.onrender.com/api/equipment", {
           params: {
             search: trimmedQuery,
             limit: 12,
@@ -389,7 +389,7 @@ const EquipmentReport = () => {
 
   const lookupEquipmentFromScan = async (candidateValues) => {
     for (const candidate of candidateValues) {
-      const response = await axios.get("http://localhost:5000/api/equipment", {
+      const response = await axios.get("https://fyp-dle0.onrender.com/api/equipment", {
         params: {
           search: candidate,
           limit: 12,
@@ -486,7 +486,7 @@ const EquipmentReport = () => {
       const equipmentReference = selectedEquipment?._id || equipmentId.trim();
 
       await axios.post(
-        "http://localhost:5000/api/equipmentReports",
+        "https://fyp-dle0.onrender.com/api/equipmentReports",
         {
           equipment: equipmentReference,
           description: reportDetails,
@@ -832,3 +832,4 @@ const EquipmentReport = () => {
 };
 
 export default EquipmentReport;
+

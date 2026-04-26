@@ -40,7 +40,7 @@ const SetSchedule = ({ onScheduleCreated, equipments }) => {
         dataToSend.customIntervalDays = formData.customIntervalDays;
       }
 
-      await axios.post("http://localhost:5000/api/schedules", dataToSend, {
+      await axios.post("https://fyp-dle0.onrender.com/api/schedules", dataToSend, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -161,3 +161,4 @@ const SetSchedule = ({ onScheduleCreated, equipments }) => {
 };
 
 export default SetSchedule;
+

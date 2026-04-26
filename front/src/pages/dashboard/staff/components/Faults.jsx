@@ -6,7 +6,7 @@ import { Card, Button, Form, Badge } from "react-bootstrap";
 import { getStoredToken } from "../../../../utils/authStorage.js";
 import "../styles/staff.css";
 
-const socket = io("http://localhost:5000", {
+const socket = io("https://fyp-dle0.onrender.com", {
   transports: ["websocket", "polling"],
 });
 
@@ -74,7 +74,7 @@ const Faults = () => {
   useEffect(() => {
     const fetchEquipments = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/equipment", {
+        const res = await axios.get("https://fyp-dle0.onrender.com/api/equipment", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setEquipments(res.data);
@@ -152,7 +152,7 @@ const Faults = () => {
 
     try {
       const res = await axios.post(
-        "http://localhost:5000/api/faults",
+        "https://fyp-dle0.onrender.com/api/faults",
         submitData,
         {
           headers: {
@@ -179,7 +179,7 @@ const Faults = () => {
   const fetchTasks = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("http://localhost:5000/api/tasks/all", {
+      const res = await axios.get("https://fyp-dle0.onrender.com/api/tasks/all", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -522,3 +522,4 @@ const Faults = () => {
 };
 
 export default Faults;
+
