@@ -8,6 +8,15 @@ import {
   withHospitalScope,
 } from "../utils/hospitalScope.js";
 
+const normalizeUploadPath = (filePath) => {
+  if (!filePath) return "";
+
+  const normalizedPath = filePath.replace(/\\/g, "/");
+  return normalizedPath.startsWith("/")
+    ? normalizedPath
+    : `/${normalizedPath}`;
+};
+
 export const getFaults = async (req, res) => {
   try {
     const faults = await Fault.find(withHospitalScope({}, req.user.hospital))
@@ -43,9 +52,10 @@ export const submitFault = async (req, res) => {
 
     const attachments = req.files || {};
     const images =
-      attachments.images?.map((file) => file.path.replace(/\\/g, "/")) || [];
-    const voiceNote =
-      attachments.voiceNote?.[0]?.path.replace(/\\/g, "/") || "";
+      attachments.images?.map((file) => normalizeUploadPath(file.path)) || [];
+    const voiceNote = normalizeUploadPath(
+      attachments.voiceNote?.[0]?.path || "",
+    );
 
     const equipmentObj = await Equipment.findOne(
       withHospitalScope({ _id: equipment }, hospital),

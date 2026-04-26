@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { useLocation } from "react-router-dom";
 import { getStoredToken } from "../../../../utils/authStorage.js";
+import { API_BASE_URL } from "../../../../services/api.js";
 
 const normalizeTaskStatus = (status) => {
   const normalized = status?.trim();
@@ -25,6 +26,20 @@ const getScrollParent = (element) => {
   }
 
   return null;
+};
+
+const resolveMediaUrl = (mediaPath) => {
+  if (!mediaPath) return "";
+
+  if (/^https?:\/\//i.test(mediaPath)) {
+    return mediaPath;
+  }
+
+  const normalizedPath = mediaPath.startsWith("/")
+    ? mediaPath
+    : `/${mediaPath}`;
+
+  return `${API_BASE_URL}${normalizedPath}`;
 };
 
 const Task = () => {
@@ -425,7 +440,7 @@ const Task = () => {
                 {selectedTask.media.images.map((img, idx) => (
                   <img
                     key={idx}
-                    src={img}
+                    src={resolveMediaUrl(img)}
                     alt=""
                     style={{
                       width: "80px",
@@ -441,7 +456,7 @@ const Task = () => {
             {!isScheduledTask && selectedTask.media?.voiceNote && (
               <audio
                 controls
-                src={selectedTask.media.voiceNote} // backend path is fixed
+                src={resolveMediaUrl(selectedTask.media.voiceNote)}
                 className="mt-2"
               />
             )}
