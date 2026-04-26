@@ -1,5 +1,5 @@
 // dashboardController.mjs (or .js if type: "module" in package.json)
-import User from "../models/User.js";
+import User from "../models/user.js";
 import EquipmentAssignment from "../models/equipment.js";
 import StockRequest from "../models/StockRequest.js";
 import Fault from "../models/fault.js";
