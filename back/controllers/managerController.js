@@ -2,7 +2,7 @@
 import User from "../models/user.js";
 import EquipmentAssignment from "../models/equipment.js";
 import StockRequest from "../models/StockRequest.js";
-import Fault from "../models/fault.js";
+import Fault from "../models/Fault.js";
 
 const getDashboardSummary = async (req, res) => {
   try {

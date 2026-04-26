@@ -1,4 +1,4 @@
-import MaintenanceLog from "../models/MaintenanceLog.js";
+import MaintenanceLog from "../models/maintenanceLog.js";
 import WorkOrder from "../models/workOrders.js";
 import {
   SCHEDULED_MAINTENANCE_STATUS,
