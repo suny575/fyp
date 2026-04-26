@@ -32,11 +32,8 @@ app.get("/", (req, res) => {
 
 // ===== ROUTES =====
 app.use("/api", appRoutes);
-
-// ===== SOCKET.IO =====
 const server = http.createServer(app);
 
-// declare first (important)
 let io;
 
 io = new Server(server, {
