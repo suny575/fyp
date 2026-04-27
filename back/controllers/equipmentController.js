@@ -8,6 +8,21 @@ import {
 const escapeRegExp = (value = "") =>
   value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
+const sanitizeEquipmentPayload = (payload = {}) => {
+  const { manufacturer, vendor, ...cleanPayload } = payload;
+  return cleanPayload;
+};
+
+const sanitizeEquipmentResponse = (equipment) => {
+  if (!equipment) return equipment;
+
+  const plainEquipment =
+    typeof equipment.toObject === "function" ? equipment.toObject() : equipment;
+
+  const { manufacturer, vendor, ...cleanEquipment } = plainEquipment;
+  return cleanEquipment;
+};
+
 export const addEquipment = async (req, res) => {
   try {
     console.log("[MongoDB][Equipment][Create] Request received", {
@@ -17,7 +32,7 @@ export const addEquipment = async (req, res) => {
     });
 
     const newEquipment = new Equipment({
-      ...req.body,
+      ...sanitizeEquipmentPayload(req.body),
       hospital: resolveHospitalName(req.user.hospital),
       allocatedBy: req.user._id,
       allocationDate: new Date(),
@@ -28,7 +43,7 @@ export const addEquipment = async (req, res) => {
       hospital: saved?.hospital,
       name: saved?.name,
     });
-    res.status(201).json(saved);
+    res.status(201).json(sanitizeEquipmentResponse(saved));
   } catch (err) {
     console.error("[MongoDB][Equipment][Create] Insert failed", err.message);
     res.status(500).json({ error: err.message });
@@ -52,7 +67,6 @@ export const getAllEquipment = async (req, res) => {
         { model: searchRegex },
         { serial: searchRegex },
         { department: searchRegex },
-        { manufacturer: searchRegex },
       ];
 
       if (mongoose.Types.ObjectId.isValid(search)) {
@@ -73,7 +87,9 @@ export const getAllEquipment = async (req, res) => {
     }
 
     const equipments = await equipmentQuery;
-    res.status(200).json(equipments);
+    res
+      .status(200)
+      .json(equipments.map((equipment) => sanitizeEquipmentResponse(equipment)));
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -83,7 +99,10 @@ export const updateEquipment = async (req, res) => {
   try {
     const updated = await Equipment.findOneAndUpdate(
       withHospitalScope({ _id: req.params.id }, req.user.hospital),
-      req.body,
+      {
+        ...sanitizeEquipmentPayload(req.body),
+        $unset: { manufacturer: "", vendor: "" },
+      },
       {
         new: true,
       },
@@ -93,7 +112,7 @@ export const updateEquipment = async (req, res) => {
       return res.status(404).json({ message: "Equipment not found" });
     }
 
-    res.status(200).json(updated);
+    res.status(200).json(sanitizeEquipmentResponse(updated));
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

@@ -8,7 +8,6 @@ const equipmentSchema = new mongoose.Schema(
     serial: { type: String, required: true, unique: true },
     purchaseDate: { type: Date, required: true },
     department: { type: String, required: true },
-    manufacturer: { type: String, trim: true, default: "" },
     supportEmail: { type: String, trim: true, lowercase: true, default: "" },
     supportWebsite: { type: String, trim: true, default: "" },
     hospital: {

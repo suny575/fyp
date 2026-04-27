@@ -6,15 +6,7 @@ import axios from "axios";
 import { getStoredToken } from "../../../../utils/authStorage.js";
 
 const EquipmentManagement = () => {
-  // 🔹 Mock data fallback
-  const mockData = [
-    { id: 1, name: "ECG Machine", model: "ECG-100", serial: "SN12345", purchaseDate: "2023-06-12", department: "Cardiology", manufacturer: "MedTech", supportEmail: "support@medtech.com", supportWebsite: "https://support.medtech.com" },
-    { id: 2, name: "Infusion Pump", model: "INF-300", serial: "SN67890", purchaseDate: "2023-05-30", department: "ICU", manufacturer: "CareFlow", supportEmail: "service@careflow.com", supportWebsite: "https://careflow.com/support" },
-    { id: 3, name: "Syringe Pump", model: "SYR-200", serial: "SN54321", purchaseDate: "2023-04-20", department: "Pharmacy", manufacturer: "Syrinx", supportEmail: "", supportWebsite: "" },
-  ];
-
   const [equipmentList, setEquipmentList] = useState([]);
-  const [useMock, setUseMock] = useState(false);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   // const [filterDepartment, setFilterDepartment] = useState("");
@@ -28,7 +20,6 @@ const EquipmentManagement = () => {
     serial: "",
     purchaseDate: "",
     department: "",
-    manufacturer: "",
     supportEmail: "",
     supportWebsite: "",
   });
@@ -43,14 +34,16 @@ const EquipmentManagement = () => {
   const fetchEquipment = async () => {
     setLoading(true);
     try {
-      // 🔹 Add Authorization header for protected route
-      const res = await axios.get(API, { headers: { Authorization: `Bearer ${token}` } }); // ⬅️ FIXED
+      const res = await axios.get(API, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setEquipmentList(res.data);
-      setUseMock(false);
     } catch (err) {
-      console.error("Backend failed, using mock data:", err.response?.data || err.message);
-      setEquipmentList(mockData);
-      setUseMock(true);
+      console.error(
+        "Failed to fetch equipment:",
+        err.response?.data || err.message,
+      );
+      setEquipmentList([]);
     } finally {
       setLoading(false);
     }
@@ -71,7 +64,6 @@ const EquipmentManagement = () => {
       serial: "",
       purchaseDate: "",
       department: "",
-      manufacturer: "",
       supportEmail: "",
       supportWebsite: "",
     });
@@ -96,26 +88,16 @@ const EquipmentManagement = () => {
     }
 
     try {
-      if (useMock) {
-        // 🔹 Fallback for mock data
-        if (isEdit) {
-          setEquipmentList(
-            equipmentList.map((item) => (item.id === selectedId ? { ...formData, id: selectedId } : item))
-          );
-        } else {
-          const newItem = { ...formData, id: Date.now() };
-          setEquipmentList([...equipmentList, newItem]);
-        }
+      if (isEdit) {
+        await axios.put(`${API}/${selectedId}`, formData, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
       } else {
-        if (isEdit) {
-          // 🔹 PUT with Authorization header
-          await axios.put(`${API}/${selectedId}`, formData, { headers: { Authorization: `Bearer ${token}` } }); // ⬅️ FIXED
-        } else {
-          // 🔹 POST with Authorization header
-          await axios.post(API, formData, { headers: { Authorization: `Bearer ${token}` } }); // ⬅️ FIXED
-        }
-        fetchEquipment(); // refresh list from backend
+        await axios.post(API, formData, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
       }
+      fetchEquipment();
     } catch (err) {
       console.error("Failed to save equipment:", err.response?.data || err.message);
       alert("Failed to save equipment. Check console for details.");
@@ -131,7 +113,6 @@ const EquipmentManagement = () => {
       serial: "",
       purchaseDate: "",
       department: "",
-      manufacturer: "",
       supportEmail: "",
       supportWebsite: "",
     });
@@ -140,16 +121,14 @@ const EquipmentManagement = () => {
   const openDeleteModal = (id) => setSelectedId(id) || setShowDeleteModal(true);
 
   const confirmDelete = async () => {
-    if (useMock) {
-      setEquipmentList(equipmentList.filter((item) => item.id !== selectedId));
-    } else {
-      try {
-        await axios.delete(`${API}/${selectedId}`, { headers: { Authorization: `Bearer ${token}` } }); // ⬅️ FIXED
-        fetchEquipment();
-      } catch (err) {
-        console.error("Failed to delete:", err.response?.data || err.message);
-        alert("Failed to delete equipment. Check console for details.");
-      }
+    try {
+      await axios.delete(`${API}/${selectedId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      fetchEquipment();
+    } catch (err) {
+      console.error("Failed to delete:", err.response?.data || err.message);
+      alert("Failed to delete equipment. Check console for details.");
     }
     setShowDeleteModal(false);
   };
@@ -173,8 +152,7 @@ const EquipmentManagement = () => {
     item.name.toLowerCase().includes(search) ||
     item.model.toLowerCase().includes(search) ||
     item.serial.toLowerCase().includes(search) ||
-    item.department.toLowerCase().includes(search) ||
-    (item.manufacturer || "").toLowerCase().includes(search)
+    item.department.toLowerCase().includes(search)
   );
 });
 
@@ -194,8 +172,6 @@ const EquipmentManagement = () => {
   // ===== RENDER =====
   return (
     <div className="equipment-container">
-      {useMock && <p style={{ color: "red" }}>⚠️ Using mock data. Backend is unavailable.</p>}
-
       <h2>Equipment Management</h2>
       <p className="sub-text">Register and manage all pharmacy equipment</p>
 
@@ -209,7 +185,6 @@ const EquipmentManagement = () => {
             <input name="model" placeholder="Model" value={formData.model} onChange={handleChange} required />
             <input name="serial" placeholder="Serial Number" value={formData.serial} onChange={handleChange} required />
             <input type="date" name="purchaseDate" value={formData.purchaseDate} onChange={handleChange} required />
-            <input name="manufacturer" placeholder="Manufacturer or vendor (optional)" value={formData.manufacturer || ""} onChange={handleChange} />
             {/* <select name="department" value={formData.department} onChange={handleChange} required>
               <option value="">Select Department</option>
               <option value="Cardiology">Cardiology</option>
