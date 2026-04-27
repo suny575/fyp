@@ -86,7 +86,7 @@ const convertFaultToTask = async (faultId) => {
       payload: {
         workOrderId: task._id,
         equipmentName: fault?.equipment?.name || "Equipment",
-        link: `/tasks/${task._id}`,
+        link: `https://fyp-indol-one.vercel.app/technician/tasks/${task._id}`,
       },
     });
   } catch (notifyErr) {
