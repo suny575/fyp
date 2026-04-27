@@ -14,13 +14,13 @@ const contactCards = [
   {
     icon: FaPhoneAlt,
     title: "Support desk",
-    detail: "+250 700 000 000",
+    detail: "+251713980308",
     caption: "For equipment support coordination and urgent follow-up.",
   },
   {
     icon: FaEnvelope,
     title: "Email channel",
-    detail: "support@hemsms.com",
+    detail: "dagiti770@gmail.com",
     caption: "For vendor communication, quotations, and service requests.",
   },
   {
